@@ -240,32 +240,46 @@ export default function NuevaFactura() {
     if (duplicatedData) {
       try {
         const data = JSON.parse(duplicatedData);
-        form.reset({
-          tipoDte: data.tipoDte || "01",
-          receptor: {
-            tipoDocumento: data.receptor?.tipoDocumento || "36",
-            numDocumento: data.receptor?.numDocumento || "",
-            nombre: data.receptor?.nombre || "",
-            nrc: data.receptor?.nrc || "",
-            direccion: {
-              departamento: data.receptor?.direccion?.departamento || "06",
-              municipio: data.receptor?.direccion?.municipio || "01",
-              complemento: data.receptor?.direccion?.complemento || "",
-            },
-            telefono: data.receptor?.telefono || "",
-            correo: data.receptor?.correo || "",
-          },
-          items: data.items?.length > 0 ? data.items : [{
+        
+        const normalizedItems = (data.items?.length > 0 ? data.items : []).map((item: any) => ({
+          tipoItem: String(item.tipoItem || "2"),
+          cantidad: Number(item.cantidad) || 1,
+          codigo: String(item.codigo || ""),
+          descripcion: String(item.descripcion || ""),
+          precioUni: Number(item.precioUni) || 0,
+          montoDescu: Number(item.montoDescu) || 0,
+        }));
+
+        if (normalizedItems.length === 0) {
+          normalizedItems.push({
             tipoItem: "2",
             cantidad: 1,
             codigo: "",
             descripcion: "",
             precioUni: 0,
             montoDescu: 0,
-          }],
-          condicionOperacion: data.condicionOperacion || "1",
-          formaPago: data.formaPago || "01",
-          observaciones: data.observaciones || "",
+          });
+        }
+
+        form.reset({
+          tipoDte: String(data.tipoDte || "01"),
+          receptor: {
+            tipoDocumento: String(data.receptor?.tipoDocumento || "36"),
+            numDocumento: String(data.receptor?.numDocumento || ""),
+            nombre: String(data.receptor?.nombre || ""),
+            nrc: String(data.receptor?.nrc || ""),
+            direccion: {
+              departamento: String(data.receptor?.direccion?.departamento || "06"),
+              municipio: String(data.receptor?.direccion?.municipio || "01"),
+              complemento: String(data.receptor?.direccion?.complemento || ""),
+            },
+            telefono: String(data.receptor?.telefono || ""),
+            correo: String(data.receptor?.correo || ""),
+          },
+          items: normalizedItems,
+          condicionOperacion: String(data.condicionOperacion || "1"),
+          formaPago: String(data.formaPago || "01"),
+          observaciones: String(data.observaciones || ""),
         });
         setIsDuplicate(true);
         sessionStorage.removeItem("duplicatedFactura");

@@ -60,8 +60,35 @@ Schemas include emisorSchema, receptorSchema, itemFacturaSchema, and insertFactu
 - **express-session** + **connect-pg-simple**: Session management (if authentication is added)
 
 ### El Salvador Tax System Specifics
-- Document types: Factura (01), Comprobante de Crédito Fiscal (03), etc.
+- Document types: Factura (01), Comprobante de Crédito Fiscal (03), Nota de Crédito (05), Nota de Débito (06), etc.
 - Tax calculation: 13% IVA
 - Geographic codes: Departamentos and municipios of El Salvador
 - Number formats: NIT (tax ID), NRC (tax registry number)
 - Control number format: `DTE-{tipo}-{establecimiento}-{punto}-{correlativo}`
+
+## Recent Changes (December 2025)
+
+### New Features Added
+1. **Notas de Crédito/Débito** (`/notas`): Forms to create credit/debit notes referencing existing invoices
+2. **Reportes y Estadísticas** (`/reportes`): Dashboard with charts showing sales by month, top services, IVA accumulated, document type distribution
+3. **Búsqueda Avanzada**: Advanced filtering in history page by date range, amount, status, and document type
+4. **Exportación Masiva**: Export all filtered invoices as a single JSON file for backup or accountant
+5. **Duplicar Factura**: One-click duplication of existing invoices to create new ones with same data
+6. **Modo Offline**: Hook for saving drafts to localStorage when connection issues occur (`use-offline-drafts.ts`)
+
+### Pending Features
+- **Email Integration**: The email sending feature is prepared in the UI but requires a service integration (Resend, SendGrid, or similar). User dismissed integration setup - when ready, configure email service and implement `/api/facturas/:id/email` endpoint.
+
+## Key Files
+
+### Pages
+- `client/src/pages/dashboard.tsx` - Main dashboard with statistics
+- `client/src/pages/nueva-factura.tsx` - Invoice creation form with preview
+- `client/src/pages/nota-credito-debito.tsx` - Credit/debit notes creation
+- `client/src/pages/historial.tsx` - Invoice history with advanced search
+- `client/src/pages/reportes.tsx` - Reports and charts
+- `client/src/pages/emisor.tsx` - Issuer configuration
+- `client/src/pages/configuracion.tsx` - System settings
+
+### Hooks
+- `client/src/hooks/use-offline-drafts.ts` - Offline draft management with localStorage
