@@ -181,6 +181,7 @@ export default function NuevaFactura() {
   const { toast } = useToast();
   const [showPreview, setShowPreview] = useState(false);
   const [correlativo, setCorrelativo] = useState(1);
+  const [isDuplicate, setIsDuplicate] = useState(false);
 
   const { data: emisor } = useQuery<Emisor>({
     queryKey: ["/api/emisor"],
@@ -233,6 +234,50 @@ export default function NuevaFactura() {
     control: form.control,
     name: "items",
   });
+
+  useEffect(() => {
+    const duplicatedData = sessionStorage.getItem("duplicatedFactura");
+    if (duplicatedData) {
+      try {
+        const data = JSON.parse(duplicatedData);
+        form.reset({
+          tipoDte: data.tipoDte || "01",
+          receptor: {
+            tipoDocumento: data.receptor?.tipoDocumento || "36",
+            numDocumento: data.receptor?.numDocumento || "",
+            nombre: data.receptor?.nombre || "",
+            nrc: data.receptor?.nrc || "",
+            direccion: {
+              departamento: data.receptor?.direccion?.departamento || "06",
+              municipio: data.receptor?.direccion?.municipio || "01",
+              complemento: data.receptor?.direccion?.complemento || "",
+            },
+            telefono: data.receptor?.telefono || "",
+            correo: data.receptor?.correo || "",
+          },
+          items: data.items?.length > 0 ? data.items : [{
+            tipoItem: "2",
+            cantidad: 1,
+            codigo: "",
+            descripcion: "",
+            precioUni: 0,
+            montoDescu: 0,
+          }],
+          condicionOperacion: data.condicionOperacion || "1",
+          formaPago: data.formaPago || "01",
+          observaciones: data.observaciones || "",
+        });
+        setIsDuplicate(true);
+        sessionStorage.removeItem("duplicatedFactura");
+        toast({
+          title: "Factura duplicada",
+          description: "Los datos han sido cargados. Revise y confirme antes de generar.",
+        });
+      } catch (e) {
+        console.error("Error loading duplicated factura:", e);
+      }
+    }
+  }, [form, toast]);
 
   const createMutation = useMutation({
     mutationFn: async (data: FacturaFormData) => {

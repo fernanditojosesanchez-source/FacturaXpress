@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   FileText,
   FileJson,
@@ -10,10 +10,16 @@ import {
   Trash2,
   Download,
   Filter,
+  Copy,
+  Mail,
+  Calendar,
+  X,
+  Package,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -48,7 +54,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -63,6 +75,14 @@ const statusConfig = {
   anulada: { label: "Anulada", variant: "destructive" as const },
 };
 
+interface AdvancedFilters {
+  dateFrom: string;
+  dateTo: string;
+  minAmount: string;
+  maxAmount: string;
+  tipoDte: string;
+}
+
 function JsonViewer({ data }: { data: object }) {
   return (
     <ScrollArea className="h-[400px] w-full rounded-md border bg-muted p-4">
@@ -74,11 +94,20 @@ function JsonViewer({ data }: { data: object }) {
 }
 
 export default function Historial() {
+  const [, navigate] = useLocation();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedFactura, setSelectedFactura] = useState<Factura | null>(null);
   const [deleteFactura, setDeleteFactura] = useState<Factura | null>(null);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({
+    dateFrom: "",
+    dateTo: "",
+    minAmount: "",
+    maxAmount: "",
+    tipoDte: "all",
+  });
 
   const { data: facturas, isLoading } = useQuery<Factura[]>({
     queryKey: ["/api/facturas"],
@@ -105,6 +134,58 @@ export default function Historial() {
     },
   });
 
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (advancedFilters.dateFrom) count++;
+    if (advancedFilters.dateTo) count++;
+    if (advancedFilters.minAmount) count++;
+    if (advancedFilters.maxAmount) count++;
+    if (advancedFilters.tipoDte !== "all") count++;
+    return count;
+  }, [advancedFilters]);
+
+  const filteredFacturas = useMemo(() => {
+    return facturas?.filter((f) => {
+      const matchesSearch =
+        f.receptor.nombre.toLowerCase().includes(search.toLowerCase()) ||
+        f.numeroControl.toLowerCase().includes(search.toLowerCase()) ||
+        f.codigoGeneracion.toLowerCase().includes(search.toLowerCase());
+      const matchesStatus = statusFilter === "all" || f.estado === statusFilter;
+
+      if (advancedFilters.dateFrom) {
+        const facturaDate = new Date(f.fecEmi);
+        const fromDate = new Date(advancedFilters.dateFrom);
+        if (facturaDate < fromDate) return false;
+      }
+      if (advancedFilters.dateTo) {
+        const facturaDate = new Date(f.fecEmi);
+        const toDate = new Date(advancedFilters.dateTo);
+        if (facturaDate > toDate) return false;
+      }
+      if (advancedFilters.minAmount) {
+        if (f.resumen.totalPagar < parseFloat(advancedFilters.minAmount)) return false;
+      }
+      if (advancedFilters.maxAmount) {
+        if (f.resumen.totalPagar > parseFloat(advancedFilters.maxAmount)) return false;
+      }
+      if (advancedFilters.tipoDte !== "all") {
+        if (f.tipoDte !== advancedFilters.tipoDte) return false;
+      }
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [facturas, search, statusFilter, advancedFilters]);
+
+  const clearAdvancedFilters = () => {
+    setAdvancedFilters({
+      dateFrom: "",
+      dateTo: "",
+      minAmount: "",
+      maxAmount: "",
+      tipoDte: "all",
+    });
+  };
+
   const downloadJSON = (factura: Factura) => {
     const dataStr = JSON.stringify(factura, null, 2);
     const blob = new Blob([dataStr], { type: "application/json" });
@@ -122,14 +203,74 @@ export default function Historial() {
     });
   };
 
-  const filteredFacturas = facturas?.filter((f) => {
-    const matchesSearch =
-      f.receptor.nombre.toLowerCase().includes(search.toLowerCase()) ||
-      f.numeroControl.toLowerCase().includes(search.toLowerCase()) ||
-      f.codigoGeneracion.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === "all" || f.estado === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const exportMassiveJSON = () => {
+    if (!filteredFacturas?.length) {
+      toast({
+        title: "Sin facturas",
+        description: "No hay facturas para exportar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const exportData = {
+      exportDate: new Date().toISOString(),
+      totalFacturas: filteredFacturas.length,
+      facturas: filteredFacturas,
+    };
+
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const now = new Date();
+    link.download = `facturas-${now.toISOString().split("T")[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast({
+      title: "Exportación completada",
+      description: `${filteredFacturas.length} facturas exportadas`,
+    });
+  };
+
+  const duplicateFactura = (factura: Factura) => {
+    const duplicatedData = {
+      tipoDte: factura.tipoDte,
+      receptor: factura.receptor,
+      items: factura.cuerpoDocumento.map((item) => ({
+        tipoItem: item.tipoItem,
+        cantidad: item.cantidad,
+        codigo: item.codigo,
+        descripcion: item.descripcion,
+        precioUni: item.precioUni,
+        montoDescu: item.montoDescu,
+      })),
+      condicionOperacion: factura.resumen.condicionOperacion,
+      formaPago: factura.resumen.pagos?.[0]?.codigo || "01",
+      observaciones: factura.extension?.observaciones || "",
+    };
+
+    sessionStorage.setItem("duplicatedFactura", JSON.stringify(duplicatedData));
+    navigate("/factura/nueva?duplicate=true");
+  };
+
+  const sendByEmail = (factura: Factura) => {
+    if (!factura.receptor.correo) {
+      toast({
+        title: "Sin correo",
+        description: "El receptor no tiene correo electrónico registrado",
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({
+      title: "Función próximamente",
+      description: "El envío por correo estará disponible pronto. Por favor configure la integración de email.",
+    });
+  };
 
   if (isLoading) {
     return (
@@ -162,15 +303,26 @@ export default function Historial() {
             Historial de Facturas
           </h1>
           <p className="text-muted-foreground">
-            {facturas?.length || 0} facturas en total
+            {filteredFacturas?.length || 0} de {facturas?.length || 0} facturas
           </p>
         </div>
-        <Link href="/factura/nueva">
-          <Button data-testid="button-new-invoice">
-            <FileText className="h-4 w-4 mr-2" />
-            Nueva Factura
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={exportMassiveJSON}
+            disabled={!filteredFacturas?.length}
+            data-testid="button-export-all"
+          >
+            <Package className="h-4 w-4 mr-2" />
+            Exportar Todas
           </Button>
-        </Link>
+          <Link href="/factura/nueva">
+            <Button data-testid="button-new-invoice">
+              <FileText className="h-4 w-4 mr-2" />
+              Nueva Factura
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Card>
@@ -188,7 +340,6 @@ export default function Historial() {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px]" data-testid="select-filter-status">
-                <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
@@ -199,6 +350,129 @@ export default function Historial() {
                 <SelectItem value="anulada">Anulada</SelectItem>
               </SelectContent>
             </Select>
+            <Popover open={showAdvancedFilters} onOpenChange={setShowAdvancedFilters}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={activeFiltersCount > 0 ? "default" : "outline"}
+                  data-testid="button-advanced-filters"
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filtros
+                  {activeFiltersCount > 0 && (
+                    <Badge variant="secondary" className="ml-2" size="sm">
+                      {activeFiltersCount}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80" align="end">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium">Filtros Avanzados</h4>
+                    {activeFiltersCount > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearAdvancedFilters}
+                        data-testid="button-clear-filters"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Limpiar
+                      </Button>
+                    )}
+                  </div>
+                  <Separator />
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-xs">Desde</Label>
+                        <Input
+                          type="date"
+                          value={advancedFilters.dateFrom}
+                          onChange={(e) =>
+                            setAdvancedFilters((prev) => ({
+                              ...prev,
+                              dateFrom: e.target.value,
+                            }))
+                          }
+                          data-testid="input-date-from"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Hasta</Label>
+                        <Input
+                          type="date"
+                          value={advancedFilters.dateTo}
+                          onChange={(e) =>
+                            setAdvancedFilters((prev) => ({
+                              ...prev,
+                              dateTo: e.target.value,
+                            }))
+                          }
+                          data-testid="input-date-to"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-xs">Monto mínimo ($)</Label>
+                        <Input
+                          type="number"
+                          placeholder="0.00"
+                          value={advancedFilters.minAmount}
+                          onChange={(e) =>
+                            setAdvancedFilters((prev) => ({
+                              ...prev,
+                              minAmount: e.target.value,
+                            }))
+                          }
+                          data-testid="input-min-amount"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Monto máximo ($)</Label>
+                        <Input
+                          type="number"
+                          placeholder="1000.00"
+                          value={advancedFilters.maxAmount}
+                          onChange={(e) =>
+                            setAdvancedFilters((prev) => ({
+                              ...prev,
+                              maxAmount: e.target.value,
+                            }))
+                          }
+                          data-testid="input-max-amount"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Tipo de documento</Label>
+                      <Select
+                        value={advancedFilters.tipoDte}
+                        onValueChange={(value) =>
+                          setAdvancedFilters((prev) => ({
+                            ...prev,
+                            tipoDte: value,
+                          }))
+                        }
+                      >
+                        <SelectTrigger data-testid="select-tipo-dte-filter">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos los tipos</SelectItem>
+                          {TIPOS_DTE.map((tipo) => (
+                            <SelectItem key={tipo.codigo} value={tipo.codigo}>
+                              {tipo.nombre}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </CardHeader>
         <CardContent>
@@ -207,11 +481,11 @@ export default function Historial() {
               <FileText className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-lg font-medium">No hay facturas</p>
               <p className="text-muted-foreground text-sm">
-                {search || statusFilter !== "all"
+                {search || statusFilter !== "all" || activeFiltersCount > 0
                   ? "No se encontraron facturas con los filtros aplicados"
                   : "Comienza creando tu primera factura electrónica"}
               </p>
-              {!search && statusFilter === "all" && (
+              {!search && statusFilter === "all" && activeFiltersCount === 0 && (
                 <Link href="/factura/nueva">
                   <Button className="mt-4" data-testid="button-create-first">
                     Crear factura
@@ -279,10 +553,26 @@ export default function Historial() {
                             <Button
                               variant="ghost"
                               size="icon"
+                              onClick={() => duplicateFactura(factura)}
+                              data-testid={`button-duplicate-${factura.id}`}
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={() => downloadJSON(factura)}
                               data-testid={`button-download-${factura.id}`}
                             >
                               <Download className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => sendByEmail(factura)}
+                              data-testid={`button-email-${factura.id}`}
+                            >
+                              <Mail className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
@@ -340,7 +630,7 @@ export default function Historial() {
                 <JsonViewer data={selectedFactura} />
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button onClick={() => downloadJSON(selectedFactura)} data-testid="button-download-json">
                   <FileJson className="h-4 w-4 mr-2" />
                   Descargar JSON
@@ -354,6 +644,17 @@ export default function Historial() {
                 >
                   <FileDown className="h-4 w-4 mr-2" />
                   Descargar PDF
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedFactura(null);
+                    duplicateFactura(selectedFactura);
+                  }}
+                  data-testid="button-duplicate-dialog"
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Duplicar
                 </Button>
               </div>
             </div>

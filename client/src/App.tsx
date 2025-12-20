@@ -13,13 +13,17 @@ import NuevaFactura from "@/pages/nueva-factura";
 import Historial from "@/pages/historial";
 import Emisor from "@/pages/emisor";
 import Configuracion from "@/pages/configuracion";
+import NotaCreditoDebito from "@/pages/nota-credito-debito";
+import Reportes from "@/pages/reportes";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/factura/nueva" component={NuevaFactura} />
+      <Route path="/notas" component={NotaCreditoDebito} />
       <Route path="/historial" component={Historial} />
+      <Route path="/reportes" component={Reportes} />
       <Route path="/emisor" component={Emisor} />
       <Route path="/configuracion" component={Configuracion} />
       <Route component={NotFound} />

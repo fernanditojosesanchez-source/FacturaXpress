@@ -6,6 +6,8 @@ import {
   History,
   Settings,
   Receipt,
+  FileMinus,
+  BarChart3,
 } from "lucide-react";
 import {
   Sidebar,
@@ -32,9 +34,19 @@ const menuItems = [
     icon: FileText,
   },
   {
+    title: "Notas Crédito/Débito",
+    url: "/notas",
+    icon: FileMinus,
+  },
+  {
     title: "Historial",
     url: "/historial",
     icon: History,
+  },
+  {
+    title: "Reportes",
+    url: "/reportes",
+    icon: BarChart3,
   },
 ];
 
