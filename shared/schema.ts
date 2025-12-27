@@ -18,9 +18,12 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
 export const emisorSchema = z.object({
-  nit: z.string().min(1, "NIT es requerido"),
+  nit: z.string()
+    .min(1, "NIT es requerido")
+    .regex(/^\d{14}-\d$/, "NIT inválido. Formato: 14 dígitos-1 dígito")
+    .max(16, "NIT muy largo"),
   nrc: z.string().min(1, "NRC es requerido"),
-  nombre: z.string().min(1, "Nombre es requerido"),
+  nombre: z.string().min(1, "Nombre es requerido").max(100),
   codActividad: z.string().min(1, "Código de actividad es requerido"),
   descActividad: z.string().min(1, "Descripción de actividad es requerida"),
   nombreComercial: z.string().optional(),
@@ -30,19 +33,29 @@ export const emisorSchema = z.object({
     municipio: z.string().min(1, "Municipio es requerido"),
     complemento: z.string().min(1, "Dirección es requerida"),
   }),
-  telefono: z.string().min(1, "Teléfono es requerido"),
+  telefono: z.string().min(1, "Teléfono es requerido").regex(/^\d{8}$/, "Teléfono debe tener 8 dígitos"),
   correo: z.string().email("Correo inválido"),
   codEstableMH: z.string().optional(),
   codEstable: z.string().optional(),
   codPuntoVentaMH: z.string().optional(),
   codPuntoVenta: z.string().optional(),
+  logo: z.string().optional(), // Base64 del logo
 });
 
 export const receptorSchema = z.object({
   tipoDocumento: z.enum(["36", "13", "02", "03", "37"]).default("36"),
-  numDocumento: z.string().min(1, "Número de documento es requerido"),
+  numDocumento: z.string()
+    .min(1, "Número de documento es requerido")
+    .refine((val) => {
+      // NIT: 14 dígitos + 1 verificador
+      if (val.match(/^\d{14}-\d$/)) return true;
+      // DUI: 8 dígitos + 1 verificador
+      if (val.match(/^\d{8}-\d$/)) return true;
+      // Otros formatos (más flexibles)
+      return val.length >= 5;
+    }, "Formato de documento inválido"),
   nrc: z.string().optional(),
-  nombre: z.string().min(1, "Nombre es requerido"),
+  nombre: z.string().min(1, "Nombre es requerido").max(100),
   codActividad: z.string().optional(),
   descActividad: z.string().optional(),
   direccion: z.object({
@@ -51,7 +64,7 @@ export const receptorSchema = z.object({
     complemento: z.string().min(1, "Dirección es requerida"),
   }),
   telefono: z.string().optional(),
-  correo: z.string().email("Correo inválido").optional(),
+  correo: z.string().email("Correo inválido").optional().or(z.literal("")),
 });
 
 export const itemFacturaSchema = z.object({

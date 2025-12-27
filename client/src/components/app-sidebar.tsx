@@ -24,7 +24,7 @@ import {
 
 const menuItems = [
   {
-    title: "Dashboard",
+    title: "Panel de Control",
     url: "/",
     icon: LayoutDashboard,
   },
@@ -67,11 +67,15 @@ export function AppSidebar() {
   const [location] = useLocation();
 
   return (
-    <Sidebar>
+    <Sidebar
+      variant="floating"
+      collapsible="icon"
+      className="m-0 mr-4 rounded-2xl border border-white/70 bg-white/85 p-3 shadow-2xl backdrop-blur-xl"
+    >
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary">
-            <Receipt className="h-5 w-5 text-primary-foreground" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 via-indigo-500 to-cyan-400 shadow-lg shadow-blue-600/25">
+            <Receipt className="h-5 w-5 text-white" />
           </div>
           <div className="flex flex-col">
             <span className="text-base font-semibold" data-testid="text-app-name">
@@ -131,7 +135,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-4">
-        <div className="rounded-md bg-muted p-3">
+        <div className="rounded-xl border border-white/70 bg-white/80 p-3 shadow-sm">
           <p className="text-xs text-muted-foreground">
             Sistema de facturación electrónica conforme a normativas DGII El Salvador
           </p>

@@ -64,6 +64,15 @@ const notaFormSchema = z.object({
 
 type NotaFormData = z.infer<typeof notaFormSchema>;
 
+const countErrors = (errors: Record<string, any>): number => {
+  return Object.values(errors).reduce((acc, value) => {
+    if (!value) return acc;
+    if (value.message) return acc + 1;
+    if (typeof value === "object") return acc + countErrors(value as Record<string, any>);
+    return acc;
+  }, 0);
+};
+
 export default function NotaCreditoDebito() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -98,6 +107,9 @@ export default function NotaCreditoDebito() {
 
   const tipoNota = form.watch("tipoNota");
   const montoAjuste = form.watch("montoAjuste");
+  const { submitCount, isSubmitting } = form.formState;
+  const errorCount = countErrors(form.formState.errors);
+  const hasErrors = errorCount > 0;
 
   const facturasElegibles = facturas?.filter(
     (f) =>
@@ -245,21 +257,22 @@ export default function NotaCreditoDebito() {
 
   return (
     <div className="p-6">
-      <div className="flex flex-wrap items-center gap-4 mb-6">
+      <div className="flex flex-wrap items-center gap-4 mb-6 animate-fade-in-up [animation-delay:0s]">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate("/")}
           data-testid="button-back"
+          className="hover:bg-white/70 transition-all duration-200 hover:-translate-x-1"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Volver
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-semibold" data-testid="text-page-title">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground" data-testid="text-page-title">
             Notas de Crédito / Débito
           </h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-sm mt-1">
             Emita documentos para corregir o anular facturas
           </p>
         </div>
@@ -267,8 +280,26 @@ export default function NotaCreditoDebito() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-2 animate-fade-in-up [animation-delay:0s]">
+            {submitCount > 0 && hasErrors && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
+                <p className="font-semibold">Revisa el formulario</p>
+                <p className="text-xs text-amber-800">Faltan {errorCount} campo(s) obligatorios o con formato inválido.</p>
+              </div>
+            )}
+            {submitCount > 0 && !hasErrors && (
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="font-semibold">Validación lista</p>
+                  <p className="text-xs text-emerald-800">Sin errores de cliente. Puedes generar la nota.</p>
+                </div>
+                {isSubmitting && <span className="text-xs">Enviando...</span>}
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0s' }}>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Receipt className="h-5 w-5" />
@@ -320,7 +351,7 @@ export default function NotaCreditoDebito() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <FileText className="h-5 w-5" />
@@ -334,7 +365,7 @@ export default function NotaCreditoDebito() {
                     placeholder="Buscar factura..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 table-input-focus"
                     data-testid="input-search-factura"
                   />
                 </div>
@@ -391,7 +422,7 @@ export default function NotaCreditoDebito() {
           </div>
 
           {selectedFactura && (
-            <Card>
+            <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
               <CardHeader>
                 <CardTitle className="text-lg">Detalles del Ajuste</CardTitle>
               </CardHeader>
@@ -405,7 +436,7 @@ export default function NotaCreditoDebito() {
                         <FormLabel>Motivo del ajuste *</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
-                            <SelectTrigger data-testid="select-motivo">
+                            <SelectTrigger data-testid="select-motivo" className="table-input-focus">
                               <SelectValue placeholder="Seleccione un motivo" />
                             </SelectTrigger>
                           </FormControl>
@@ -438,6 +469,7 @@ export default function NotaCreditoDebito() {
                             min="0.01"
                             max={selectedFactura.resumen.totalGravada}
                             data-testid="input-monto-ajuste"
+                            className="table-input-focus"
                           />
                         </FormControl>
                         <FormMessage />
@@ -447,7 +479,7 @@ export default function NotaCreditoDebito() {
 
                   <div>
                     <Label className="text-sm font-medium">Total con IVA</Label>
-                    <p className="text-2xl font-bold mt-1">
+                    <p className="text-2xl font-bold mt-1 text-[#3d2f28]">
                       {formatCurrency(montoAjuste + calculateIVA(montoAjuste))}
                     </p>
                   </div>
@@ -463,7 +495,7 @@ export default function NotaCreditoDebito() {
                         <Textarea
                           {...field}
                           placeholder="Describa el concepto del ajuste..."
-                          className="resize-none"
+                          className="resize-none table-input-focus"
                           data-testid="input-descripcion-ajuste"
                         />
                       </FormControl>
@@ -500,6 +532,7 @@ export default function NotaCreditoDebito() {
                     variant="outline"
                     onClick={() => navigate("/historial")}
                     data-testid="button-cancel"
+                    className="hover:bg-white/70 transition-all duration-200"
                   >
                     Cancelar
                   </Button>
@@ -507,6 +540,7 @@ export default function NotaCreditoDebito() {
                     type="submit"
                     disabled={createNotaMutation.isPending}
                     data-testid="button-submit"
+                    className="bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 text-white hover:shadow-lg transition-all duration-200"
                   >
                     {createNotaMutation.isPending ? "Generando..." : `Generar ${tipoNota === "05" ? "Nota de Crédito" : "Nota de Débito"}`}
                   </Button>

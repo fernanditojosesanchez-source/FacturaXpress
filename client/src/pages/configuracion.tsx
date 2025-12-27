@@ -1,22 +1,336 @@
-import { Settings, Info, FileJson, Shield, HelpCircle } from "lucide-react";
+import { Settings, Info, FileJson, Shield, HelpCircle, Wifi, WifiOff, AlertCircle, Database, Trash2, Plus, Upload, Image as ImageIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useState, useRef } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import type { Emisor } from "@shared/schema";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+interface MHStatus {
+  conectado: boolean;
+  modoSimulacion: boolean;
+  mensaje: string;
+}
 
 export default function Configuracion() {
+  const { toast } = useToast();
+  const [cantidad, setCantidad] = useState(10);
+  const [showClearDialog, setShowClearDialog] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const { data: mhStatus, isLoading: loadingMH, refetch: refetchMH } = useQuery<MHStatus>({
+    queryKey: ["/api/mh/status"],
+    refetchInterval: 30000,
+  });
+
+  const { data: facturas } = useQuery<any[]>({
+    queryKey: ["/api/facturas"],
+  });
+
+  const { data: emisor } = useQuery<Emisor>({
+    queryKey: ["/api/emisor"],
+  });
+
+  // Mutation para generar datos de prueba
+  const generarDatosMutation = useMutation({
+    mutationFn: async (cantidad: number) => {
+      // Primero guardar emisor de prueba
+      await apiRequest("POST", "/api/seed/emisor");
+      // Luego generar facturas
+      return await apiRequest<{ success: boolean; cantidad: number; mensaje: string }>(
+        "POST", 
+        "/api/seed/facturas", 
+        { cantidad }
+      );
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/facturas"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/emisor"] });
+      toast({
+        title: "✅ Datos generados",
+        description: data.mensaje,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudieron generar los datos",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation para limpiar datos
+  const limpiarDatosMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest<{ success: boolean; cantidad: number; mensaje: string }>(
+        "DELETE", 
+        "/api/seed/facturas"
+      );
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/facturas"] });
+      toast({
+        title: "🗑️ Datos eliminados",
+        description: data.mensaje,
+      });
+      setShowClearDialog(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudieron eliminar los datos",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation para subir logo
+  const uploadLogoMutation = useMutation({
+    mutationFn: async (logoBase64: string) => {
+      if (!emisor) throw new Error("No hay emisor configurado");
+      
+      const updatedEmisor = {
+        ...emisor,
+        logo: logoBase64,
+      };
+      
+      return await apiRequest("POST", "/api/emisor", updatedEmisor);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/emisor"] });
+      toast({
+        title: "Logo actualizado",
+        description: "El logo se ha guardado correctamente",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo subir el logo",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Archivo inválido",
+        description: "Solo se permiten imágenes (PNG, JPG, SVG)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validar tamaño (máx 1MB)
+    if (file.size > 1024 * 1024) {
+      toast({
+        title: "Archivo muy grande",
+        description: "El logo debe pesar menos de 1MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Convertir a base64
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      uploadLogoMutation.mutate(base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeLogo = () => {
+    if (!emisor) return;
+    
+    const updatedEmisor = {
+      ...emisor,
+      logo: undefined,
+    };
+    
+    apiRequest("POST", "/api/emisor", updatedEmisor).then(() => {
+      queryClient.invalidateQueries({ queryKey: ["/api/emisor"] });
+      toast({
+        title: "Logo eliminado",
+        description: "El logo se ha eliminado correctamente",
+      });
+    });
+  };
+
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold" data-testid="text-page-title">
+      <div className="animate-fade-in-up [animation-delay:0s]">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground" data-testid="text-page-title">
           Configuración
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-sm mt-1">
           Información del sistema y configuraciones
         </p>
       </div>
 
+      <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0s' }}>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {loadingMH ? (
+                  <Skeleton className="h-5 w-5 rounded-full" />
+                ) : mhStatus?.conectado ? (
+                  <Wifi className="h-5 w-5 text-green-600" />
+                ) : (
+                  <WifiOff className="h-5 w-5 text-red-600" />
+                )}
+                <div>
+                  <CardTitle className="text-lg">Ministerio de Hacienda</CardTitle>
+                  <CardDescription>Estado de conexión e integración</CardDescription>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetchMH()}
+                disabled={loadingMH}
+                className="hover:bg-white/70 transition-all duration-200"
+              >
+                Verificar
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {loadingMH ? (
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Estado</span>
+                  <Badge variant={mhStatus?.conectado ? "default" : "secondary"}>
+                    {mhStatus?.conectado ? "Conectado" : "Desconectado"}
+                  </Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Modo</span>
+                  <Badge variant={mhStatus?.modoSimulacion ? "outline" : "default"}>
+                    {mhStatus?.modoSimulacion ? "Simulación" : "Producción"}
+                  </Badge>
+                </div>
+                <Separator />
+                <div className="flex items-start gap-2 text-sm">
+                  <AlertCircle className="h-4 w-4 text-muted-foreground mt-0.5" />
+                  <p className="text-muted-foreground">{mhStatus?.mensaje}</p>
+                </div>
+              
+                {mhStatus?.modoSimulacion && (
+                  <div className="p-3 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                    <p className="text-xs text-amber-800 dark:text-amber-200">
+                      <strong>Modo Simulación:</strong> Las transmisiones no se envían al MH real. 
+                      Este modo permite desarrollar y probar sin certificado digital.
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+        <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <ImageIcon className="h-5 w-5 text-primary" />
+              <div>
+                <CardTitle className="text-lg">Logo del Emisor</CardTitle>
+                <CardDescription>Personaliza tu identidad corporativa</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {emisor?.logo ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-center p-4 rounded-lg border-2 border-dashed border-border bg-muted/50">
+                  <img 
+                    src={emisor.logo} 
+                    alt="Logo del emisor" 
+                    className="max-h-24 max-w-full object-contain"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex-1"
+                    disabled={uploadLogoMutation.isPending}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Cambiar Logo
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={removeLogo}
+                    className="hover:bg-red-50 hover:border-red-200"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div 
+                  className="flex flex-col items-center justify-center p-8 rounded-lg border-2 border-dashed border-border hover:border-primary hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                  <p className="text-sm font-medium">Subir logo</p>
+                  <p className="text-xs text-muted-foreground mt-1">PNG, JPG o SVG (máx 1MB)</p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full"
+                  disabled={uploadLogoMutation.isPending}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Seleccionar Archivo
+                </Button>
+              </div>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleLogoUpload}
+              className="hidden"
+            />
+            <p className="text-xs text-muted-foreground">
+              El logo aparecerá en el navbar y en los PDFs generados.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
           <CardHeader>
             <div className="flex items-center gap-3">
               <Info className="h-5 w-5 text-primary" />
@@ -46,7 +360,7 @@ export default function Configuracion() {
           </CardContent>
         </Card>
 
-        <Card>
+  <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
           <CardHeader>
             <div className="flex items-center gap-3">
               <FileJson className="h-5 w-5 text-primary" />
@@ -69,7 +383,7 @@ export default function Configuracion() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
           <CardHeader>
             <div className="flex items-center gap-3">
               <Shield className="h-5 w-5 text-primary" />
@@ -98,7 +412,91 @@ export default function Configuracion() {
           </CardContent>
         </Card>
 
-        <Card>
+        {/* Nueva sección: Datos de Prueba */}
+        <Card className="md:col-span-2 backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Database className="h-5 w-5 text-primary" />
+                <div>
+                  <CardTitle className="text-lg">Datos de Prueba</CardTitle>
+                  <CardDescription>
+                    Genera facturas de prueba para desarrollar y probar el sistema
+                  </CardDescription>
+                </div>
+              </div>
+              <Badge variant="outline">
+                 <span className="text-[#3d2f28] font-semibold">{facturas?.length || 0}</span> facturas
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
+                <strong>Generador Automático:</strong> Crea facturas de prueba con datos realistas 
+                incluyendo diferentes receptores, productos, servicios y estados variados.
+              </p>
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[200px]">
+                  <Label htmlFor="cantidad" className="text-xs text-blue-800 dark:text-blue-200">
+                    Cantidad de facturas
+                  </Label>
+                  <Input
+                    id="cantidad"
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={cantidad}
+                    onChange={(e) => setCantidad(parseInt(e.target.value) || 10)}
+                    className="mt-1 table-input-focus"
+                  />
+                </div>
+                <Button
+                  onClick={() => generarDatosMutation.mutate(cantidad)}
+                  disabled={generarDatosMutation.isPending}
+                                    className="bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 text-white hover:shadow-lg transition-all duration-200"
+                  size="default"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  {generarDatosMutation.isPending ? "Generando..." : "Generar Datos"}
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowClearDialog(true)}
+                  disabled={limpiarDatosMutation.isPending || !facturas?.length}
+                                    className="hover:bg-red-600 transition-all duration-200"
+                  size="default"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Limpiar Todo
+                </Button>
+              </div>
+            </div>
+
+            <Separator />
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground text-xs">Emisor de prueba</p>
+                 <p className="font-medium text-[#3d2f28]">COMERCIAL LA ESPERANZA</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Receptores</p>
+                 <p className="font-medium text-[#3d2f28]">5 clientes variados</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Productos/Servicios</p>
+                 <p className="font-medium text-[#3d2f28]">15 ítems diferentes</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Estados</p>
+                 <p className="font-medium text-[#3d2f28]">Todos los estados</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+  <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
           <CardHeader>
             <div className="flex items-center gap-3">
               <HelpCircle className="h-5 w-5 text-primary" />
@@ -113,7 +511,7 @@ export default function Configuracion() {
               href="https://factura.gob.sv"
               target="_blank"
               rel="noopener noreferrer"
-              className="block p-3 rounded-md bg-muted hover-elevate transition-colors"
+              className="block p-3 rounded-md bg-indigo-50/30 hover:bg-indigo-100/40 transition-all duration-200 border border-indigo-200/50 hover:border-indigo-300/70"
             >
               <p className="text-sm font-medium">Portal DGII</p>
               <p className="text-xs text-muted-foreground">factura.gob.sv</p>
@@ -122,7 +520,7 @@ export default function Configuracion() {
               href="https://factura.gob.sv/consultaobligatoriedad"
               target="_blank"
               rel="noopener noreferrer"
-              className="block p-3 rounded-md bg-muted hover-elevate transition-colors"
+              className="block p-3 rounded-md bg-indigo-50/30 hover:bg-indigo-100/40 transition-all duration-200 border border-indigo-200/50 hover:border-indigo-300/70"
             >
               <p className="text-sm font-medium">Consulta de Obligatoriedad</p>
               <p className="text-xs text-muted-foreground">
@@ -137,7 +535,7 @@ export default function Configuracion() {
         </Card>
       </div>
 
-      <Card>
+      <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
         <CardHeader>
           <CardTitle className="text-lg">Notas Importantes</CardTitle>
         </CardHeader>
@@ -185,6 +583,28 @@ export default function Configuracion() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Diálogo de confirmación para limpiar datos */}
+      <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar todas las facturas?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente todas las facturas ({facturas?.length || 0} en total).
+              Esta operación no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => limpiarDatosMutation.mutate()}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar Todo
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

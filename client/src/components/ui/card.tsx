@@ -9,9 +9,14 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "shadcn-card rounded-xl border bg-card border-card-border text-card-foreground shadow-sm",
+      "shadcn-card rounded-2xl bg-card text-card-foreground border border-white/60 shadow-xl",
+      "transition-shadow duration-200",
       className
     )}
+    style={{
+      boxShadow:
+        "0 22px 60px rgba(42, 32, 20, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.55)",
+    }}
     {...props}
   />
 ));

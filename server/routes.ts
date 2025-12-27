@@ -5,11 +5,107 @@ import { emisorSchema, insertFacturaSchema } from "@shared/schema";
 import { z } from "zod";
 import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
+import { mhService } from "./mh-service";
+import { generarFacturasPrueba, EMISOR_PRUEBA } from "./seed-data";
+import { registerAuthRoutes } from "./auth";
+import {
+  DEPARTAMENTOS_EL_SALVADOR,
+  TIPOS_DOCUMENTO,
+  TIPOS_DTE,
+  CONDICIONES_OPERACION,
+  FORMAS_PAGO,
+  TIPOS_ITEM,
+  UNIDADES_MEDIDA,
+} from "./catalogs";
+import { validateDTESchema } from "./dgii-validator";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Rutas de autenticación
+  registerAuthRoutes(app);
+
+  // ============================================
+  // ENDPOINTS DE CATÁLOGOS DGII
+  // ============================================
+
+  app.get("/api/catalogos/departamentos", (_req: Request, res: Response) => {
+    res.json(DEPARTAMENTOS_EL_SALVADOR);
+  });
+
+  app.get("/api/catalogos/tipos-documento", (_req: Request, res: Response) => {
+    res.json(TIPOS_DOCUMENTO);
+  });
+
+  app.get("/api/catalogos/tipos-dte", (_req: Request, res: Response) => {
+    res.json(TIPOS_DTE);
+  });
+
+  app.get("/api/catalogos/condiciones-operacion", (_req: Request, res: Response) => {
+    res.json(CONDICIONES_OPERACION);
+  });
+
+  app.get("/api/catalogos/formas-pago", (_req: Request, res: Response) => {
+    res.json(FORMAS_PAGO);
+  });
+
+  app.get("/api/catalogos/tipos-item", (_req: Request, res: Response) => {
+    res.json(TIPOS_ITEM);
+  });
+
+  app.get("/api/catalogos/unidades-medida", (_req: Request, res: Response) => {
+    res.json(UNIDADES_MEDIDA);
+  });
+
+  app.get("/api/catalogos/all", (_req: Request, res: Response) => {
+    res.json({
+      departamentos: DEPARTAMENTOS_EL_SALVADOR,
+      tiposDocumento: TIPOS_DOCUMENTO,
+      tiposDte: TIPOS_DTE,
+      condicionesOperacion: CONDICIONES_OPERACION,
+      formasPago: FORMAS_PAGO,
+      tiposItem: TIPOS_ITEM,
+      unidadesMedida: UNIDADES_MEDIDA,
+    });
+  });
+
+  // ============================================
+  // VALIDACIÓN DTE CONTRA SCHEMA DGII
+  // ============================================
+  app.post("/api/validar-dte", (req: Request, res: Response) => {
+    try {
+      console.log("[validar-dte] Request body:", JSON.stringify(req.body).substring(0, 100));
+      
+      if (!req.body || typeof req.body !== 'object') {
+        return res.status(400).json({
+          valid: false,
+          errors: [{ field: "root", message: "Request body must be a JSON object" }]
+        });
+      }
+
+      const dteValidation = validateDTESchema(req.body);
+      console.log("[validar-dte] Validation result:", dteValidation.valid);
+      
+      if (dteValidation.valid) {
+        return res.json({ 
+          valid: true, 
+          message: "DTE válido según schema DGII" 
+        });
+      } else {
+        return res.status(400).json({
+          valid: false,
+          errors: dteValidation.errors
+        });
+      }
+    } catch (error) {
+      console.error("[validar-dte] Error:", error);
+      return res.status(500).json({ 
+        error: "Error al validar DTE",
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
   
   app.get("/api/emisor", async (req: Request, res: Response) => {
     try {
@@ -59,11 +155,25 @@ export async function registerRoutes(
 
   app.post("/api/facturas", async (req: Request, res: Response) => {
     try {
+      // Validación Zod
       const parsed = insertFacturaSchema.safeParse(req.body);
       if (!parsed.success) {
         console.log("Validation errors:", parsed.error.errors);
-        return res.status(400).json({ error: parsed.error.errors });
+        return res.status(400).json({ 
+          error: "Validación fallida",
+          details: parsed.error.errors 
+        });
       }
+
+      // Validación DGII Schema (validar estructura DTE)
+      const dteValidation = validateDTESchema(parsed.data);
+      if (!dteValidation.valid) {
+        return res.status(400).json({
+          error: "Validación DGII fallida",
+          dgiiErrors: dteValidation.errors
+        });
+      }
+
       const factura = await storage.createFactura(parsed.data);
       res.status(201).json(factura);
     } catch (error) {
@@ -221,6 +331,238 @@ export async function registerRoutes(
       res.json(factura);
     } catch (error) {
       res.status(500).json({ error: "Error al generar JSON" });
+    }
+  });
+
+  // ============================================
+  // ENDPOINTS DE INTEGRACIÓN MH
+  // ============================================
+  
+  // Transmitir factura al Ministerio de Hacienda
+  app.post("/api/facturas/:id/transmitir", async (req: Request, res: Response) => {
+    try {
+      const factura = await storage.getFactura(req.params.id);
+      if (!factura) {
+        return res.status(404).json({ error: "Factura no encontrada" });
+      }
+
+      // Verificar que la factura esté en estado válido para transmitir
+      if (factura.estado === "transmitida" || factura.estado === "sellada") {
+        return res.status(400).json({ 
+          error: "Esta factura ya fue transmitida al MH" 
+        });
+      }
+
+      if (factura.estado === "anulada") {
+        return res.status(400).json({ 
+          error: "No se puede transmitir una factura anulada" 
+        });
+      }
+
+      // Transmitir al MH (mock o real según configuración)
+      const sello = await mhService.transmitirDTE(factura);
+
+      // Actualizar factura con el sello recibido
+      const nuevoEstado = sello.estado === "PROCESADO" ? "sellada" : "generada";
+      const facturaActualizada = await storage.updateFactura(req.params.id, {
+        selloRecibido: sello.selloRecibido,
+        estado: nuevoEstado
+      });
+
+      res.json({ 
+        success: sello.estado === "PROCESADO",
+        sello,
+        factura: facturaActualizada 
+      });
+    } catch (error) {
+      console.error("Error al transmitir factura:", error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : "Error al transmitir al MH" 
+      });
+    }
+  });
+
+  // Consultar estado de DTE en el MH
+  app.get("/api/facturas/:id/estado-mh", async (req: Request, res: Response) => {
+    try {
+      const factura = await storage.getFactura(req.params.id);
+      if (!factura) {
+        return res.status(404).json({ error: "Factura no encontrada" });
+      }
+
+      const estado = await mhService.consultarEstado(factura.codigoGeneracion);
+      
+      res.json(estado);
+    } catch (error) {
+      console.error("Error al consultar estado:", error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : "Error al consultar estado en el MH" 
+      });
+    }
+  });
+
+  // Anular DTE en el MH
+  app.post("/api/facturas/:id/anular", async (req: Request, res: Response) => {
+    try {
+      const { motivo } = req.body;
+      
+      if (!motivo || motivo.trim().length === 0) {
+        return res.status(400).json({ 
+          error: "El motivo de anulación es requerido" 
+        });
+      }
+
+      const factura = await storage.getFactura(req.params.id);
+      if (!factura) {
+        return res.status(404).json({ error: "Factura no encontrada" });
+      }
+
+      // Verificar que la factura pueda ser anulada
+      if (factura.estado === "anulada") {
+        return res.status(400).json({ 
+          error: "Esta factura ya está anulada" 
+        });
+      }
+
+      if (factura.estado !== "sellada" && factura.estado !== "transmitida") {
+        return res.status(400).json({ 
+          error: "Solo se pueden anular facturas que han sido transmitidas al MH" 
+        });
+      }
+
+      // Anular en el MH
+      const resultado = await mhService.anularDTE(factura.codigoGeneracion, motivo);
+
+      // Actualizar estado local
+      if (resultado.success) {
+        await storage.updateFactura(req.params.id, {
+          estado: "anulada"
+        });
+      }
+
+      res.json(resultado);
+    } catch (error) {
+      console.error("Error al anular factura:", error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : "Error al anular en el MH" 
+      });
+    }
+  });
+
+  // Verificar estado de la conexión con el MH
+  app.get("/api/mh/status", async (req: Request, res: Response) => {
+    try {
+      const conectado = await mhService.verificarConexion();
+      const mockMode = process.env.MH_MOCK_MODE === "true" || !process.env.MH_API_TOKEN;
+      
+      res.json({
+        conectado,
+        modoSimulacion: mockMode,
+        mensaje: mockMode 
+          ? "Modo simulación activo - No se transmite al MH real"
+          : conectado 
+            ? "Conectado al MH"
+            : "No se pudo conectar al MH"
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        conectado: false,
+        error: "Error al verificar conexión" 
+      });
+    }
+  });
+
+  // ============================================
+  // ENDPOINTS DE DATOS DE PRUEBA
+  // ============================================
+  
+  // Generar datos de prueba
+  app.post("/api/seed/facturas", async (req: Request, res: Response) => {
+    try {
+      const { cantidad = 10 } = req.body;
+      
+      if (cantidad < 1 || cantidad > 100) {
+        return res.status(400).json({ 
+          error: "La cantidad debe estar entre 1 y 100" 
+        });
+      }
+
+      // Generar facturas de prueba
+      const facturasPrueba = generarFacturasPrueba(cantidad);
+      
+      // Guardar en storage
+      const facturasCreadas = [];
+      for (const factura of facturasPrueba) {
+        const creada = await storage.createFactura(factura);
+        facturasCreadas.push(creada);
+      }
+
+      res.json({
+        success: true,
+        cantidad: facturasCreadas.length,
+        mensaje: `Se generaron ${facturasCreadas.length} facturas de prueba`
+      });
+    } catch (error) {
+      console.error("Error al generar datos de prueba:", error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : "Error al generar datos de prueba" 
+      });
+    }
+  });
+
+  // Guardar emisor de prueba
+  app.post("/api/seed/emisor", async (req: Request, res: Response) => {
+    try {
+      const emisor = await storage.saveEmisor(EMISOR_PRUEBA);
+      res.json({
+        success: true,
+        emisor
+      });
+    } catch (error) {
+      console.error("Error al guardar emisor de prueba:", error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : "Error al guardar emisor" 
+      });
+    }
+  });
+
+  // Limpiar todas las facturas
+  app.delete("/api/seed/facturas", async (req: Request, res: Response) => {
+    try {
+      const facturas = await storage.getFacturas();
+      let eliminadas = 0;
+      
+      for (const factura of facturas) {
+        if (factura.id) {
+          await storage.deleteFactura(factura.id);
+          eliminadas++;
+        }
+      }
+
+      res.json({
+        success: true,
+        cantidad: eliminadas,
+        mensaje: `Se eliminaron ${eliminadas} facturas`
+      });
+    } catch (error) {
+      console.error("Error al limpiar facturas:", error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : "Error al limpiar datos" 
+      });
+    }
+  });
+
+  // Crear usuario de prueba (admin/admin)
+  app.post("/api/seed/usuario", async (_req: Request, res: Response) => {
+    try {
+      const existente = await storage.getUserByUsername("admin");
+      if (existente) {
+        return res.json({ success: true, usuario: { id: existente.id, username: existente.username } });
+      }
+      const creado = await storage.createUser({ username: "admin", password: "admin" });
+      res.json({ success: true, usuario: { id: creado.id, username: creado.username } });
+    } catch (error) {
+      res.status(500).json({ error: error instanceof Error ? error.message : "Error al crear usuario de prueba" });
     }
   });
 

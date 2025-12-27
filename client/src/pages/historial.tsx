@@ -15,6 +15,8 @@ import {
   Calendar,
   X,
   Package,
+  Send,
+  RefreshCw,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -100,6 +102,7 @@ export default function Historial() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedFactura, setSelectedFactura] = useState<Factura | null>(null);
   const [deleteFactura, setDeleteFactura] = useState<Factura | null>(null);
+  const [transmitingId, setTransmitingId] = useState<string | null>(null);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({
     dateFrom: "",
@@ -133,6 +136,58 @@ export default function Historial() {
       });
     },
   });
+
+  // Mutation para transmitir al MH
+  const transmitirMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await apiRequest<{
+        success: boolean;
+        sello: {
+          estado: string;
+          selloRecibido: string;
+          observaciones?: string;
+        };
+      }>("POST", `/api/facturas/${id}/transmitir`);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/facturas"] });
+      if (data.success) {
+        toast({
+          title: "✅ Transmisión exitosa",
+          description: "La factura ha sido transmitida y sellada por el MH",
+        });
+      } else {
+        toast({
+          title: "⚠️ Transmisión rechazada",
+          description: data.sello.observaciones || "El MH rechazó el documento",
+          variant: "destructive",
+        });
+      }
+      setTransmitingId(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error al transmitir",
+        description: error.message || "No se pudo transmitir al MH",
+        variant: "destructive",
+      });
+      setTransmitingId(null);
+    },
+  });
+
+  const transmitirAlMH = async (factura: Factura) => {
+    if (factura.estado === "sellada" || factura.estado === "transmitida") {
+      toast({
+        title: "Factura ya transmitida",
+        description: "Esta factura ya fue transmitida al MH",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTransmitingId(factura.id!);
+    transmitirMutation.mutate(factura.id!);
+  };
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -336,6 +391,7 @@ export default function Historial() {
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
                 data-testid="input-search"
+                data-search-input
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -512,7 +568,7 @@ export default function Historial() {
                     const status = statusConfig[factura.estado];
                     const tipoDte = TIPOS_DTE.find((t) => t.codigo === factura.tipoDte);
                     return (
-                      <TableRow key={factura.id} data-testid={`row-factura-${factura.id}`}>
+                      <TableRow key={factura.id} data-testid={`row-factura-${factura.id}`} className="table-row-hover">
                         <TableCell className="font-mono text-sm">
                           {formatDate(factura.fecEmi)}
                         </TableCell>
@@ -542,6 +598,22 @@ export default function Historial() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-end gap-1">
+                            {(factura.estado === "generada" || factura.estado === "borrador") && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => transmitirAlMH(factura)}
+                                disabled={transmitingId === factura.id}
+                                data-testid={`button-transmit-${factura.id}`}
+                                title="Transmitir al MH"
+                              >
+                                {transmitingId === factura.id ? (
+                                  <RefreshCw className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Send className="h-4 w-4 text-blue-600" />
+                                )}
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="icon"

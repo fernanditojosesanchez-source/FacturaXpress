@@ -1,6 +1,34 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* NProgress personalizado con tema de la app */
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: linear-gradient(to right, #3b82f6, #6366f1, #8b5cf6);
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+}
+
+#nprogress .peg {
+  display: block;
+  position: absolute;
+  right: 0px;
+  width: 100px;
+  height: 100%;
+  box-shadow: 0 0 10px #6366f1, 0 0 5px #6366f1;
+  opacity: 1;
+  transform: rotate(3deg) translate(0px, -4px);
+}
 
 /* LIGHT MODE */
 :root {
@@ -9,12 +37,12 @@
   --opaque-button-border-intensity: -8;
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
-  --background: 210 6% 98%;
-  --foreground: 210 6% 12%;
-  --border: 210 6% 92%;
-  --card: 210 6% 96%;
-  --card-foreground: 210 6% 12%;
-  --card-border: 210 6% 94%;
+  --background: 33 12% 96%;
+  --foreground: 28 12% 14%;
+  --border: 33 10% 92%;
+  --card: 0 0% 100%;
+  --card-foreground: 30 10% 12%;
+  --card-border: 33 14% 92%;
   --sidebar: 210 6% 94%;
   --sidebar-foreground: 210 6% 12%;
   --sidebar-border: 210 6% 90%;
@@ -43,18 +71,18 @@
   --chart-3: 160 65% 30%;
   --chart-4: 35 80% 40%;
   --chart-5: 280 70% 35%;
-  --font-sans: Inter, sans-serif;
+  --font-sans: "Plus Jakarta Sans", Inter, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
   --radius: .5rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(210 6% 12% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(210 6% 12% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(210 6% 12% / 0.00), 0px 1px 2px -1px hsl(210 6% 12% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(210 6% 12% / 0.00), 0px 1px 2px -1px hsl(210 6% 12% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(210 6% 12% / 0.00), 0px 2px 4px -1px hsl(210 6% 12% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(210 6% 12% / 0.00), 0px 4px 6px -1px hsl(210 6% 12% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(210 6% 12% / 0.00), 0px 8px 10px -1px hsl(210 6% 12% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(210 6% 12% / 0.00);
+  --shadow-2xs: 0px 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-xs: 0px 2px 12px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0px 4px 16px rgba(0, 0, 0, 0.06), 0px 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow: 0px 4px 20px rgba(0, 0, 0, 0.07), 0px 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0px 6px 24px rgba(0, 0, 0, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0px 14px 42px rgba(42, 32, 20, 0.10), 0px 4px 8px rgba(42, 32, 20, 0.06);
+  --shadow-xl: 0px 18px 52px rgba(42, 32, 20, 0.12), 0px 10px 16px rgba(42, 32, 20, 0.08);
+  --shadow-2xl: 0px 24px 64px rgba(42, 32, 20, 0.14), 0px 12px 20px rgba(42, 32, 20, 0.10);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
@@ -173,6 +201,33 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+
+  /* Premium card styling with soft shadows and inner stroke */
+  [role="region"],
+  .card,
+  [class*="Card"] {
+    @apply rounded-2xl bg-card;
+    box-shadow:
+      0 18px 50px rgba(42, 32, 20, 0.1),
+      0 6px 18px rgba(42, 32, 20, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease, background-color 200ms ease;
+  }
+
+  [role="region"]:hover,
+  .card:hover,
+  [class*="Card"]:hover {
+    transform: translateY(-6px);
+    box-shadow:
+      0 28px 72px rgba(42, 32, 20, 0.14),
+      0 14px 30px rgba(42, 32, 20, 0.10),
+      inset 0 1px 0 rgba(255, 255, 255, 0.82),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.4);
+    border-color: rgba(255, 255, 255, 0.75);
+    background-color: hsl(var(--card));
+  }
 }
 
 /**
@@ -285,4 +340,77 @@
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
   }
+
+  /* Fade-in animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse-subtle {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+
+  @keyframes tableRowHover {
+    from {
+      background-color: transparent;
+      box-shadow: none;
+    }
+    to {
+      background-color: rgba(99, 102, 241, 0.08);
+      box-shadow: inset 0 0 12px rgba(99, 102, 241, 0.1);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .animate-pulse-subtle {
+    animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Animación para filas de tabla */
+  @layer components {
+    .table-row-hover {
+      @apply transition-all duration-200 cursor-pointer relative;
+    }
+
+    .table-row-hover:hover {
+      @apply bg-indigo-50/50 shadow-[inset_0_0_16px_rgba(99,102,241,0.15),0_0_20px_rgba(99,102,241,0.08)];
+    }
+
+    .table-row-hover:hover > td {
+      @apply bg-indigo-50/60 transition-colors duration-200;
+    }
+
+    .table-row-active {
+      @apply bg-indigo-100/70 shadow-[inset_0_2px_12px_rgba(99,102,241,0.2),0_0_24px_rgba(99,102,241,0.1)];
+    }
+
+    .table-row-active > td {
+      @apply bg-indigo-100/70;
+    }
+
+    .table-input-focus {
+      @apply focus:ring-2 focus:ring-indigo-500/70 focus:ring-offset-0 focus:bg-indigo-50/40 transition-colors duration-200;
+    }
+  }
+
+  /* Stagger delays for animation */
+  .animate-fade-in-up:nth-child(1) { animation-delay: 0.1s; }
+  .animate-fade-in-up:nth-child(2) { animation-delay: 0.2s; }
+  .animate-fade-in-up:nth-child(3) { animation-delay: 0.3s; }
+  .animate-fade-in-up:nth-child(4) { animation-delay: 0.4s; }
 }

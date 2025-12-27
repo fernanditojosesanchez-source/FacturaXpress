@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "ambiente": "00",
+  "tipoDte": "01",
+  "numeroControl": "001-123456789012345678",
+  "codigoGeneracion": "550e8400-e29b-41d4-a716-446655440000",
+  "tipoModelo": "1",
+  "tipoOperacion": "1",
+  "fecEmi": "2024-01-15",
+  "horEmi": "14:30:45",
+  "tipoMoneda": "USD",
+  "emisor": {
+    "nit": "06050000000000-7",
+    "nrc": "123456",
+    "nombre": "EMPRESA SV SA DE CV",
+    "codActividad": "6310",
+    "descActividad": "Procesamiento de datos y servicio de alojamiento en la web",
+    "tipoEstablecimiento": "01",
+    "direccion": {
+      "departamento": "13",
+      "municipio": "01",
+      "complemento": "Avenida Principal 123, Edificio Central, Piso 5"
+    },
+    "telefono": "22222222",
+    "correo": "contacto@empresa.com.sv"
+  },
+  "receptor": {
+    "tipoDocumento": "36",
+    "numDocumento": "06050000000000-7",
+    "nombre": "CLIENTE PRUEBA SV",
+    "direccion": {
+      "departamento": "01",
+      "municipio": "01",
+      "complemento": "Calle Principal 456, San Salvador"
+    }
+  },
+  "cuerpoDocumento": [
+    {
+      "numItem": 1,
+      "tipoItem": "2",
+      "cantidad": 1,
+      "descripcion": "Servicio de consultoría empresarial",
+      "precioUni": 1000.00,
+      "ventaGravada": 1000.00,
+      "ventaExenta": 0,
+      "ventaNoSuj": 0
+    },
+    {
+      "numItem": 2,
+      "tipoItem": "1",
+      "cantidad": 5,
+      "descripcion": "Licencia de software anual",
+      "precioUni": 200.00,
+      "ventaGravada": 1000.00,
+      "ventaExenta": 0,
+      "ventaNoSuj": 0
+    }
+  ],
+  "resumen": {
+    "totalNoSuj": 0,
+    "totalExenta": 0,
+    "totalGravada": 2000.00,
+    "totalIva": 260.00,
+    "totalPagar": 2260.00,
+    "totalLetras": "Dos mil doscientos sesenta dólares con cero centavos",
+    "condicionOperacion": "1"
+  }
+}

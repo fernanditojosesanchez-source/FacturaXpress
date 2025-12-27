@@ -205,18 +205,18 @@ export default function Reportes() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 animate-fade-in-up [animation-delay:0s]">
         <div>
-          <h1 className="text-2xl font-semibold" data-testid="text-page-title">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground" data-testid="text-page-title">
             Reportes y Estadísticas
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm mt-1">
             Análisis de ventas, IVA y servicios facturados
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-[140px]" data-testid="select-month">
+            <SelectTrigger className="w-[140px] table-input-focus" data-testid="select-month">
               <Calendar className="h-4 w-4 mr-2" />
               <SelectValue />
             </SelectTrigger>
@@ -229,7 +229,7 @@ export default function Reportes() {
             </SelectContent>
           </Select>
           <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-[100px]" data-testid="select-year">
+            <SelectTrigger className="w-[100px] table-input-focus" data-testid="select-year">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -240,7 +240,7 @@ export default function Reportes() {
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={downloadReport} variant="outline" data-testid="button-download-report">
+          <Button onClick={downloadReport} variant="outline" data-testid="button-download-report" className="hover:bg-white/70 transition-all duration-200">
             <Download className="h-4 w-4 mr-2" />
             Exportar
           </Button>
@@ -248,7 +248,7 @@ export default function Reportes() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+        <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0s' }}>
           <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Ventas del Mes
@@ -256,7 +256,7 @@ export default function Reportes() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold" data-testid="text-month-sales">
+            <p className="text-2xl font-bold text-[#3d2f28]" data-testid="text-month-sales">
               {formatCurrency(stats?.monthVentas || 0)}
             </p>
             <p className="text-xs text-muted-foreground">
@@ -265,7 +265,7 @@ export default function Reportes() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
           <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               IVA del Mes
@@ -273,14 +273,14 @@ export default function Reportes() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold" data-testid="text-month-iva">
+            <p className="text-2xl font-bold text-[#3d2f28]" data-testid="text-month-iva">
               {formatCurrency(stats?.monthIVA || 0)}
             </p>
             <p className="text-xs text-muted-foreground">13% sobre ventas gravadas</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
           <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Facturas del Mes
@@ -288,14 +288,14 @@ export default function Reportes() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold" data-testid="text-month-count">
+            <p className="text-2xl font-bold text-[#3d2f28]" data-testid="text-month-count">
               {stats?.monthCount || 0}
             </p>
             <p className="text-xs text-muted-foreground">Documentos emitidos</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
           <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Acumulado
@@ -303,7 +303,7 @@ export default function Reportes() {
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold" data-testid="text-total-sales">
+            <p className="text-2xl font-bold text-[#3d2f28]" data-testid="text-total-sales">
               {formatCurrency(stats?.totalVentas || 0)}
             </p>
             <p className="text-xs text-muted-foreground">
@@ -314,7 +314,7 @@ export default function Reportes() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+        <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
@@ -345,7 +345,7 @@ export default function Reportes() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
@@ -382,7 +382,7 @@ export default function Reportes() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+        <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <DollarSign className="h-5 w-5" />
@@ -418,7 +418,7 @@ export default function Reportes() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <PieChart className="h-5 w-5" />
