@@ -4,3 +4,13 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Base de datos SQLite (desarrollo)
+app.db
+app.db-shm
+app.db-wal
+
+# Variables de entorno
+.env
+.env.local
+.env.*.local

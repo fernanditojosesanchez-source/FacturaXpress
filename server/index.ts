@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { storage } from "./storage";
 
 const app = express();
 const httpServer = createServer(app);
@@ -64,6 +65,16 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Inicializar base de datos SQLite
+  await storage.initialize();
+
+  // Crear usuario por defecto si no existe
+  const existingUser = await storage.getUserByUsername("admin");
+  if (!existingUser) {
+    await storage.createUser({ username: "admin", password: "admin" });
+    log("✅ Usuario por defecto creado: admin/admin");
+  }
+
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -90,11 +101,7 @@ app.use((req, res, next) => {
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || "5000", 10);
   httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
+    port,
     () => {
       log(`serving on port ${port}`);
     },

@@ -21,6 +21,7 @@ import { User, FileText } from "lucide-react";
 import type { Factura } from "@shared/schema";
 import Login from "@/pages/login";
 import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 
 function Protected({ children }: { children: JSX.Element }) {
@@ -52,6 +53,7 @@ function Router() {
 
 function AppContent() {
   const { user, logout } = useAuth();
+  const { theme } = useTheme();
   const navItems = [
     { label: "Panel de Control", href: "/" },
     { label: "Facturas", href: "/factura/nueva" },
@@ -104,18 +106,105 @@ function AppContent() {
     return () => window.removeEventListener('keydown', handler);
   }, [navigate]);
 
+  // Determinar el fondo según el tema
+  const bgClass = theme === 'dark' 
+    ? 'bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-900' 
+    : 'relative';
+  
+  const navBgClass = theme === 'dark'
+    ? 'border-slate-700/40 bg-slate-800/60'
+    : 'border-slate-200/60 bg-white/70';
+
   return (
-    <div className="min-h-screen w-full bg-[radial-gradient(circle_at_20%_20%,#f7f2ea_0,#f0ebe3_45%,#e6dfd5_100%)] p-6">
-      <div className="flex justify-center">
-        <div className="flex items-center gap-3 rounded-full border border-white/70 bg-white/90 px-6 py-3 shadow-2xl backdrop-blur-2xl transition-all duration-200 hover:shadow-[0_24px_60px_rgba(42,32,20,0.20)] hover:translate-y-[-2px] scale-[1.1]">
+    <div className={cn("min-h-screen w-full transition-colors duration-500 ease-out p-6", bgClass)}>
+      {theme === 'light' && (
+        <svg className="fixed inset-0 w-full h-full" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" style={{ pointerEvents: 'none', zIndex: 0, filter: 'blur(5px)' }}>
+          <defs>
+            <radialGradient id="lightRadial1" cx="30%" cy="20%" r="50%">
+              <stop offset="0%" stopColor="#d9d3c8" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#c9bfb4" stopOpacity="0.3" />
+            </radialGradient>
+            <radialGradient id="lightRadial2" cx="70%" cy="75%" r="45%">
+              <stop offset="0%" stopColor="#cfc9be" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#b8b3a8" stopOpacity="0.2" />
+            </radialGradient>
+            <radialGradient id="lightRadial3" cx="80%" cy="30%" r="40%">
+              <stop offset="0%" stopColor="#d4cfc4" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#c9bfb4" stopOpacity="0.15" />
+            </radialGradient>
+            <linearGradient id="lightWave1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#c9bfb4" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#a8a39a" stopOpacity="0.4" />
+            </linearGradient>
+          </defs>
+          
+          {/* Background base */}
+          <rect width="1440" height="900" fill="#e8e3dc" />
+          
+          {/* Large flowing shapes - similar to template */}
+          <circle cx="-200" cy="100" r="450" fill="url(#lightRadial1)" />
+          <circle cx="1300" cy="800" r="500" fill="url(#lightRadial2)" />
+          <circle cx="1400" cy="-100" r="400" fill="url(#lightRadial3)" />
+          
+          {/* Wavy organic paths */}
+          <path d="M0,350 Q360,250 720,350 T1440,350 L1440,500 Q1080,600 720,500 T0,500 Z" fill="url(#lightWave1)" opacity="0.5" />
+          <path d="M0,600 Q240,500 480,600 T960,550 Q1200,580 1440,600 L1440,900 L0,900 Z" fill="#d4cfc4" opacity="0.35" />
+          
+          {/* Subtle accent curves */}
+          <path d="M0,200 Q300,150 600,200 T1440,180" stroke="#c9bfb4" strokeWidth="2" fill="none" opacity="0.2" />
+          <path d="M0,750 Q400,700 800,750 T1440,720" stroke="#a8a39a" strokeWidth="1.5" fill="none" opacity="0.15" />
+        </svg>
+      )}
+      {theme === 'dark' && (
+        <svg className="fixed inset-0 w-full h-full" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" style={{ pointerEvents: 'none', zIndex: 0, filter: 'blur(6px)' }}>
+          <defs>
+            <linearGradient id="darkGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#1e293b" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#0f172a" stopOpacity="0.6" />
+            </linearGradient>
+            <linearGradient id="darkGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#1e3a8a" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#0c4a6e" stopOpacity="0.5" />
+            </linearGradient>
+          </defs>
+          
+          {/* Background base - Dark slate */}
+          <rect width="1440" height="900" fill="#0f172a" />
+          
+          {/* Elegant dark silhouettes with blue accents */}
+          <path d="M0,150 Q300,80 600,120 T1440,100 L1440,0 L0,0 Z" fill="url(#darkGrad1)" opacity="0.6" />
+          <path d="M1440,650 Q1100,550 700,600 T0,550 L0,900 L1440,900 Z" fill="url(#darkGrad1)" opacity="0.5" />
+          <path d="M0,400 Q200,350 400,380 T800,360 Q1000,355 1440,400 L1440,600 Q1200,630 900,610 T300,650 L0,620 Z" fill="url(#darkGrad2)" opacity="0.4" />
+          
+          {/* Elegant shapes with glow effect */}
+          <circle cx="150" cy="750" r="280" fill="#1e3a8a" opacity="0.15" />
+          <circle cx="1350" cy="200" r="320" fill="#0c4a6e" opacity="0.12" />
+          <ellipse cx="700" cy="450" rx="380" ry="180" fill="#1e293b" opacity="0.08" />
+          
+          {/* Accent lines for elegance */}
+          <line x1="0" y1="200" x2="1440" y2="200" stroke="#1e3a8a" strokeWidth="1" opacity="0.1" />
+          <line x1="0" y1="700" x2="1440" y2="700" stroke="#1e3a8a" strokeWidth="1" opacity="0.08" />
+        </svg>
+      )}
+      <div className="relative z-10 flex justify-center">
+        <div className={cn(
+          "flex items-center gap-2.5 rounded-2xl border px-5 py-3 backdrop-blur-xl transition-all duration-300",
+          navBgClass,
+          theme === 'dark' 
+            ? 'shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30' 
+            : 'shadow-md shadow-slate-200/50 hover:shadow-lg hover:shadow-slate-300/60'
+        )}>
           {emisor?.logo && (
             <>
               <img 
                 src={emisor.logo} 
                 alt="Logo" 
-                className="h-8 object-contain"
+                className="h-6 object-contain"
               />
-              <div className="h-5 w-px bg-white/70" />
+              <div className={cn(
+                "h-5 w-px",
+                theme === 'dark' ? 'bg-slate-600/60' : 'bg-slate-300/60'
+              )} />
             </>
           )}
           {navItems.map((item) => (
@@ -123,19 +212,27 @@ function AppContent() {
               key={item.href}
               href={item.href}
               className={cn(
-                "px-3.5 py-2 text-sm font-medium rounded-full transition-all duration-150",
+                "px-3 py-2 text-sm font-500 rounded-lg transition-all duration-200",
                 location === item.href
-                  ? "bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 text-white shadow-md shadow-indigo-200/30 scale-[1.02]"
-                  : "text-foreground/80 hover:text-foreground hover:bg-white/70 hover:shadow-sm"
+                  ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md"
+                  : theme === 'dark'
+                  ? "text-slate-300/90 hover:text-slate-100 hover:bg-slate-700/50"
+                  : "text-slate-600 hover:text-slate-800 hover:bg-slate-200/50"
               )}
             >
               {item.label}
             </Link>
           ))}
-          <div className="h-5 w-px bg-white/70" />
-          <div className="flex items-center gap-3 pl-2">
-            <div className="flex items-center gap-1.5">
-              <FileText className="h-4 w-4 text-muted-foreground" />
+          <div className={cn(
+            "h-5 w-px",
+            theme === 'dark' ? 'bg-slate-600/60' : 'bg-slate-300/60'
+          )} />
+          <div className="flex items-center gap-2.5 pl-1">
+            <div className="flex items-center gap-1">
+              <FileText className={cn(
+                "h-4 w-4",
+                theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+              )} />
               <div className="flex items-center gap-1">
                 <Badge variant="secondary" className="text-xs font-medium">
                   {facturasTotal}
@@ -148,24 +245,29 @@ function AppContent() {
               </div>
             </div>
             {user && (
-              <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 text-white text-sm font-semibold">
-                  <User className="h-4 w-4" />
+              <div className="flex items-center gap-1.5">
+                <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 text-white text-xs font-semibold">
+                  <User className="h-3.5 w-3.5" />
                 </div>
-                <div className="text-xs">
-                  <p className="font-medium text-foreground capitalize">{user.username}</p>
-                  <p className="text-muted-foreground">Conectado</p>
+                <div className="text-xs hidden sm:block">
+                  <p className={cn(
+                    "font-medium capitalize",
+                    theme === 'dark' ? 'text-slate-200' : 'text-slate-800'
+                  )}>{user.username}</p>
                 </div>
               </div>
             )}
           </div>
-          <div className="h-5 w-px bg-white/70" />
+          <div className={cn(
+            "h-5 w-px",
+            theme === 'dark' ? 'bg-slate-600/60' : 'bg-slate-300/60'
+          )} />
           <ThemeToggle />
           {user && (
             <Button
               variant="outline"
               size="sm"
-              className="ml-2"
+              className="ml-1 text-xs px-2.5"
               onClick={() => logout.mutate()}
             >
               Salir
@@ -174,7 +276,7 @@ function AppContent() {
         </div>
       </div>
 
-      <main className="mt-6 flex justify-center">
+      <main className="mt-6 flex justify-center relative z-10">
         <div className="w-full max-w-7xl">
           <Router />
         </div>
