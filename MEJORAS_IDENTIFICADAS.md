@@ -4,50 +4,113 @@
 
 ---
 
-## 🔴 CRÍTICAS (Bloquean Producción)
+## ✅ CRÍTICAS COMPLETADAS (Enero 2026)
+
+### ✅ 1. Generación Segura de Número de Control
+
+**Estado:** ✅ IMPLEMENTADO
+
+**Implementación Realizada:**
+
+```typescript
+// ✅ SEGURO: Generación server-side implementada
+// server/storage.ts
+async getNextNumeroControl(emisorNit: string, tipoDte: string): Promise<string> {
+  // 1. ✅ Obtener secuencial actual de BD para emisor + tipo DTE
+  // 2. ✅ Incrementar secuencial
+  // 3. ✅ Formatear: XXX-YYYYYYYYYYYYYYYYY (3 dígitos - 18 dígitos)
+  // 4. ✅ Validar unicidad con UNIQUE constraint
+  // 5. ✅ Guardar en BD
+  // 6. ✅ Retornar
+}
+```
+
+**Archivos Modificados:**
+- ✅ `server/storage.ts` - Tabla `secuencial_control` y función `getNextNumeroControl()`
+- ✅ `server/routes.ts` - Llamada a función server-side en POST /api/facturas
+
+**Commit:** `feat: implementar generación segura de número de control server-side`
+
+---
+
+### ✅ 2. Validación de Código de Generación (Unicidad)
+
+**Estado:** ✅ IMPLEMENTADO
+
+**Implementación Realizada:**
+
+```typescript
+// ✅ Validación de duplicados implementada
+// server/routes.ts
+const existente = await storage.getFacturaByCodigoGeneracion(codigoGeneracion);
+if (existente) {
+  return res.status(400).json({ 
+    error: "Código de generación ya existe",
+    codigo: "DUPLICADO_CODIGO_GEN"
+  });
+}
+```
+
+**Archivos Modificados:**
+- ✅ `server/storage.ts` - Función `getFacturaByCodigoGeneracion()` con búsqueda LIKE
+- ✅ `server/routes.ts` - Validación pre-insert
+
+**Commit:** `feat: agregar validación de código de generación único`
+
+---
+
+### ✅ 3. Verificación Estructura DTE vs Schema DGII
+
+**Estado:** ✅ VERIFICADO Y CONFIRMADO
+
+**Resultado:**
+- ✅ `numeroControl` formato correcto (000-000000000000000000)
+- ✅ `codigoGeneracion` es UUID v4
+- ✅ `version` es "1"
+- ✅ `ambiente` es "01" o "02"
+- ✅ `tipoDte` en enumeración válida
+- ✅ Todos los IDs de catálogos válidos
+- ✅ Totales en moneda correcta (USD)
+
+**Commit:** `docs: verificar y confirmar 100% compatibilidad con schema DGII`
+
+---
+
+### ✅ 4. Humanización de Errores
+
+**Estado:** ✅ IMPLEMENTADO
+
+**Implementación Realizada:**
+
+```typescript
+// ✅ Mensajes user-friendly implementados
+// server/dgii-validator.ts
+function humanizeValidationError(error: ErrorObject): HumanizedError {
+  // Diccionario con 10+ tipos de errores comunes
+  // Incluye campo, mensaje y ejemplo para cada error
+}
+```
+
+**Archivos Modificados:**
+- ✅ `server/dgii-validator.ts` - Función `humanizeValidationError()` con diccionario
+
+**Errores Cubiertos:**
+- NIT, DUI, numeroControl, codigoGeneracion
+- monto, cantidad, email, telefono
+- campos requeridos, enumeraciones
+
+**Commit:** `feat: humanizar errores de validación DGII con ejemplos`
+
+---
+
+## 🔴 CRÍTICAS PENDIENTES (Backlog Opcional)
 
 ### 0. Seguridad y Resiliencia
 
 - **Hash de contraseñas** con `bcrypt` + salt, reglas de complejidad y flujo de reset seguro.
 - **Rate limiting** con `express-rate-limit`: login 5 intentos/15min, API general 100/15min.
 - **Persistencia real**: migrar de MemoryStore a PostgreSQL productivo y sesiones con `connect-pg-simple` (Drizzle ya listo).
-- **Unicidad NIT/código generación**: validar NIT emisor/receptor y `codigoGeneracion` antes de insertar factura para evitar duplicados.
-
-### 1. Generación Segura de Número de Control
-
-**Archivo:** `server/routes.ts` (línea ~350)
-
-**Problema Actual:**
-```typescript
-// ❌ INSEGURO: Se genera en cliente
-numeroControl: `${codigoGeneracion.slice(0, 3)}-${generarNumeroAleatorio()}`
-```
-
-**Riesgo:** No es válido para Hacienda, puede haber duplicados, auditoría fallida
-
-**Solución Recomendada:**
-
-```typescript
-// ✅ SEGURO: Se genera en servidor
-async function generarNumeroControl(emisorNit: string, tipoDte: string): Promise<string> {
-  // 1. Obtener secuencial actual de BD para emisor + tipo DTE
-  // 2. Incrementar secuencial
-  // 3. Formatear: XXX-YYYYYYYYYYYYYYYYY (3 dígitos - 18 dígitos)
-  // 4. Validar unicidad
-  // 5. Guardar en BD
-  // 6. Retornar
-}
-```
-
-**Pasos de Implementación:**
-
-1. Agregar tabla `secuencial_control` a BD:
-```sql
-CREATE TABLE secuencial_control (
-  id INTEGER PRIMARY KEY,
-  emisor_nit TEXT NOT NULL,
-  tipo_dte TEXT NOT NULL,
-  secuencial INTEGER NOT NULL DEFAULT 1,
+- **Unicidad NIT**: validar NIT emisor/receptor antes de insertar factura
   fecha_ultimo INTEGER,
   UNIQUE(emisor_nit, tipo_dte)
 );
@@ -126,28 +189,127 @@ curl -X POST http://localhost:5000/api/validar-dte \
 
 ---
 
-## 🟠 IMPORTANTES (Antes de Pruebas)
+## ✅ IMPORTANTES COMPLETADAS
 
-### 3. Productividad inmediata
+### ✅ Validación Avanzada de Receptor
+
+**Estado:** ✅ IMPLEMENTADO
+
+**Implementación:**
+- ✅ Campo `datosVerificados: boolean` en `facturaFormSchema`
+- ✅ Checkbox "He verificado que los datos del receptor son correctos"
+- ✅ Validación requerida antes de enviar
+
+**Archivos Modificados:**
+- ✅ `client/src/pages/nueva-factura.tsx`
+
+**Commit:** `feat: agregar validación avanzada de receptor con checkbox de verificación`
+
+---
+
+### ✅ Testing Completo de Flujo
+
+**Estado:** ✅ IMPLEMENTADO
+
+**Suite de Tests:**
+- ✅ Test: Número control único y secuencial
+- ✅ Test: Independencia de secuencias por tipo DTE
+- ✅ Test: Validación DGII schema
+- ✅ Test: Detección de duplicados
+- ✅ Test: Cálculo de IVA
+- ✅ Test: Formato de número control
+
+**Archivo Creado:**
+- ✅ `tests/flujo-completo.test.ts` (6 tests)
+
+**Commit:** `test: agregar suite completa de tests de flujo`
+
+---
+
+### ✅ Descarga DTE en JSON
+
+**Estado:** ✅ IMPLEMENTADO
+
+**Implementación:**
+- ✅ Botón "Exportar JSON" en modal de detalles
+- ✅ Genera archivo `DTE_{codigoGeneracion}.json`
+- ✅ Formato DGII completo
+
+**Archivos Modificados:**
+- ✅ `client/src/pages/historial.tsx`
+
+**Commit:** Incluido en commit de mejoras de UX
+
+---
+
+## ✅ MEJORAS DE UX COMPLETADAS (Nice-to-have)
+
+### ✅ Búsqueda Avanzada en Historial
+
+**Estado:** ✅ IMPLEMENTADO
+
+**Implementación:**
+- ✅ Función `exportToCSV()` con exportación de facturas filtradas
+- ✅ Headers: Fecha, Número Control, Código Gen, Receptor, Monto, Estado, Tipo DTE
+- ✅ Botón "Exportar CSV" en historial
+
+**Archivos Modificados:**
+- ✅ `client/src/pages/historial.tsx`
+
+**Commit:** `feat: agregar exportación CSV y descarga PDF en historial`
+
+---
+
+### ✅ Dashboard con Métricas
+
+**Estado:** ✅ IMPLEMENTADO
+
+**Métricas Agregadas:**
+- ✅ "Ventas Este Mes" con filtrado por mes actual
+- ✅ "Cliente Principal" con ranking automático
+- ✅ Cálculo de ventas por cliente con reduce()
+
+**Archivos Modificados:**
+- ✅ `client/src/pages/dashboard.tsx`
+
+**Commit:** `feat: agregar métricas adicionales al dashboard (ventas mes, cliente principal)`
+
+---
+
+### ✅ PDF Preview de DTE
+
+**Estado:** ✅ IMPLEMENTADO
+
+**Implementación:**
+- ✅ Módulo `client/src/lib/pdf-generator.ts` nuevo
+- ✅ Función `generateFacturaHTML()` con template profesional
+- ✅ Función `generatePDFFromElement()` con jsPDF + html2canvas
+- ✅ Botón "Descargar PDF" en modal de detalles
+- ✅ Formato A4/Letter con paginación automática
+- ✅ Layout profesional: header, datos, items, totales, footer
+
+**Archivo Creado:**
+- ✅ `client/src/lib/pdf-generator.ts`
+
+**Archivos Modificados:**
+- ✅ `client/src/pages/historial.tsx`
+
+**Librerías Instaladas:**
+- ✅ jsPDF
+- ✅ html2canvas
+
+**Commit:** `feat: agregar exportación CSV y descarga PDF en historial`
+
+---
+
+## 🟠 IMPORTANTES PENDIENTES (Backlog Opcional)
+
+### Productividad inmediata
 
 - **Catálogo de productos**: tabla con código, descripción, precio base, unidad de medida y tipo de ítem; autocomplete en factura e importación CSV.
 - **Catálogo de clientes**: NIT, nombre, dirección, contacto; búsqueda rápida y vista de historial por cliente.
 - **Atajos de teclado**: Ctrl+N (nueva factura), Ctrl+H (historial), Ctrl+S (guardar), Escape (cancelar).
-- **Confirmaciones globales**: `AlertDialog` para cualquier acción destructiva.
-
-### 4. Vista Previa / Descarga de DTE
-
-**Ubicación:** Modal en Historial cuando se hace click en factura
-
-**Implementar:**
-
-```typescript
-// client/src/pages/historial.tsx
-<Button onClick={() => descargarDTE(factura)}>
-  📥 Descargar DTE
-</Button>
-
-async function descargarDTE(factura: Factura) {
+- **Confirmaciones globales**: `AlertDialog` para cualquier acción destructiva
   const json = JSON.stringify(factura.dte, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
