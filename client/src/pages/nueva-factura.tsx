@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -94,6 +95,7 @@ const facturaFormSchema = z.object({
     numDocumento: z.string().min(1, "Número de documento requerido"),
     nombre: z.string().min(1, "Nombre requerido"),
     nrc: z.string().optional(),
+    datosVerificados: z.boolean().default(false),
     direccion: z.object({
       departamento: z.string().min(1, "Departamento requerido"),
       municipio: z.string().min(1, "Municipio requerido"),
@@ -237,6 +239,7 @@ export default function NuevaFactura() {
         numDocumento: "",
         nombre: "",
         nrc: "",
+        datosVerificados: false,
         direccion: {
           departamento: "06",
           municipio: "01",
@@ -673,6 +676,26 @@ export default function NuevaFactura() {
                       )}
                     />
                   </div>
+
+                  <FormField
+                    control={form.control}
+                    name="receptor.datosVerificados"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            id="receptor-datos-verificados"
+                          />
+                        </FormControl>
+                        <FormLabel htmlFor="receptor-datos-verificados" className="cursor-pointer font-normal mb-0">
+                          ✓ He verificado que los datos del receptor son correctos
+                        </FormLabel>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <FormField
                     control={form.control}
