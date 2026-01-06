@@ -291,6 +291,54 @@ export default function Historial() {
     });
   };
 
+  const exportToCSV = () => {
+    if (!filteredFacturas?.length) {
+      toast({
+        title: "Sin facturas",
+        description: "No hay facturas para exportar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Headers del CSV
+    const headers = ["Fecha", "Número Control", "Código Gen", "Receptor", "Monto", "Estado", "Tipo DTE"];
+    
+    // Rows del CSV
+    const rows = filteredFacturas.map(f => [
+      formatDate(f.fecEmi),
+      f.numeroControl,
+      f.codigoGeneracion.substring(0, 8),
+      f.receptor.nombre,
+      formatCurrency(f.resumen.totalPagar),
+      f.estado,
+      TIPOS_DTE.find(t => t.codigo === f.tipoDte)?.nombre || f.tipoDte,
+    ]);
+
+    // Convertir a CSV
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(",")),
+    ].join("\n");
+
+    // Descargar
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const now = new Date();
+    link.download = `facturas-${now.toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Exportación a CSV completada",
+      description: `${filteredFacturas.length} facturas exportadas`,
+    });
+  };
+
   const duplicateFactura = (factura: Factura) => {
     const duplicatedData = {
       tipoDte: factura.tipoDte,
@@ -368,8 +416,17 @@ export default function Historial() {
             disabled={!filteredFacturas?.length}
             data-testid="button-export-all"
           >
-            <Package className="h-4 w-4 mr-2" />
-            Exportar Todas
+            <FileJson className="h-4 w-4 mr-2" />
+            Exportar JSON
+          </Button>
+          <Button
+            variant="outline"
+            onClick={exportToCSV}
+            disabled={!filteredFacturas?.length}
+            data-testid="button-export-csv"
+          >
+            <FileDown className="h-4 w-4 mr-2" />
+            Exportar CSV
           </Button>
           <Link href="/factura/nueva">
             <Button data-testid="button-new-invoice">

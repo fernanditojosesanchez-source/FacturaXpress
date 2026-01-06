@@ -174,6 +174,20 @@ export default function Dashboard() {
   const totalVentas = facturas?.reduce((sum, f) => sum + f.resumen.totalPagar, 0) || 0;
   const outstanding =
     facturas?.filter((f) => f.estado === "generada").reduce((sum, f) => sum + f.resumen.totalPagar, 0) || 0;
+  
+  // Calcular métricas adicionales
+  const ventasPorCliente = facturas?.reduce((acc, f) => {
+    const cliente = f.receptor.nombre;
+    acc[cliente] = (acc[cliente] || 0) + f.resumen.totalPagar;
+    return acc;
+  }, {} as Record<string, number>) || {};
+  
+  const clientePrincipal = Object.entries(ventasPorCliente).sort((a, b) => b[1] - a[1])[0];
+  
+  const mesActual = new Date().toISOString().slice(0, 7);
+  const ventasEsteMes = facturas?.filter(f => f.fecEmi.startsWith(mesActual))
+    .reduce((sum, f) => sum + f.resumen.totalPagar, 0) || 0;
+  
   const recentFacturas = facturas?.slice(0, 5) || [];
   const isEmpty = recentFacturas.length === 0;
 
@@ -282,24 +296,24 @@ export default function Dashboard() {
             />
           </div>
           <StatCard
-            title="Ventas Totales"
-            value={formatCurrency(totalVentas)}
-            description="Monto total facturado"
+            title="Ventas Este Mes"
+            value={formatCurrency(ventasEsteMes)}
+            description="Monto facturado en el mes actual"
             icon={TrendingUp}
             index={1}
+          />
+          <StatCard
+            title="Cliente Principal"
+            value={clientePrincipal ? clientePrincipal[0].substring(0, 15) : "N/A"}
+            description={clientePrincipal ? `Ventas: ${formatCurrency(clientePrincipal[1])}` : "Sin datos"}
+            icon={User}
+            index={2}
           />
           <StatCard
             title="Pendientes"
             value={stats.pendientes}
             description="Por transmitir a DGII"
             icon={Clock}
-            index={2}
-          />
-          <StatCard
-            title="Hoy"
-            value={stats.hoy}
-            description="Facturas generadas hoy"
-            icon={CheckCircle2}
             index={3}
           />
           </div>
