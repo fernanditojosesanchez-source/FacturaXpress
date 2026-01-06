@@ -165,8 +165,32 @@ export async function registerRoutes(
         });
       }
 
+      // ✅ Validar unicidad de código generación
+      const codigoGen = parsed.data.codigoGeneracion;
+      if (codigoGen) {
+        const existente = await (storage as any).getFacturaByCodigoGeneracion(codigoGen);
+        if (existente) {
+          return res.status(400).json({
+            error: "Código de generación ya existe",
+            codigo: "DUPLICADO_CODIGO_GEN",
+            message: "Este código de generación ya fue usado. Genera uno nuevo."
+          });
+        }
+      }
+
+      // ✅ NUEVO: Generar número de control en servidor
+      const emisorNit = parsed.data.emisor?.nit || "00000000000000-0";
+      const tipoDte = parsed.data.tipoDte || "01";
+      const numeroControl = await (storage as any).getNextNumeroControl(emisorNit, tipoDte);
+      
+      // Actualizar factura con número generado
+      const facturaConNumero = {
+        ...parsed.data,
+        numeroControl
+      };
+
       // Validación DGII Schema (validar estructura DTE)
-      const dteValidation = validateDTESchema(parsed.data);
+      const dteValidation = validateDTESchema(facturaConNumero);
       if (!dteValidation.valid) {
         return res.status(400).json({
           error: "Validación DGII fallida",
@@ -174,7 +198,7 @@ export async function registerRoutes(
         });
       }
 
-      const factura = await storage.createFactura(parsed.data);
+      const factura = await storage.createFactura(facturaConNumero);
       res.status(201).json(factura);
     } catch (error) {
       console.error("Error creating factura:", error);

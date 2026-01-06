@@ -68,6 +68,20 @@ export class SQLiteStorage implements IStorage {
       )
     `);
 
+    // Crear tabla de secuencial de números de control
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS secuencial_control (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        emisor_nit TEXT NOT NULL,
+        tipo_dte TEXT NOT NULL,
+        secuencial INTEGER NOT NULL DEFAULT 1,
+        ultimo_numero_control TEXT,
+        fecha_creacion INTEGER NOT NULL,
+        fecha_actualizacion INTEGER NOT NULL,
+        UNIQUE(emisor_nit, tipo_dte)
+      )
+    `);
+
     this.initialized = true;
   }
 
@@ -174,6 +188,60 @@ export class SQLiteStorage implements IStorage {
     const stmt = this.db.prepare("DELETE FROM facturas WHERE id = ?");
     const result = stmt.run(id);
     return (result.changes || 0) > 0;
+  }
+
+  async getNextNumeroControl(emisorNit: string, tipoDte: string): Promise<string> {
+    const now = Date.now();
+    
+    // Obtener o crear registro
+    const selectStmt = this.db.prepare(
+      `SELECT * FROM secuencial_control 
+       WHERE emisor_nit = ? AND tipo_dte = ?`
+    );
+    let record = selectStmt.get(emisorNit, tipoDte) as any;
+    
+    if (!record) {
+      const insertStmt = this.db.prepare(
+        `INSERT INTO secuencial_control 
+         (emisor_nit, tipo_dte, secuencial, fecha_creacion, fecha_actualizacion)
+         VALUES (?, ?, ?, ?, ?)`
+      );
+      insertStmt.run(emisorNit, tipoDte, 1, now, now);
+      record = { secuencial: 1 };
+    }
+    
+    // Incrementar secuencial
+    const newSecuencial = record.secuencial + 1;
+    
+    // Formatear número de control: 001-000000000000000001
+    const prefix = String(tipoDte).padStart(3, '0');
+    const suffix = String(newSecuencial).padStart(18, '0');
+    const numeroControl = `${prefix}-${suffix}`;
+    
+    // Guardar
+    const updateStmt = this.db.prepare(
+      `UPDATE secuencial_control 
+       SET secuencial = ?, ultimo_numero_control = ?, fecha_actualizacion = ?
+       WHERE emisor_nit = ? AND tipo_dte = ?`
+    );
+    updateStmt.run(newSecuencial, numeroControl, now, emisorNit, tipoDte);
+    
+    return numeroControl;
+  }
+
+  async getFacturaByCodigoGeneracion(codigoGen: string): Promise<Factura | null> {
+    try {
+      const stmt = this.db.prepare(
+        `SELECT data FROM facturas WHERE data LIKE ?`
+      );
+      const row = stmt.get(`%"codigoGeneracion":"${codigoGen}"%`) as any;
+      
+      if (!row) return null;
+      
+      return JSON.parse(row.data);
+    } catch {
+      return null;
+    }
   }
 
   close(): void {

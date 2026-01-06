@@ -11,6 +11,68 @@ const validateFactura = ajv.compile(factuuraSchema);
 export interface DTEValidationError {
   field: string;
   message: string;
+  ejemplo?: string;
+}
+
+/**
+ * Humaniza mensajes de error de validación DGII
+ */
+export function humanizeValidationError(error: any): DTEValidationError {
+  const path = error.instancePath || error.schemaPath || "root";
+  const fieldName = path.split('/').pop() || "Campo desconocido";
+  
+  const errorMap: Record<string, { message: string; ejemplo: string }> = {
+    'nit': {
+      message: 'NIT debe tener formato: 14 dígitos - 1 verificador',
+      ejemplo: '00123456789012-9'
+    },
+    'dui': {
+      message: 'DUI debe tener formato: 8 dígitos - 1 verificador',
+      ejemplo: '12345678-9'
+    },
+    'numeroControl': {
+      message: 'Número de control debe ser: 3 dígitos - 18 dígitos',
+      ejemplo: '001-000000000000000001'
+    },
+    'codigoGeneracion': {
+      message: 'Código de generación debe ser un UUID v4 válido',
+      ejemplo: '550e8400-e29b-41d4-a716-446655440000'
+    },
+    'monto': {
+      message: 'Monto debe ser un número positivo',
+      ejemplo: '100.00'
+    },
+    'cantidad': {
+      message: 'Cantidad debe ser un número positivo',
+      ejemplo: '1.00'
+    },
+    'email': {
+      message: 'Email debe ser válido (ej: usuario@ejemplo.com)',
+      ejemplo: 'contacto@empresa.com'
+    },
+    'telefono': {
+      message: 'Teléfono debe tener 8 dígitos',
+      ejemplo: '22345678'
+    }
+  };
+  
+  // Buscar coincidencia en el nombre del campo
+  const key = Object.keys(errorMap).find(k => 
+    fieldName.toLowerCase().includes(k.toLowerCase())
+  );
+  
+  if (key) {
+    return {
+      field: fieldName,
+      message: errorMap[key].message,
+      ejemplo: errorMap[key].ejemplo
+    };
+  }
+  
+  return {
+    field: fieldName,
+    message: error.message || 'Error de validación'
+  };
 }
 
 /**
@@ -32,10 +94,7 @@ export function validateDTESchema(dte: any): {
 
   if (validateFactura.errors) {
     for (const error of validateFactura.errors) {
-      errors.push({
-        field: error.instancePath || error.schemaPath || "root",
-        message: error.message || "Validation failed",
-      });
+      errors.push(humanizeValidationError(error));
     }
   }
 
