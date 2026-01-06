@@ -258,6 +258,39 @@ export default function Historial() {
     });
   };
 
+  const downloadPDF = async (factura: Factura) => {
+    try {
+      const { generateFacturaHTML, generatePDFFromElement } = await import(
+        "@/lib/pdf-generator"
+      );
+
+      const htmlContent = generateFacturaHTML(factura);
+      
+      // Crear elemento temporal
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = htmlContent;
+      tempDiv.style.position = "absolute";
+      tempDiv.style.left = "-10000px";
+      document.body.appendChild(tempDiv);
+
+      await generatePDFFromElement(tempDiv, `FACTURA-${factura.numeroControl}.pdf`);
+      
+      document.body.removeChild(tempDiv);
+      
+      toast({
+        title: "PDF descargado",
+        description: `Archivo FACTURA-${factura.numeroControl}.pdf descargado`,
+      });
+    } catch (error) {
+      console.error("Error generando PDF:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo generar el PDF",
+        variant: "destructive",
+      });
+    }
+  };
+
   const exportMassiveJSON = () => {
     if (!filteredFacturas?.length) {
       toast({
@@ -763,6 +796,14 @@ export default function Historial() {
                 <Button onClick={() => downloadJSON(selectedFactura)} data-testid="button-download-json">
                   <FileJson className="h-4 w-4 mr-2" />
                   Descargar JSON
+                </Button>
+                <Button 
+                  onClick={() => downloadPDF(selectedFactura)} 
+                  variant="outline"
+                  data-testid="button-download-pdf"
+                >
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Descargar PDF
                 </Button>
                 <Button
                   variant="outline"
