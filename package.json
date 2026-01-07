@@ -11,7 +11,8 @@
     "check": "tsc",
     "lint": "eslint . --ext .ts,.tsx --ignore-pattern node_modules/",
     "lint:fix": "eslint . --ext .ts,.tsx --fix --ignore-pattern node_modules/",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "db:check": "tsx script/db-check.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -55,6 +56,7 @@
     "cmdk": "^1.1.1",
     "connect-pg-simple": "^10.0.0",
     "date-fns": "^3.6.0",
+    "dotenv": "^17.2.3",
     "drizzle-orm": "^0.39.3",
     "drizzle-zod": "^0.7.0",
     "embla-carousel-react": "^8.6.0",
@@ -71,6 +73,7 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "pg": "^8.16.3",
+    "postgres": "^3.4.8",
     "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",

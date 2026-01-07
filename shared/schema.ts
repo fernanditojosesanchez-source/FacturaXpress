@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, decimal, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, decimal, integer, timestamp, jsonb, serial, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -8,6 +8,30 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
 });
+
+export const emisorTable = pgTable("emisor", {
+  id: text("id").primaryKey(),
+  data: jsonb("data").notNull(),
+});
+
+export const facturasTable = pgTable("facturas", {
+  id: text("id").primaryKey(),
+  data: jsonb("data").notNull(),
+  createdAt: timestamp("created_at").notNull(),
+  fecEmi: text("fec_emi").notNull(),
+});
+
+export const secuencialControlTable = pgTable("secuencial_control", {
+  id: serial("id").primaryKey(),
+  emisorNit: text("emisor_nit").notNull(),
+  tipoDte: text("tipo_dte").notNull(),
+  secuencial: integer("secuencial").notNull().default(1),
+  ultimoNumeroControl: text("ultimo_numero_control"),
+  fechaCreacion: timestamp("fecha_creacion").notNull().defaultNow(),
+  fechaActualizacion: timestamp("fecha_actualizacion").notNull().defaultNow(),
+}, (t) => ({
+  unq: unique().on(t.emisorNit, t.tipoDte),
+}));
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,

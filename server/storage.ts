@@ -1,8 +1,10 @@
-import { type User, type InsertUser, type Factura, type InsertFactura, type Emisor } from "@shared/schema";
+import { type User, type InsertUser, type Factura, type InsertFactura, type Emisor, users, emisorTable, facturasTable, secuencialControlTable } from "@shared/schema";
 import { randomUUID } from "crypto";
 import Database from "better-sqlite3";
 import path from "path";
 import { fileURLToPath } from "url";
+import { db } from "./db";
+import { eq, desc, sql } from "drizzle-orm";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,14 +22,153 @@ export interface IStorage {
   createFactura(factura: InsertFactura): Promise<Factura>;
   updateFactura(id: string, factura: Partial<Factura>): Promise<Factura | undefined>;
   deleteFactura(id: string): Promise<boolean>;
+  getNextNumeroControl(emisorNit: string, tipoDte: string): Promise<string>;
+  getFacturaByCodigoGeneracion(codigoGen: string): Promise<Factura | null>;
   initialize(): Promise<void>;
 }
 
-/**
- * NOTA IMPORTANTE: Esta es una implementación SQLite para DESARROLLO.
- * Próximamente se migrará a PostgreSQL para producción.
- * No cambies esta implementación directamente - mantén la interfaz IStorage compatible.
- */
+export class DatabaseStorage implements IStorage {
+  async initialize(): Promise<void> {
+    // Migrations are handled by drizzle-kit
+  }
+
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+
+  async getEmisor(): Promise<Emisor | undefined> {
+    const [row] = await db.select().from(emisorTable).limit(1);
+    return row ? (row.data as Emisor) : undefined;
+  }
+
+  async saveEmisor(emisor: Emisor): Promise<Emisor> {
+    await db.delete(emisorTable);
+    await db.insert(emisorTable).values({
+      id: "1",
+      data: emisor,
+    });
+    return emisor;
+  }
+
+  async getFacturas(): Promise<Factura[]> {
+    const rows = await db.select().from(facturasTable).orderBy(desc(facturasTable.createdAt));
+    return rows.map(row => row.data as Factura);
+  }
+
+  async getFactura(id: string): Promise<Factura | undefined> {
+    const [row] = await db.select().from(facturasTable).where(eq(facturasTable.id, id));
+    return row ? (row.data as Factura) : undefined;
+  }
+
+  async createFactura(insertFactura: InsertFactura): Promise<Factura> {
+    const id = randomUUID();
+    const createdAt = new Date().toISOString();
+    const factura: Factura = { ...insertFactura, id, createdAt };
+    
+    await db.insert(facturasTable).values({
+      id,
+      data: factura,
+      createdAt: new Date(createdAt),
+      fecEmi: insertFactura.fecEmi,
+    });
+    
+    return factura;
+  }
+
+  async updateFactura(id: string, updates: Partial<Factura>): Promise<Factura | undefined> {
+    const current = await this.getFactura(id);
+    if (!current) return undefined;
+    
+    const updated = { ...current, ...updates };
+    
+    await db.update(facturasTable)
+      .set({ data: updated })
+      .where(eq(facturasTable.id, id));
+      
+    return updated;
+  }
+
+  async deleteFactura(id: string): Promise<boolean> {
+    const result = await db.delete(facturasTable).where(eq(facturasTable.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async getNextNumeroControl(emisorNit: string, tipoDte: string): Promise<string> {
+    return await db.transaction(async (tx) => {
+      // Intentar obtener el registro actual
+      let [record] = await tx
+        .select()
+        .from(secuencialControlTable)
+        .where(
+          sql`${secuencialControlTable.emisorNit} = ${emisorNit} AND ${secuencialControlTable.tipoDte} = ${tipoDte}`
+        );
+
+      let newSecuencial = 1;
+
+      if (!record) {
+        // Crear nuevo registro si no existe
+        [record] = await tx
+          .insert(secuencialControlTable)
+          .values({
+            emisorNit,
+            tipoDte,
+            secuencial: 1,
+            fechaCreacion: new Date(),
+            fechaActualizacion: new Date(),
+          })
+          .returning();
+      } else {
+        // Incrementar si existe
+        newSecuencial = record.secuencial + 1;
+        [record] = await tx
+          .update(secuencialControlTable)
+          .set({
+            secuencial: newSecuencial,
+            fechaActualizacion: new Date(),
+          })
+          .where(eq(secuencialControlTable.id, record.id))
+          .returning();
+      }
+
+      // Formatear: DTE-01-12345678-9-000000000000001
+      // NOTA: El formato estándar DGII es más complejo, pero mantendremos
+      // la lógica compatible con lo que había en SQLiteStorage
+      const prefix = String(tipoDte).padStart(3, '0');
+      const suffix = String(newSecuencial).padStart(18, '0');
+      const numeroControl = `${prefix}-${suffix}`;
+
+      await tx.update(secuencialControlTable)
+        .set({ ultimoNumeroControl: numeroControl })
+        .where(eq(secuencialControlTable.id, record.id));
+
+      return numeroControl;
+    });
+  }
+
+  async getFacturaByCodigoGeneracion(codigoGen: string): Promise<Factura | null> {
+    // Busqueda en JSONB es específica de Postgres
+    // data->>'codigoGeneracion' = codigoGen
+    const [row] = await db
+      .select()
+      .from(facturasTable)
+      .where(sql`data->>'codigoGeneracion' = ${codigoGen}`)
+      .limit(1);
+      
+    return row ? (row.data as Factura) : null;
+  }
+}
+
 export class SQLiteStorage implements IStorage {
   private db: Database.Database;
   private initialized = false;
@@ -41,7 +182,6 @@ export class SQLiteStorage implements IStorage {
   async initialize(): Promise<void> {
     if (this.initialized) return;
 
-    // Crear tabla de usuarios
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
@@ -50,7 +190,6 @@ export class SQLiteStorage implements IStorage {
       )
     `);
 
-    // Crear tabla de emisor
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS emisor (
         id TEXT PRIMARY KEY,
@@ -58,7 +197,6 @@ export class SQLiteStorage implements IStorage {
       )
     `);
 
-    // Crear tabla de facturas
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS facturas (
         id TEXT PRIMARY KEY,
@@ -68,7 +206,6 @@ export class SQLiteStorage implements IStorage {
       )
     `);
 
-    // Crear tabla de secuencial de números de control
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS secuencial_control (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -193,7 +330,6 @@ export class SQLiteStorage implements IStorage {
   async getNextNumeroControl(emisorNit: string, tipoDte: string): Promise<string> {
     const now = Date.now();
     
-    // Obtener o crear registro
     const selectStmt = this.db.prepare(
       `SELECT * FROM secuencial_control 
        WHERE emisor_nit = ? AND tipo_dte = ?`
@@ -210,15 +346,12 @@ export class SQLiteStorage implements IStorage {
       record = { secuencial: 1 };
     }
     
-    // Incrementar secuencial
     const newSecuencial = record.secuencial + 1;
     
-    // Formatear número de control: 001-000000000000000001
     const prefix = String(tipoDte).padStart(3, '0');
     const suffix = String(newSecuencial).padStart(18, '0');
     const numeroControl = `${prefix}-${suffix}`;
     
-    // Guardar
     const updateStmt = this.db.prepare(
       `UPDATE secuencial_control 
        SET secuencial = ?, ultimo_numero_control = ?, fecha_actualizacion = ?
@@ -260,9 +393,7 @@ export class MemStorage implements IStorage {
     this.emisor = undefined;
   }
 
-  async initialize(): Promise<void> {
-    // No-op for MemStorage
-  }
+  async initialize(): Promise<void> {}
 
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
@@ -321,11 +452,26 @@ export class MemStorage implements IStorage {
   async deleteFactura(id: string): Promise<boolean> {
     return this.facturas.delete(id);
   }
+
+  async getNextNumeroControl(emisorNit: string, tipoDte: string): Promise<string> {
+    // Implementación mock simple para MemStorage
+    return `${tipoDte}-${Date.now().toString().slice(-14)}`;
+  }
+
+  async getFacturaByCodigoGeneracion(codigoGen: string): Promise<Factura | null> {
+    for (const factura of this.facturas.values()) {
+      if (factura.codigoGeneracion === codigoGen) return factura;
+    }
+    return null;
+  }
 }
 
-// Usar SQLite en desarrollo, MemStorage como fallback
-const useSQLite = process.env.NODE_ENV === "development" || process.env.USE_SQLITE === "true";
+// Lógica de selección de Storage
+const useSQLite = process.env.USE_SQLITE === "true";
+const usePostgres = process.env.DATABASE_URL && !useSQLite;
 
-export const storage: IStorage = useSQLite
-  ? new SQLiteStorage()
-  : new MemStorage();
+export const storage: IStorage = usePostgres 
+  ? new DatabaseStorage() 
+  : useSQLite 
+    ? new SQLiteStorage() 
+    : new MemStorage();
