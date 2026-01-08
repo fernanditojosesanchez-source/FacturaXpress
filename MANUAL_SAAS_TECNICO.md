@@ -34,7 +34,16 @@ Como proveedor SaaS, somos custodios de la identidad digital de nuestros cliente
 *   **Encriptación**: Antes de guardar, el certificado se cifra con **AES-256-CBC** usando una llave maestra (`ENCRYPTION_KEY`) que solo vive en la memoria del servidor.
 *   **Uso Efímero**: Al momento de firmar, el sistema desencripta el certificado en memoria RAM, firma el JSON y destruye la copia desencriptada inmediatamente.
 
-## 4. Panel de Super Administrador
+## 4. Roles y Permisos (RBAC)
+
+El sistema implementa una jerarquía de 4 niveles para operar en tiendas reales:
+
+1.  **Super Admin (`super_admin`)**: Dueño de la plataforma (Fher). Ve el panel `/admin`.
+2.  **Tenant Admin (`tenant_admin`)**: Dueño del negocio (Ferretero). Acceso total a su tienda.
+3.  **Manager (`manager`)**: Gerente. Puede ver reportes y emitir notas de crédito.
+4.  **Cajero (`cashier`)**: Operativo. Solo factura y ve historial. Bloqueado de reportes y configuración.
+
+## 5. Panel de Super Administrador
 
 Se ha creado una interfaz exclusiva para el dueño de la plataforma (Fher / FS Digital).
 
@@ -44,7 +53,7 @@ Se ha creado una interfaz exclusiva para el dueño de la plataforma (Fher / FS D
     *   **Gestión de Credenciales**: Subir los certificados `.p12` y contraseñas de Hacienda de cada cliente desde la web.
     *   **Monitoreo**: Ver el estado de todas las empresas registradas.
 
-## 5. Escalabilidad Comercial
+## 6. Escalabilidad Comercial
 
 Esta arquitectura permite dos modelos de negocio simultáneos:
 
@@ -55,9 +64,3 @@ Esta arquitectura permite dos modelos de negocio simultáneos:
 2.  **FacturaXpress Retail (Producto Masivo):**
     *   Venta de suscripciones a PYMES (Ferreterías, Abogados, Tiendas).
     *   Cada cliente tiene su propio acceso, logo y facturación independiente.
-
-## 6. Próximos Pasos Recomendados
-
-1.  **Interfaz POS**: Crear una vista simplificada para tiendas de retail (búsqueda rápida de productos).
-2.  **Planes de Suscripción**: Integrar una pasarela de pagos (Stripe/Wompi) para cobrar la mensualidad del SaaS automáticamente.
-3.  **API Pública**: Documentar los endpoints para que otros desarrolladores integren FacturaXpress en sus sistemas.
