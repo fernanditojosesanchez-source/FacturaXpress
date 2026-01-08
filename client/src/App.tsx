@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Switch, Route, Link, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
@@ -57,17 +57,27 @@ function Router() {
 function AppContent() {
   const { user, logout } = useAuth();
   const { theme } = useTheme();
-  const navItems = [
-    { label: "Panel de Control", href: "/" },
-    { label: "Facturas", href: "/factura/nueva" },
-    { label: "Notas", href: "/notas" },
-    { label: "Reportes", href: "/reportes" },
-    { label: "Configuración", href: "/configuracion" },
-  ];
+  
+  // Lógica de filtrado de roles aplicada directamente al Header
+  const navItems = useMemo(() => {
+    const role = user?.role || "cashier"; // Fallback seguro
+    
+    const allItems = [
+      { label: "Panel de Control", href: "/", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
+      { label: "Facturas", href: "/factura/nueva", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
+      { label: "Notas", href: "/notas", roles: ["super_admin", "tenant_admin", "manager"] }, // Cajero bloqueado
+      { label: "Reportes", href: "/reportes", roles: ["super_admin", "tenant_admin", "manager"] }, // Cajero bloqueado
+      { label: "Configuración", href: "/configuracion", roles: ["super_admin", "tenant_admin"] }, // Solo admins
+    ];
 
-  if (user?.role === "super_admin") {
-    navItems.unshift({ label: "Super Admin", href: "/admin" });
-  }
+    const filtered = allItems.filter(item => item.roles.includes(role));
+
+    if (role === "super_admin") {
+      filtered.unshift({ label: "Super Admin", href: "/admin", roles: ["super_admin"] });
+    }
+
+    return filtered;
+  }, [user]);
 
   const [location, navigate] = useLocation();
 
@@ -256,11 +266,15 @@ function AppContent() {
                 <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 text-white text-xs font-semibold">
                   <User className="h-3.5 w-3.5" />
                 </div>
-                <div className="text-xs hidden sm:block">
+                <div className="flex flex-col text-xs hidden sm:flex">
                   <p className={cn(
                     "font-medium capitalize",
                     theme === 'dark' ? 'text-slate-200' : 'text-slate-800'
                   )}>{user.username}</p>
+                  <p className={cn(
+                    "text-[10px] capitalize opacity-70",
+                    theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+                  )}>{user.role?.replace("_", " ") || "User"}</p>
                 </div>
               </div>
             )}
