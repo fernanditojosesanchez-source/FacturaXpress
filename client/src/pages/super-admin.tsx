@@ -2,8 +2,6 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
 import {
   Table,
   TableBody,
@@ -80,21 +78,18 @@ export default function SuperAdminPage() {
   });
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <main className="flex-1 overflow-auto bg-gray-50 dark:bg-zinc-900">
-        <div className="p-6">
-          <div className="flex items-center gap-4 mb-8">
-            <SidebarTrigger />
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">Super Admin</h1>
-              <p className="text-muted-foreground">
-                Panel de control SaaS - Gestión de Inquilinos
-              </p>
-            </div>
+    <div className="flex-1 overflow-auto bg-gray-50 dark:bg-zinc-900">
+      <div className="p-6">
+        <div className="flex items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Super Admin</h1>
+            <p className="text-muted-foreground">
+              Panel de control SaaS - Gestión de Inquilinos
+            </p>
           </div>
+        </div>
 
-          <div className="grid gap-6">
+        <div className="grid gap-6">
             <div className="flex justify-end">
               <Button onClick={() => setIsCreateOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" /> Nueva Empresa
@@ -174,19 +169,17 @@ export default function SuperAdminPage() {
           isPending={createTenantMutation.isPending}
         />
 
-        {/* Modal Credenciales */}
-        {selectedTenant && (
-          <CredentialsDialog
-            tenant={selectedTenant}
-            open={!!selectedTenant}
-            onOpenChange={(open) => !open && setSelectedTenant(null)}
-          />
-        )}
-      </main>
-    </SidebarProvider>
-  );
-}
-
+              {/* Modal Credenciales */}
+              {selectedTenant && (
+                <CredentialsDialog
+                  tenant={selectedTenant}
+                  open={!!selectedTenant}
+                  onOpenChange={(open) => !open && setSelectedTenant(null)}
+                />
+              )}
+            </div>
+          );
+        }
 function CreateTenantDialog({
   open,
   onOpenChange,
