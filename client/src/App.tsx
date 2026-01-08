@@ -289,7 +289,10 @@ function AppContent() {
               variant="outline"
               size="sm"
               className="ml-1 text-xs px-2.5"
-              onClick={() => logout.mutate()}
+              onClick={(e) => {
+                e.preventDefault();
+                logout.mutate();
+              }}
             >
               Salir
             </Button>
