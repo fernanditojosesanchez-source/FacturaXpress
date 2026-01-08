@@ -35,7 +35,7 @@ export const users = pgTable("users", {
   tenantId: uuid("tenant_id").references(() => tenants.id),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
-  role: text("role").notNull().default("user"), // user, admin, super_admin
+  role: text("role").notNull().default("user"), // super_admin, tenant_admin, manager, cashier
 });
 
 export const emisorTable = pgTable("emisor", {

@@ -2,8 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { storage } from "./storage";
 
-// Sencillo almacén de sesiones en memoria
-const sessions = new Map<string, string>(); // sessionId -> userId
+const sessions = new Map<string, string>();
 
 function generateSessionId() {
   return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
@@ -27,7 +26,7 @@ function getSessionId(req: Request): string | undefined {
   return cookies["sessionId"];
 }
 
-// Middleware opcional para proteger rutas
+// Middleware base
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   try {
     const sid = getSessionId(req);
@@ -37,7 +36,6 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     const user = await storage.getUser(userId);
     if (!user) return res.status(401).json({ message: "Usuario no encontrado" });
     
-    // Adjuntar usuario con su tenantId al request
     (req as any).user = { 
       id: user.id, 
       username: user.username,
@@ -50,33 +48,37 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   }
 }
 
-// Middleware para requerir rol de super admin
-export async function requireSuperAdmin(req: Request, res: Response, next: NextFunction) {
-  await requireAuth(req, res, async () => {
+// Middleware de roles específicos
+export function requireRole(allowedRoles: string[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
     const user = (req as any).user;
-    if (user.role !== "super_admin") {
-      return res.status(403).json({ message: "Acceso denegado: Se requiere rol de Super Admin" });
+    if (!user || !allowedRoles.includes(user.role)) {
+      return res.status(403).json({ message: "Acceso denegado: Rol insuficiente" });
     }
     next();
-  });
+  };
 }
 
+// Helpers rápidos
+export const requireSuperAdmin = [requireAuth, requireRole(["super_admin"])];
+export const requireTenantAdmin = [requireAuth, requireRole(["super_admin", "tenant_admin"])];
+export const requireManager = [requireAuth, requireRole(["super_admin", "tenant_admin", "manager"])];
+
+// Rutas de autenticación
 const loginSchema = z.object({
   username: z.string().min(1),
   password: z.string().min(1),
 });
 
 export function registerAuthRoutes(app: Express) {
-  // Iniciar sesión
   app.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
       const parsed = loginSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return res.status(400).json({ error: parsed.error.errors });
-      }
+      if (!parsed.success) return res.status(400).json({ error: parsed.error.errors });
+      
       const { username, password } = parsed.data;
-
       const user = await storage.getUserByUsername(username);
+      
       if (!user || user.password !== password) {
         return res.status(401).json({ message: "Credenciales inválidas" });
       }
@@ -89,7 +91,7 @@ export function registerAuthRoutes(app: Express) {
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production",
         path: "/",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
       res.json({ 
@@ -105,27 +107,13 @@ export function registerAuthRoutes(app: Express) {
     }
   });
 
-  // Cerrar sesión
   app.post("/api/auth/logout", async (req: Request, res: Response) => {
-    try {
-      const sid = getSessionId(req);
-      if (sid) {
-        sessions.delete(sid);
-      }
-      res.cookie("sessionId", "", {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-        path: "/",
-        maxAge: 0,
-      });
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ message: "Error en logout" });
-    }
+    const sid = getSessionId(req);
+    if (sid) sessions.delete(sid);
+    res.cookie("sessionId", "", { maxAge: 0 });
+    res.json({ success: true });
   });
 
-  // Usuario actual
   app.get("/api/auth/me", async (req: Request, res: Response) => {
     try {
       const sid = getSessionId(req);
@@ -134,6 +122,7 @@ export function registerAuthRoutes(app: Express) {
       if (!userId) return res.status(401).json({ message: "Sesión inválida" });
       const user = await storage.getUser(userId);
       if (!user) return res.status(401).json({ message: "Usuario no encontrado" });
+      
       res.json({ 
         user: { 
           id: user.id, 

@@ -6,7 +6,12 @@ import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 import { mhService } from "./mh-service";
 import { generarFacturasPrueba, EMISOR_PRUEBA } from "./seed-data";
-import { registerAuthRoutes, requireAuth } from "./auth";
+import { 
+  registerAuthRoutes, 
+  requireAuth, 
+  requireTenantAdmin, 
+  requireManager 
+} from "./auth";
 import {
   DEPARTAMENTOS_EL_SALVADOR,
   TIPOS_DOCUMENTO,
@@ -112,7 +117,7 @@ export async function registerRoutes(
   // ENDPOINTS DE EMISOR (Configuración por Tenant)
   // ============================================
 
-  app.get("/api/emisor", requireAuth, async (req: Request, res: Response) => {
+  app.get("/api/emisor", ...requireTenantAdmin, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const emisor = await storage.getEmisor(tenantId);
@@ -125,7 +130,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/emisor", requireAuth, async (req: Request, res: Response) => {
+  app.post("/api/emisor", ...requireTenantAdmin, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const parsed = emisorSchema.safeParse(req.body);
@@ -230,7 +235,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/facturas/:id", requireAuth, async (req: Request, res: Response) => {
+  app.delete("/api/facturas/:id", ...requireManager, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const deleted = await storage.deleteFactura(req.params.id, tenantId);

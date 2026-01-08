@@ -1,131 +1,125 @@
-import { Link, useLocation } from "wouter";
-import {
-  LayoutDashboard,
-  FileText,
-  Building2,
-  History,
-  Settings,
-  Receipt,
-  FileMinus,
-  BarChart3,
-} from "lucide-react";
+import { Home, Receipt, FileText, Settings, Key, Building2, Ticket } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarFooter,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
+import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
 
-const menuItems = [
+// Definición de ítems con roles permitidos
+const items = [
   {
     title: "Panel de Control",
     url: "/",
-    icon: LayoutDashboard,
+    icon: Home,
+    roles: ["super_admin", "tenant_admin", "manager", "cashier"],
   },
   {
     title: "Nueva Factura",
     url: "/factura/nueva",
-    icon: FileText,
+    icon: Receipt,
+    roles: ["super_admin", "tenant_admin", "manager", "cashier"],
   },
   {
-    title: "Notas Crédito/Débito",
+    title: "Notas C/D",
     url: "/notas",
-    icon: FileMinus,
+    icon: Ticket,
+    roles: ["super_admin", "tenant_admin", "manager"], // Cajeros no deberían emitir notas libremente
   },
   {
     title: "Historial",
     url: "/historial",
-    icon: History,
+    icon: FileText,
+    roles: ["super_admin", "tenant_admin", "manager", "cashier"],
   },
   {
     title: "Reportes",
     url: "/reportes",
-    icon: BarChart3,
-  },
-];
-
-const configItems = [
-  {
-    title: "Datos del Emisor",
-    url: "/emisor",
-    icon: Building2,
+    icon: FileText,
+    roles: ["super_admin", "tenant_admin", "manager"], // Managers sí, cajeros no
   },
   {
     title: "Configuración",
     url: "/configuracion",
     icon: Settings,
+    roles: ["super_admin", "tenant_admin"], // Solo dueños
+  },
+];
+
+const superAdminItems = [
+  {
+    title: "Gestión Empresas",
+    url: "/admin",
+    icon: Building2,
+    roles: ["super_admin"],
   },
 ];
 
 export function AppSidebar() {
   const [location] = useLocation();
+  const { user } = useAuth();
+  const userRole = user?.role || "cashier"; // Fallback seguro
+
+  const filteredItems = items.filter(item => item.roles.includes(userRole));
+  const adminItems = superAdminItems.filter(item => item.roles.includes(userRole));
 
   return (
-    <Sidebar
-      variant="floating"
-      collapsible="icon"
-      className="m-0 mr-4 rounded-2xl border border-white/70 bg-white/85 p-3 shadow-2xl backdrop-blur-xl"
-    >
-      <SidebarHeader className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 via-indigo-500 to-cyan-400 shadow-lg shadow-blue-600/25">
-            <Receipt className="h-5 w-5 text-white" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-base font-semibold" data-testid="text-app-name">
-              FacturaElectrónica
-            </span>
-            <span className="text-xs text-muted-foreground">
-              El Salvador - DTE
-            </span>
-          </div>
-        </div>
+    <Sidebar>
+      <SidebarHeader className="p-4 border-b">
+        <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          FacturaXpress
+        </h2>
+        <p className="text-xs text-muted-foreground capitalize">
+          {userRole.replace("_", " ")}
+        </p>
       </SidebarHeader>
-
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Facturación</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={location === item.url}
-                    data-testid={`nav-${item.url.replace(/\//g, "-").slice(1) || "dashboard"}`}
-                  >
-                    <Link href={item.url}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {adminItems.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administración</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={location === item.url}
+                      tooltip={item.title}
+                    >
+                      <a href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         <SidebarGroup>
-          <SidebarGroupLabel>Configuración</SidebarGroupLabel>
+          <SidebarGroupLabel>Operaciones</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {configItems.map((item) => (
+              {filteredItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
+                  <SidebarMenuButton 
+                    asChild 
                     isActive={location === item.url}
-                    data-testid={`nav-${item.url.replace(/\//g, "-").slice(1)}`}
+                    tooltip={item.title}
                   >
-                    <Link href={item.url}>
-                      <item.icon className="h-4 w-4" />
+                    <a href={item.url}>
+                      <item.icon />
                       <span>{item.title}</span>
-                    </Link>
+                    </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -133,14 +127,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter className="p-4">
-        <div className="rounded-xl border border-white/70 bg-white/80 p-3 shadow-sm">
-          <p className="text-xs text-muted-foreground">
-            Sistema de facturación electrónica conforme a normativas DGII El Salvador
-          </p>
-        </div>
-      </SidebarFooter>
     </Sidebar>
   );
 }

@@ -21,7 +21,7 @@ const updateCredentialsSchema = z.object({
 export function registerAdminRoutes(app: Express) {
   
   // Listar todos los tenants
-  app.get("/api/admin/tenants", requireSuperAdmin, async (_req: Request, res: Response) => {
+  app.get("/api/admin/tenants", ...requireSuperAdmin, async (_req: Request, res: Response) => {
     try {
       const tenants = await storage.listTenants();
       res.json(tenants);
@@ -31,7 +31,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // Crear un nuevo tenant
-  app.post("/api/admin/tenants", requireSuperAdmin, async (req: Request, res: Response) => {
+  app.post("/api/admin/tenants", ...requireSuperAdmin, async (req: Request, res: Response) => {
     try {
       const parsed = createTenantSchema.safeParse(req.body);
       if (!parsed.success) {
@@ -47,12 +47,12 @@ export function registerAdminRoutes(app: Express) {
 
       const tenant = await storage.createTenant(nombre, slug);
       
-      // Crear usuario admin por defecto para el tenant
+      // Crear usuario tenant_admin por defecto
       const adminUser = await storage.createUser({
         username: `admin-${slug}`,
-        password: "password123", // Debería ser cambiada inmediatamente
+        password: "password123", 
         tenantId: tenant.id,
-        role: "admin"
+        role: "tenant_admin"
       });
 
       res.status(201).json({ tenant, adminUser });
@@ -63,7 +63,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // Configurar credenciales para un tenant
-  app.post("/api/admin/tenants/:id/credentials", requireSuperAdmin, async (req: Request, res: Response) => {
+  app.post("/api/admin/tenants/:id/credentials", ...requireSuperAdmin, async (req: Request, res: Response) => {
     try {
       const tenantId = req.params.id;
       const parsed = updateCredentialsSchema.safeParse(req.body);
