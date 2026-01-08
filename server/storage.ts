@@ -1,35 +1,111 @@
-import { type User, type InsertUser, type Factura, type InsertFactura, type Emisor, users, emisorTable, facturasTable, secuencialControlTable } from "@shared/schema";
+import { 
+  type User, type InsertUser, type Factura, type InsertFactura, type Emisor, type Tenant,
+  users, emisorTable, facturasTable, secuencialControlTable, tenants, facturaItemsTable,
+  tenantCredentials
+} from "@shared/schema";
 import { randomUUID } from "crypto";
 import Database from "better-sqlite3";
 import path from "path";
 import { fileURLToPath } from "url";
 import { db } from "./db";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, and } from "drizzle-orm";
+import { encrypt, decrypt } from "./lib/crypto";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export interface IStorage {
+  // Tenencia
+  getTenant(id: string): Promise<Tenant | undefined>;
+  getTenantBySlug(slug: string): Promise<Tenant | undefined>;
+  createTenant(nombre: string, slug: string): Promise<Tenant>;
+  ensureDefaultTenant(): Promise<Tenant>;
+  listTenants(): Promise<Tenant[]>;
+
+  // Credenciales (Certificados)
+  getTenantCredentials(tenantId: string): Promise<any | undefined>;
+  saveTenantCredentials(tenantId: string, credentials: any): Promise<void>;
+
+  // Usuarios
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserRole(userId: string, role: string): Promise<void>;
   
-  getEmisor(): Promise<Emisor | undefined>;
-  saveEmisor(emisor: Emisor): Promise<Emisor>;
+  // Emisor (Configuración por Tenant)
+  getEmisor(tenantId: string): Promise<Emisor | undefined>;
+  saveEmisor(tenantId: string, emisor: Emisor): Promise<Emisor>;
   
-  getFacturas(): Promise<Factura[]>;
-  getFactura(id: string): Promise<Factura | undefined>;
-  createFactura(factura: InsertFactura): Promise<Factura>;
-  updateFactura(id: string, factura: Partial<Factura>): Promise<Factura | undefined>;
-  deleteFactura(id: string): Promise<boolean>;
-  getNextNumeroControl(emisorNit: string, tipoDte: string): Promise<string>;
-  getFacturaByCodigoGeneracion(codigoGen: string): Promise<Factura | null>;
+  // Facturación (DTEs por Tenant)
+  getFacturas(tenantId: string): Promise<Factura[]>;
+  getFactura(id: string, tenantId: string): Promise<Factura | undefined>;
+  createFactura(tenantId: string, factura: InsertFactura): Promise<Factura>;
+  updateFactura(id: string, tenantId: string, factura: Partial<Factura>): Promise<Factura | undefined>;
+  deleteFactura(id: string, tenantId: string): Promise<boolean>;
+  getNextNumeroControl(tenantId: string, emisorNit: string, tipoDte: string): Promise<string>;
+  getFacturaByCodigoGeneracion(codigoGen: string, tenantId: string): Promise<Factura | null>;
+  
   initialize(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
   async initialize(): Promise<void> {
-    // Migrations are handled by drizzle-kit
+    await this.ensureDefaultTenant();
+  }
+
+  async ensureDefaultTenant(): Promise<Tenant> {
+    let [tenant] = await db.select().from(tenants).where(eq(tenants.slug, "default")).limit(1);
+    if (!tenant) {
+      [tenant] = await db.insert(tenants).values({
+        nombre: "Empresa por Defecto",
+        slug: "default",
+      }).returning();
+    }
+    return tenant;
+  }
+
+  async getTenant(id: string): Promise<Tenant | undefined> {
+    const [tenant] = await db.select().from(tenants).where(eq(tenants.id, id));
+    return tenant;
+  }
+
+  async getTenantBySlug(slug: string): Promise<Tenant | undefined> {
+    const [tenant] = await db.select().from(tenants).where(eq(tenants.slug, slug));
+    return tenant;
+  }
+
+  async createTenant(nombre: string, slug: string): Promise<Tenant> {
+    const [tenant] = await db.insert(tenants).values({ nombre, slug }).returning();
+    return tenant;
+  }
+
+  async listTenants(): Promise<Tenant[]> {
+    return await db.select().from(tenants).orderBy(desc(tenants.createdAt));
+  }
+
+  async getTenantCredentials(tenantId: string): Promise<any | undefined> {
+    const [creds] = await db.select().from(tenantCredentials).where(eq(tenantCredentials.tenantId, tenantId)).limit(1);
+    if (!creds) return undefined;
+
+    return {
+      ...creds,
+      mhPass: decrypt(creds.mhPassEnc),
+      certificadoP12: decrypt(creds.certificadoP12Enc),
+      certificadoPass: decrypt(creds.certificadoPassEnc),
+    };
+  }
+
+  async saveTenantCredentials(tenantId: string, creds: any): Promise<void> {
+    await db.delete(tenantCredentials).where(eq(tenantCredentials.tenantId, tenantId));
+    await db.insert(tenantCredentials).values({
+      tenantId,
+      mhUsuario: creds.mhUsuario,
+      mhPassEnc: encrypt(creds.mhPass),
+      certificadoP12Enc: encrypt(creds.certificadoP12),
+      certificadoPassEnc: encrypt(creds.certificadoPass),
+      ambiente: creds.ambiente || "pruebas",
+      validoHasta: creds.validoHasta,
+    });
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -43,93 +119,138 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
+    let tId = insertUser.tenantId;
+    if (!tId) {
+      const def = await this.ensureDefaultTenant();
+      tId = def.id;
+    }
+    const [user] = await db.insert(users).values({ ...insertUser, tenantId: tId }).returning();
     return user;
   }
 
-  async getEmisor(): Promise<Emisor | undefined> {
-    const [row] = await db.select().from(emisorTable).limit(1);
+  async updateUserRole(userId: string, role: string): Promise<void> {
+    await db.update(users).set({ role }).where(eq(users.id, userId));
+  }
+
+  async getEmisor(tenantId: string): Promise<Emisor | undefined> {
+    const [row] = await db.select().from(emisorTable).where(eq(emisorTable.tenantId, tenantId)).limit(1);
     return row ? (row.data as Emisor) : undefined;
   }
 
-  async saveEmisor(emisor: Emisor): Promise<Emisor> {
-    await db.delete(emisorTable);
+  async saveEmisor(tenantId: string, emisor: Emisor): Promise<Emisor> {
+    await db.delete(emisorTable).where(eq(emisorTable.tenantId, tenantId));
     await db.insert(emisorTable).values({
-      id: "1",
+      id: randomUUID(),
+      tenantId: tenantId,
       data: emisor,
     });
     return emisor;
   }
 
-  async getFacturas(): Promise<Factura[]> {
-    const rows = await db.select().from(facturasTable).orderBy(desc(facturasTable.createdAt));
+  async getFacturas(tenantId: string): Promise<Factura[]> {
+    const rows = await db.select().from(facturasTable)
+      .where(eq(facturasTable.tenantId, tenantId))
+      .orderBy(desc(facturasTable.createdAt));
     return rows.map(row => row.data as Factura);
   }
 
-  async getFactura(id: string): Promise<Factura | undefined> {
-    const [row] = await db.select().from(facturasTable).where(eq(facturasTable.id, id));
+  async getFactura(id: string, tenantId: string): Promise<Factura | undefined> {
+    const [row] = await db.select().from(facturasTable)
+      .where(and(eq(facturasTable.id, id), eq(facturasTable.tenantId, tenantId)));
     return row ? (row.data as Factura) : undefined;
   }
 
-  async createFactura(insertFactura: InsertFactura): Promise<Factura> {
+  async createFactura(tenantId: string, insertFactura: InsertFactura): Promise<Factura> {
     const id = randomUUID();
     const createdAt = new Date().toISOString();
-    const factura: Factura = { ...insertFactura, id, createdAt };
+    const factura: Factura = { ...insertFactura, id, createdAt, tenantId };
     
-    await db.insert(facturasTable).values({
-      id,
-      data: factura,
-      createdAt: new Date(createdAt),
-      fecEmi: insertFactura.fecEmi,
+    await db.transaction(async (tx) => {
+      await tx.insert(facturasTable).values({
+        id,
+        tenantId,
+        data: factura,
+        createdAt: new Date(createdAt),
+        fecEmi: insertFactura.fecEmi,
+        estado: insertFactura.estado || "borrador",
+        codigoGeneracion: insertFactura.codigoGeneracion,
+      });
+
+      if (insertFactura.cuerpoDocumento && insertFactura.cuerpoDocumento.length > 0) {
+        const items = insertFactura.cuerpoDocumento.map((item, idx) => ({
+          facturaId: id,
+          numItem: item.numItem || idx + 1,
+          tipoItem: item.tipoItem,
+          cantidad: item.cantidad.toString(),
+          codigo: item.codigo,
+          descripcion: item.descripcion,
+          precioUni: item.precioUni.toString(),
+          ventaNoSuj: (item.ventaNoSuj || 0).toString(),
+          ventaExenta: (item.ventaExenta || 0).toString(),
+          ventaGravada: (item.ventaGravada || 0).toString(),
+          ivaItem: (item.ivaItem || 0).toString(),
+          tributos: item.tributos || null,
+        }));
+        await tx.insert(facturaItemsTable).values(items);
+      }
     });
     
     return factura;
   }
 
-  async updateFactura(id: string, updates: Partial<Factura>): Promise<Factura | undefined> {
-    const current = await this.getFactura(id);
+  async updateFactura(id: string, tenantId: string, updates: Partial<Factura>): Promise<Factura | undefined> {
+    const current = await this.getFactura(id, tenantId);
     if (!current) return undefined;
     
     const updated = { ...current, ...updates };
     
     await db.update(facturasTable)
-      .set({ data: updated })
-      .where(eq(facturasTable.id, id));
+      .set({ 
+        data: updated,
+        estado: updated.estado,
+        selloRecibido: updated.selloRecibido,
+      })
+      .where(and(eq(facturasTable.id, id), eq(facturasTable.tenantId, tenantId)));
       
     return updated;
   }
 
-  async deleteFactura(id: string): Promise<boolean> {
-    const result = await db.delete(facturasTable).where(eq(facturasTable.id, id)).returning();
-    return result.length > 0;
+  async deleteFactura(id: string, tenantId: string): Promise<boolean> {
+    return await db.transaction(async (tx) => {
+      await tx.delete(facturaItemsTable).where(eq(facturaItemsTable.facturaId, id));
+      const result = await tx.delete(facturasTable)
+        .where(and(eq(facturasTable.id, id), eq(facturasTable.tenantId, tenantId)))
+        .returning();
+      return result.length > 0;
+    });
   }
 
-  async getNextNumeroControl(emisorNit: string, tipoDte: string): Promise<string> {
+  async getNextNumeroControl(tenantId: string, emisorNit: string, tipoDte: string): Promise<string> {
     return await db.transaction(async (tx) => {
-      // Intentar obtener el registro actual
       let [record] = await tx
         .select()
         .from(secuencialControlTable)
         .where(
-          sql`${secuencialControlTable.emisorNit} = ${emisorNit} AND ${secuencialControlTable.tipoDte} = ${tipoDte}`
+          and(
+            eq(secuencialControlTable.tenantId, tenantId),
+            eq(secuencialControlTable.emisorNit, emisorNit),
+            eq(secuencialControlTable.tipoDte, tipoDte)
+          )
         );
 
       let newSecuencial = 1;
 
       if (!record) {
-        // Crear nuevo registro si no existe
         [record] = await tx
           .insert(secuencialControlTable)
           .values({
+            tenantId,
             emisorNit,
             tipoDte,
             secuencial: 1,
-            fechaCreacion: new Date(),
-            fechaActualizacion: new Date(),
           })
           .returning();
       } else {
-        // Incrementar si existe
         newSecuencial = record.secuencial + 1;
         [record] = await tx
           .update(secuencialControlTable)
@@ -141,9 +262,6 @@ export class DatabaseStorage implements IStorage {
           .returning();
       }
 
-      // Formatear: DTE-01-12345678-9-000000000000001
-      // NOTA: El formato estándar DGII es más complejo, pero mantendremos
-      // la lógica compatible con lo que había en SQLiteStorage
       const prefix = String(tipoDte).padStart(3, '0');
       const suffix = String(newSecuencial).padStart(18, '0');
       const numeroControl = `${prefix}-${suffix}`;
@@ -156,317 +274,70 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
-  async getFacturaByCodigoGeneracion(codigoGen: string): Promise<Factura | null> {
-    // Busqueda en JSONB es específica de Postgres
-    // data->>'codigoGeneracion' = codigoGen
+  async getFacturaByCodigoGeneracion(codigoGen: string, tenantId: string): Promise<Factura | null> {
     const [row] = await db
       .select()
       .from(facturasTable)
-      .where(sql`data->>'codigoGeneracion' = ${codigoGen}`)
+      .where(and(
+        eq(facturasTable.codigoGeneracion, codigoGen),
+        eq(facturasTable.tenantId, tenantId)
+      ))
       .limit(1);
       
     return row ? (row.data as Factura) : null;
   }
 }
 
+// Implementación de fallback para SQLite
 export class SQLiteStorage implements IStorage {
-  private db: Database.Database;
-  private initialized = false;
-
-  constructor(dbPath?: string) {
-    const filePath = dbPath || path.join(path.dirname(__dirname), "app.db");
-    this.db = new Database(filePath);
-    this.db.pragma("journal_mode = WAL");
-  }
-
-  async initialize(): Promise<void> {
-    if (this.initialized) return;
-
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL
-      )
-    `);
-
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS emisor (
-        id TEXT PRIMARY KEY,
-        data TEXT NOT NULL
-      )
-    `);
-
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS facturas (
-        id TEXT PRIMARY KEY,
-        data TEXT NOT NULL,
-        createdAt TEXT NOT NULL,
-        fecEmi TEXT NOT NULL
-      )
-    `);
-
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS secuencial_control (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        emisor_nit TEXT NOT NULL,
-        tipo_dte TEXT NOT NULL,
-        secuencial INTEGER NOT NULL DEFAULT 1,
-        ultimo_numero_control TEXT,
-        fecha_creacion INTEGER NOT NULL,
-        fecha_actualizacion INTEGER NOT NULL,
-        UNIQUE(emisor_nit, tipo_dte)
-      )
-    `);
-
-    this.initialized = true;
-  }
-
-  async getUser(id: string): Promise<User | undefined> {
-    try {
-      const stmt = this.db.prepare("SELECT * FROM users WHERE id = ?");
-      const row = stmt.get(id) as any;
-      return row ? { id: row.id, username: row.username, password: row.password } : undefined;
-    } catch {
-      return undefined;
-    }
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    try {
-      const stmt = this.db.prepare("SELECT * FROM users WHERE username = ?");
-      const row = stmt.get(username) as any;
-      return row ? { id: row.id, username: row.username, password: row.password } : undefined;
-    } catch {
-      return undefined;
-    }
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const stmt = this.db.prepare(
-      "INSERT INTO users (id, username, password) VALUES (?, ?, ?)"
-    );
-    stmt.run(id, insertUser.username, insertUser.password);
-    return { id, ...insertUser };
-  }
-
-  async getEmisor(): Promise<Emisor | undefined> {
-    try {
-      const stmt = this.db.prepare("SELECT data FROM emisor LIMIT 1");
-      const row = stmt.get() as any;
-      return row ? JSON.parse(row.data) : undefined;
-    } catch {
-      return undefined;
-    }
-  }
-
-  async saveEmisor(emisor: Emisor): Promise<Emisor> {
-    const stmt = this.db.prepare("DELETE FROM emisor");
-    stmt.run();
-    
-    const insertStmt = this.db.prepare(
-      "INSERT INTO emisor (id, data) VALUES (?, ?)"
-    );
-    insertStmt.run("1", JSON.stringify(emisor));
-    
-    return emisor;
-  }
-
-  async getFacturas(): Promise<Factura[]> {
-    try {
-      const stmt = this.db.prepare(
-        "SELECT data, createdAt, fecEmi FROM facturas ORDER BY createdAt DESC"
-      );
-      const rows = stmt.all() as any[];
-      return rows.map(row => JSON.parse(row.data));
-    } catch {
-      return [];
-    }
-  }
-
-  async getFactura(id: string): Promise<Factura | undefined> {
-    try {
-      const stmt = this.db.prepare("SELECT data FROM facturas WHERE id = ?");
-      const row = stmt.get(id) as any;
-      return row ? JSON.parse(row.data) : undefined;
-    } catch {
-      return undefined;
-    }
-  }
-
-  async createFactura(insertFactura: InsertFactura): Promise<Factura> {
-    const id = randomUUID();
-    const createdAt = new Date().toISOString();
-    const factura: Factura = { ...insertFactura, id, createdAt };
-    
-    const stmt = this.db.prepare(
-      "INSERT INTO facturas (id, data, createdAt, fecEmi) VALUES (?, ?, ?, ?)"
-    );
-    stmt.run(id, JSON.stringify(factura), createdAt, insertFactura.fecEmi);
-    
-    return factura;
-  }
-
-  async updateFactura(id: string, updates: Partial<Factura>): Promise<Factura | undefined> {
-    const existing = await this.getFactura(id);
-    if (!existing) return undefined;
-    
-    const updated = { ...existing, ...updates };
-    const stmt = this.db.prepare(
-      "UPDATE facturas SET data = ? WHERE id = ?"
-    );
-    stmt.run(JSON.stringify(updated), id);
-    
-    return updated;
-  }
-
-  async deleteFactura(id: string): Promise<boolean> {
-    const stmt = this.db.prepare("DELETE FROM facturas WHERE id = ?");
-    const result = stmt.run(id);
-    return (result.changes || 0) > 0;
-  }
-
-  async getNextNumeroControl(emisorNit: string, tipoDte: string): Promise<string> {
-    const now = Date.now();
-    
-    const selectStmt = this.db.prepare(
-      `SELECT * FROM secuencial_control 
-       WHERE emisor_nit = ? AND tipo_dte = ?`
-    );
-    let record = selectStmt.get(emisorNit, tipoDte) as any;
-    
-    if (!record) {
-      const insertStmt = this.db.prepare(
-        `INSERT INTO secuencial_control 
-         (emisor_nit, tipo_dte, secuencial, fecha_creacion, fecha_actualizacion)
-         VALUES (?, ?, ?, ?, ?)`
-      );
-      insertStmt.run(emisorNit, tipoDte, 1, now, now);
-      record = { secuencial: 1 };
-    }
-    
-    const newSecuencial = record.secuencial + 1;
-    
-    const prefix = String(tipoDte).padStart(3, '0');
-    const suffix = String(newSecuencial).padStart(18, '0');
-    const numeroControl = `${prefix}-${suffix}`;
-    
-    const updateStmt = this.db.prepare(
-      `UPDATE secuencial_control 
-       SET secuencial = ?, ultimo_numero_control = ?, fecha_actualizacion = ?
-       WHERE emisor_nit = ? AND tipo_dte = ?`
-    );
-    updateStmt.run(newSecuencial, numeroControl, now, emisorNit, tipoDte);
-    
-    return numeroControl;
-  }
-
-  async getFacturaByCodigoGeneracion(codigoGen: string): Promise<Factura | null> {
-    try {
-      const stmt = this.db.prepare(
-        `SELECT data FROM facturas WHERE data LIKE ?`
-      );
-      const row = stmt.get(`%"codigoGeneracion":"${codigoGen}"%`) as any;
-      
-      if (!row) return null;
-      
-      return JSON.parse(row.data);
-    } catch {
-      return null;
-    }
-  }
-
-  close(): void {
-    this.db.close();
-  }
-}
-
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-  private emisor: Emisor | undefined;
-  private facturas: Map<string, Factura>;
-
-  constructor() {
-    this.users = new Map();
-    this.facturas = new Map();
-    this.emisor = undefined;
-  }
-
   async initialize(): Promise<void> {}
-
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
-  }
-
-  async getEmisor(): Promise<Emisor | undefined> {
-    return this.emisor;
-  }
-
-  async saveEmisor(emisor: Emisor): Promise<Emisor> {
-    this.emisor = emisor;
-    return emisor;
-  }
-
-  async getFacturas(): Promise<Factura[]> {
-    return Array.from(this.facturas.values()).sort((a, b) => {
-      const dateA = new Date(a.createdAt || a.fecEmi);
-      const dateB = new Date(b.createdAt || b.fecEmi);
-      return dateB.getTime() - dateA.getTime();
-    });
-  }
-
-  async getFactura(id: string): Promise<Factura | undefined> {
-    return this.facturas.get(id);
-  }
-
-  async createFactura(insertFactura: InsertFactura): Promise<Factura> {
-    const id = randomUUID();
-    const createdAt = new Date().toISOString();
-    const factura: Factura = { ...insertFactura, id, createdAt };
-    this.facturas.set(id, factura);
-    return factura;
-  }
-
-  async updateFactura(id: string, updates: Partial<Factura>): Promise<Factura | undefined> {
-    const existing = this.facturas.get(id);
-    if (!existing) return undefined;
-    const updated = { ...existing, ...updates };
-    this.facturas.set(id, updated);
-    return updated;
-  }
-
-  async deleteFactura(id: string): Promise<boolean> {
-    return this.facturas.delete(id);
-  }
-
-  async getNextNumeroControl(emisorNit: string, tipoDte: string): Promise<string> {
-    // Implementación mock simple para MemStorage
-    return `${tipoDte}-${Date.now().toString().slice(-14)}`;
-  }
-
-  async getFacturaByCodigoGeneracion(codigoGen: string): Promise<Factura | null> {
-    for (const factura of this.facturas.values()) {
-      if (factura.codigoGeneracion === codigoGen) return factura;
-    }
-    return null;
-  }
+  async getTenant(id: string) { return undefined; }
+  async getTenantBySlug(slug: string) { return undefined; }
+  async listTenants() { return []; }
+  async createTenant(n: string, s: string): Promise<Tenant> { throw new Error("Not implemented"); }
+  async ensureDefaultTenant(): Promise<Tenant> { return { id: "1", nombre: "Local", slug: "local", tipo: "clinic", estado: "activo", createdAt: new Date() }; }
+  async getTenantCredentials(tId: string) { return undefined; }
+  async saveTenantCredentials(tId: string, c: any) {}
+  async getUser(id: string) { return undefined; }
+  async getUserByUsername(u: string) { return undefined; }
+  async createUser(u: any) { return u as any; }
+  async updateUserRole(uId: string, r: string) {}
+  async getEmisor(t: string) { return undefined; }
+  async saveEmisor(t: string, e: any) { return e; }
+  async getFacturas(t: string) { return []; }
+  async getFactura(id: string, t: string) { return undefined; }
+  async createFactura(t: string, f: any) { return f; }
+  async updateFactura(id: string, t: string, f: any) { return undefined; }
+  async deleteFactura(id: string, t: string) { return false; }
+  async getNextNumeroControl(t: string, n: string, ty: string) { return ""; }
+  async getFacturaByCodigoGeneracion(c: string, t: string) { return null; }
 }
 
-// Lógica de selección de Storage
+// Fallback MemStorage
+export class MemStorage implements IStorage {
+  async initialize() {}
+  async getTenant(id: string) { return undefined; }
+  async getTenantBySlug(slug: string) { return undefined; }
+  async listTenants() { return []; }
+  async createTenant(n: string, s: string): Promise<Tenant> { throw new Error("Not implemented"); }
+  async ensureDefaultTenant(): Promise<Tenant> { return { id: "1", nombre: "Mem", slug: "mem", tipo: "clinic", estado: "activo", createdAt: new Date() }; }
+  async getTenantCredentials(tId: string) { return undefined; }
+  async saveTenantCredentials(tId: string, c: any) {}
+  async getUser(id: string) { return undefined; }
+  async getUserByUsername(u: string) { return undefined; }
+  async createUser(u: any) { return u; }
+  async updateUserRole(uId: string, r: string) {}
+  async getEmisor(t: string) { return undefined; }
+  async saveEmisor(t: string, e: any) { return e; }
+  async getFacturas(t: string) { return []; }
+  async getFactura(id: string, t: string) { return undefined; }
+  async createFactura(t: string, f: any) { return f; }
+  async updateFactura(id: string, t: string, f: any) { return undefined; }
+  async deleteFactura(id: string, t: string) { return false; }
+  async getNextNumeroControl(t: string, n: string, ty: string) { return ""; }
+  async getFacturaByCodigoGeneracion(c: string, t: string) { return null; }
+}
+
 const useSQLite = process.env.USE_SQLITE === "true";
 const usePostgres = process.env.DATABASE_URL && !useSQLite;
 

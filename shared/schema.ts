@@ -1,28 +1,79 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, decimal, integer, timestamp, jsonb, serial, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, decimal, integer, timestamp, jsonb, serial, unique, uuid, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// --- TABLAS PARA MULTI-TENANCY ---
+
+export const tenants = pgTable("tenants", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  nombre: text("nombre").notNull(),
+  slug: text("slug").unique().notNull(),
+  tipo: text("tipo").default("clinic"), // clinic, hospital, lab, store
+  estado: text("estado").default("activo"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const tenantCredentials = pgTable("tenant_credentials", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: uuid("tenant_id").references(() => tenants.id).notNull(),
+  mhUsuario: text("mh_usuario"),
+  mhPassEnc: text("mh_pass_enc").notNull(),
+  certificadoP12Enc: text("cert_p12_enc").notNull(),
+  certificadoPassEnc: text("cert_pass_enc").notNull(),
+  ambiente: text("ambiente").default("pruebas"),
+  validoDesde: timestamp("valido_desde"),
+  validoHasta: timestamp("valido_hasta"),
+  activo: boolean("activo").default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// --- TABLAS DE NEGOCIO ACTUALIZADAS ---
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: uuid("tenant_id").references(() => tenants.id),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  role: text("role").notNull().default("user"), // user, admin, super_admin
 });
 
 export const emisorTable = pgTable("emisor", {
   id: text("id").primaryKey(),
+  tenantId: uuid("tenant_id").references(() => tenants.id),
   data: jsonb("data").notNull(),
 });
 
 export const facturasTable = pgTable("facturas", {
   id: text("id").primaryKey(),
-  data: jsonb("data").notNull(),
-  createdAt: timestamp("created_at").notNull(),
+  tenantId: uuid("tenant_id").references(() => tenants.id),
+  data: jsonb("data").notNull(), // El DTE completo enviado (auditoría)
+  createdAt: timestamp("created_at").notNull().defaultNow(),
   fecEmi: text("fec_emi").notNull(),
+  estado: text("estado").notNull().default("borrador"), // borrador, generada, transmitida, sellada, anulada
+  codigoGeneracion: text("codigo_generacion").unique(),
+  selloRecibido: text("sello_recibido"),
+});
+
+export const facturaItemsTable = pgTable("factura_items", {
+  id: serial("id").primaryKey(),
+  facturaId: text("factura_id").references(() => facturasTable.id),
+  numItem: integer("num_item").notNull(),
+  tipoItem: text("tipo_item").notNull(),
+  cantidad: decimal("cantidad", { precision: 12, scale: 6 }).notNull(),
+  codigo: text("codigo"),
+  descripcion: text("descripcion").notNull(),
+  precioUni: decimal("precio_uni", { precision: 12, scale: 6 }).notNull(),
+  ventaNoSuj: decimal("venta_no_suj", { precision: 12, scale: 2 }).notNull().default("0"),
+  ventaExenta: decimal("venta_exenta", { precision: 12, scale: 2 }).notNull().default("0"),
+  ventaGravada: decimal("venta_gravada", { precision: 12, scale: 2 }).notNull().default("0"),
+  tributos: jsonb("tributos"),
+  ivaItem: decimal("iva_item", { precision: 12, scale: 2 }).notNull().default("0"),
 });
 
 export const secuencialControlTable = pgTable("secuencial_control", {
   id: serial("id").primaryKey(),
+  tenantId: uuid("tenant_id").references(() => tenants.id),
   emisorNit: text("emisor_nit").notNull(),
   tipoDte: text("tipo_dte").notNull(),
   secuencial: integer("secuencial").notNull().default(1),
@@ -30,16 +81,34 @@ export const secuencialControlTable = pgTable("secuencial_control", {
   fechaCreacion: timestamp("fecha_creacion").notNull().defaultNow(),
   fechaActualizacion: timestamp("fecha_actualizacion").notNull().defaultNow(),
 }, (t) => ({
-  unq: unique().on(t.emisorNit, t.tipoDte),
+  unq: unique().on(t.tenantId, t.emisorNit, t.tipoDte),
 }));
+
+// --- CATÁLOGOS GLOBALES ---
+
+export const mhCatalogosTable = pgTable("mh_catalogos", {
+  id: serial("id").primaryKey(),
+  catalogo: text("catalogo").notNull(), // 'departamentos', 'municipios', 'actividades', etc.
+  codigo: text("codigo").notNull(),
+  valor: text("valor").notNull(),
+  padre: text("padre"), // Para municipios, el padre es el código de departamento
+  activo: boolean("activo").default(true),
+}, (t) => ({
+  unq_cat: unique().on(t.catalogo, t.codigo),
+}));
+
+// --- SCHEMAS DE ZOD ---
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  tenantId: true,
+  role: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type Tenant = typeof tenants.$inferSelect;
 
 export const emisorSchema = z.object({
   nit: z.string()
@@ -146,6 +215,7 @@ export const resumenFacturaSchema = z.object({
 
 export const facturaSchema = z.object({
   id: z.string().optional(),
+  tenantId: z.string().optional(),
   version: z.number().default(1),
   ambiente: z.enum(["00", "01"]).default("00"),
   tipoDte: z.enum(["01", "03", "05", "06", "07", "08", "09", "11", "14", "15"]).default("01"),

@@ -36,12 +36,29 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     if (!userId) return res.status(401).json({ message: "Sesión inválida" });
     const user = await storage.getUser(userId);
     if (!user) return res.status(401).json({ message: "Usuario no encontrado" });
-    // adjuntar user mínimo al request mediante any para evitar ampliar tipos globales
-    (req as any).user = { id: user.id, username: user.username };
+    
+    // Adjuntar usuario con su tenantId al request
+    (req as any).user = { 
+      id: user.id, 
+      username: user.username,
+      tenantId: user.tenantId,
+      role: user.role
+    };
     next();
   } catch (err) {
     next(err);
   }
+}
+
+// Middleware para requerir rol de super admin
+export async function requireSuperAdmin(req: Request, res: Response, next: NextFunction) {
+  await requireAuth(req, res, async () => {
+    const user = (req as any).user;
+    if (user.role !== "super_admin") {
+      return res.status(403).json({ message: "Acceso denegado: Se requiere rol de Super Admin" });
+    }
+    next();
+  });
 }
 
 const loginSchema = z.object({
@@ -67,8 +84,6 @@ export function registerAuthRoutes(app: Express) {
       const sessionId = generateSessionId();
       sessions.set(sessionId, user.id);
 
-      // Establecer cookie de sesión
-      // Nota: res.cookie existe en Express; no usamos cookie-parser para req.cookies.
       res.cookie("sessionId", sessionId, {
         httpOnly: true,
         sameSite: "lax",
@@ -77,7 +92,14 @@ export function registerAuthRoutes(app: Express) {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
       });
 
-      res.json({ user: { id: user.id, username: user.username } });
+      res.json({ 
+        user: { 
+          id: user.id, 
+          username: user.username,
+          tenantId: user.tenantId,
+          role: user.role
+        } 
+      });
     } catch (error) {
       res.status(500).json({ message: "Error en login" });
     }
@@ -112,7 +134,14 @@ export function registerAuthRoutes(app: Express) {
       if (!userId) return res.status(401).json({ message: "Sesión inválida" });
       const user = await storage.getUser(userId);
       if (!user) return res.status(401).json({ message: "Usuario no encontrado" });
-      res.json({ user: { id: user.id, username: user.username } });
+      res.json({ 
+        user: { 
+          id: user.id, 
+          username: user.username,
+          tenantId: user.tenantId,
+          role: user.role
+        } 
+      });
     } catch (error) {
       res.status(500).json({ message: "Error al obtener usuario" });
     }

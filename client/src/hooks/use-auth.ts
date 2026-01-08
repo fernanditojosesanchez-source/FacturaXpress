@@ -2,7 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { getQueryFn } from "@/lib/queryClient";
 
-type MeResponse = { user?: { id: string; username: string } };
+type MeResponse = { 
+  user?: { 
+    id: string; 
+    username: string; 
+    tenantId?: string;
+    role?: string;
+  } 
+};
 
 export function useAuth() {
   const qc = useQueryClient();

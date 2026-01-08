@@ -24,6 +24,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 
+import SuperAdminPage from "@/pages/super-admin";
+
 function Protected({ children }: { children: JSX.Element }) {
   const { isAuthenticated, isLoading } = useAuth();
   const [location, navigate] = useLocation();
@@ -40,6 +42,7 @@ function Router() {
     <Switch>
       <Route path="/login" component={Login} />
       <Route path="/" component={() => (<Protected><Dashboard /></Protected>)} />
+      <Route path="/admin" component={() => (<Protected><SuperAdminPage /></Protected>)} />
       <Route path="/factura/nueva" component={() => (<Protected><NuevaFactura /></Protected>)} />
       <Route path="/notas" component={() => (<Protected><NotaCreditoDebito /></Protected>)} />
       <Route path="/historial" component={() => (<Protected><Historial /></Protected>)} />
@@ -61,6 +64,10 @@ function AppContent() {
     { label: "Reportes", href: "/reportes" },
     { label: "Configuración", href: "/configuracion" },
   ];
+
+  if (user?.role === "super_admin") {
+    navItems.unshift({ label: "Super Admin", href: "/admin" });
+  }
 
   const [location, navigate] = useLocation();
 
