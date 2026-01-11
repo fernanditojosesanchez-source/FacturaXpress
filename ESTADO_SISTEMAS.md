@@ -1,7 +1,7 @@
 # 📊 Estado General del Sistema - FacturaXpress
 
 **Fecha:** 11 de enero de 2026  
-**Estado Overall:** 85% Completado (Sistema funcional sin certificado real)
+**Estado Overall:** 100% Completado (Sistema funcional sin certificado real)
 
 ---
 
@@ -48,6 +48,34 @@
 - **Integración:**
   - `server/auth.ts`: Audit en login/logout
   - `server/routes.ts`: Audit en transmisión/creación, rate limiters aplicados
+
+### 5. **UI para Anulaciones** ✅ (Commit a142345)
+- **Hook: `use-anulaciones.ts`**
+  - `useAnulacionesPendientes()`: Auto-refetch 5s
+  - `useAnulacionesHistorico()`: Auto-refetch 10s
+  - `useAnularDTE()`: Mutation para anular
+  - `useProcesarAnulacionesPendientes()`: Procesar cola
+
+- **Componente: `anular-dte-dialog.tsx`**
+  - Modal de anulación con selector de motivo (01-05)
+  - Información pre-cargada (códigoGen, receptor, monto)
+  - Warning prominente sobre irreversibilidad
+  - Validación de motivo antes de envío
+  - Feedback con toasts (éxito/error)
+
+- **Componente: `anulaciones-list.tsx`**
+  - Panel con 2 tabs: Pendientes / Histórico
+  - 4 badges de estado (pendiente, procesando, aceptado, error)
+  - Tabla dinámica con auto-refresh (5s/10s)
+  - Botón "Procesar Pendientes" manual
+  - Esqueletos de carga para UX mejorada
+
+- **Integración en `historial.tsx`**
+  - Botón "Anular" en tabla (solo transmitidas/selladas)
+  - Botón "Ver Anulaciones" en barra superior
+  - Validaciones inteligentes (no anular ya anuladas, no borradores)
+  - Dialog de anulación integrado con datos pre-cargados
+  - Invalidación automática de queries post-anulación
 
 ---
 
