@@ -17,6 +17,7 @@ import {
   Package,
   Send,
   RefreshCw,
+  Ban,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,8 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { AnularDTEDialog } from "@/components/anular-dte-dialog";
+import { AnulacionesList } from "@/components/anulaciones-list";
 import type { Factura } from "@shared/schema";
 import { TIPOS_DTE } from "@shared/schema";
 
@@ -104,6 +107,9 @@ export default function Historial() {
   const [deleteFactura, setDeleteFactura] = useState<Factura | null>(null);
   const [transmitingId, setTransmitingId] = useState<string | null>(null);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [showAnularDialog, setShowAnularDialog] = useState(false);
+  const [facturaToAnular, setFacturaToAnular] = useState<Factura | null>(null);
+  const [showAnulacionesList, setShowAnulacionesList] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({
     dateFrom: "",
     dateTo: "",
@@ -187,6 +193,29 @@ export default function Historial() {
 
     setTransmitingId(factura.id!);
     transmitirMutation.mutate(factura.id!);
+  };
+
+  const handleAnularFactura = (factura: Factura) => {
+    if (factura.estado === "anulada") {
+      toast({
+        title: "Factura ya anulada",
+        description: "Esta factura ya fue anulada",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (factura.estado === "borrador") {
+      toast({
+        title: "Factura no transmitida",
+        description: "No se puede anular una factura en estado borrador. Debe estar transmitida o sellada.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setFacturaToAnular(factura);
+    setShowAnularDialog(true);
   };
 
   const activeFiltersCount = useMemo(() => {
@@ -461,6 +490,14 @@ export default function Historial() {
             <FileDown className="h-4 w-4 mr-2" />
             Exportar CSV
           </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowAnulacionesList(!showAnulacionesList)}
+            data-testid="button-anulaciones"
+          >
+            <Ban className="h-4 w-4 mr-2" />
+            Ver Anulaciones
+          </Button>
           <Link href="/factura/nueva">
             <Button data-testid="button-new-invoice">
               <FileText className="h-4 w-4 mr-2" />
@@ -704,6 +741,17 @@ export default function Historial() {
                                 )}
                               </Button>
                             )}
+                            {(factura.estado === "transmitida" || factura.estado === "sellada") && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleAnularFactura(factura)}
+                                data-testid={`button-anular-${factura.id}`}
+                                title="Anular factura"
+                              >
+                                <Ban className="h-4 w-4 text-red-600" />
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="icon"
@@ -755,6 +803,11 @@ export default function Historial() {
           )}
         </CardContent>
       </Card>
+
+      {/* Anulaciones List */}
+      {showAnulacionesList && (
+        <AnulacionesList />
+      )}
 
       <Dialog open={!!selectedFactura} onOpenChange={() => setSelectedFactura(null)}>
         <DialogContent className="max-w-3xl">
@@ -853,6 +906,18 @@ export default function Historial() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Anular DTE Dialog */}
+      {facturaToAnular && (
+        <AnularDTEDialog
+          open={showAnularDialog}
+          onOpenChange={setShowAnularDialog}
+          facturaId={facturaToAnular.id!}
+          codigoGeneracion={facturaToAnular.codigoGeneracion || ""}
+          receptorRazonSocial={facturaToAnular.receptor.nombre}
+          monto={facturaToAnular.resumen.totalPagar}
+        />
+      )}
     </div>
   );
 }
