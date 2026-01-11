@@ -11,6 +11,7 @@ export const tenants = pgTable("tenants", {
   slug: text("slug").unique().notNull(),
   tipo: text("tipo").default("clinic"), // clinic, hospital, lab, store
   estado: text("estado").default("activo"),
+  modules: jsonb("modules").default({}), // Feature flags: { inventory: false, accounting: true }
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -88,12 +89,40 @@ export const receptoresTable = pgTable("receptores", {
 export const facturasTable = pgTable("facturas", {
   id: text("id").primaryKey(),
   tenantId: uuid("tenant_id").references(() => tenants.id),
+  externalId: text("external_id"), // ID de referencia en SIGMA (Clinic/Hosp/Lab)
   data: jsonb("data").notNull(), // El DTE completo enviado (auditoría)
   createdAt: timestamp("created_at").notNull().defaultNow(),
   fecEmi: text("fec_emi").notNull(),
   estado: text("estado").notNull().default("borrador"), // borrador, generada, transmitida, sellada, anulada
   codigoGeneracion: text("codigo_generacion").unique(),
   selloRecibido: text("sello_recibido"),
+});
+
+// --- COLA DE CONTINGENCIA (Para DTEs cuando MH está caído) ---
+
+export const contingenciaQueueTable = pgTable("contingencia_queue", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: uuid("tenant_id").references(() => tenants.id).notNull(),
+  facturaId: text("factura_id").references(() => facturasTable.id).notNull(),
+  codigoGeneracion: text("codigo_generacion").notNull(),
+  estado: text("estado").notNull().default("pendiente"), // pendiente, procesando, completado, error
+  intentosFallidos: integer("intentos_fallidos").default(0),
+  ultimoError: text("ultimo_error"),
+  fechaIngreso: timestamp("fecha_ingreso").notNull().defaultNow(),
+  fechaIntento: timestamp("fecha_intento"),
+  fechaCompletado: timestamp("fecha_completado"),
+}, (t) => ({
+  unq: unique().on(t.tenantId, t.codigoGeneracion),
+}));
+
+export const apiKeys = pgTable("api_keys", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: uuid("tenant_id").references(() => tenants.id).notNull(),
+  key: text("key").unique().notNull(), // API Key (formato: fx_live_...)
+  name: text("name").notNull(), // Ej: "SIGMA Clinic Integration"
+  active: boolean("active").default(true),
+  lastUsedAt: timestamp("last_used_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const facturaItemsTable = pgTable("factura_items", {
@@ -257,11 +286,12 @@ export const resumenFacturaSchema = z.object({
 export const facturaSchema = z.object({
   id: z.string().optional(),
   tenantId: z.string().optional(),
+  externalId: z.string().nullable().optional(),
   version: z.number().default(1),
   ambiente: z.enum(["00", "01"]).default("00"),
   tipoDte: z.enum(["01", "03", "05", "06", "07", "08", "09", "11", "14", "15"]).default("01"),
-  numeroControl: z.string(),
-  codigoGeneracion: z.string(),
+  numeroControl: z.string().optional(),
+  codigoGeneracion: z.string().optional(),
   tipoModelo: z.enum(["1", "2"]).default("1"),
   tipoOperacion: z.enum(["1", "2"]).default("1"),
   tipoContingencia: z.string().nullable().optional(),

@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { type Server } from "http";
+import { randomUUID } from "crypto";
 import { storage } from "./storage";
 import { emisorSchema, insertFacturaSchema } from "@shared/schema";
 import { jsPDF } from "jspdf";
@@ -10,17 +11,21 @@ import {
   registerAuthRoutes, 
   requireAuth, 
   requireTenantAdmin, 
-  requireManager 
+  requireManager,
+  requireApiKey
 } from "./auth";
-import {
+import { 
   DEPARTAMENTOS_EL_SALVADOR,
   TIPOS_DOCUMENTO,
   TIPOS_DTE,
   CONDICIONES_OPERACION,
   FORMAS_PAGO,
   TIPOS_ITEM,
-  UNIDADES_MEDIDA,
+  UNIDADES_MEDIDA
 } from "./catalogs";
+
+// ... (existing imports)
+
 import { validateDTESchema } from "./dgii-validator";
 import { registerAdminRoutes } from "./routes/admin";
 
@@ -34,6 +39,17 @@ export async function registerRoutes(
 
   // Helper para obtener tenantId del request
   const getTenantId = (req: Request) => (req as any).user?.tenantId;
+
+  // Helper para autenticación dual (Cookie o API Key)
+  const requireAuthOrApiKey = (req: Request, res: Response, next: any) => {
+    const hasAuthCookie = req.headers.cookie?.includes("accessToken");
+    const hasApiKey = req.headers["x-api-key"] || req.headers["authorization"];
+    
+    if (hasApiKey && !hasAuthCookie) {
+      return requireApiKey(req, res, next);
+    }
+    return requireAuth(req, res, next);
+  };
 
   // ============================================
   // ENDPOINTS DE CATÁLOGOS DGII (Públicos/Globales)
@@ -196,7 +212,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/facturas", requireAuth, async (req: Request, res: Response) => {
+  app.post("/api/facturas", requireAuthOrApiKey, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const parsed = insertFacturaSchema.safeParse(req.body);
@@ -223,10 +239,12 @@ export async function registerRoutes(
       const emisorNit = parsed.data.emisor?.nit || "00000000000000-0";
       const tipoDte = parsed.data.tipoDte || "01";
       const numeroControl = await storage.getNextNumeroControl(tenantId, emisorNit, tipoDte);
+      const codigoGeneracion = parsed.data.codigoGeneracion || randomUUID().toUpperCase();
       
       const facturaConNumero = {
         ...parsed.data,
         numeroControl,
+        codigoGeneracion,
         tenantId
       };
 
@@ -404,6 +422,22 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Esta factura ya fue transmitida" });
       }
 
+      // Verificar disponibilidad del MH
+      const mhDisponible = await mhService.verificarDisponibilidad();
+      
+      if (!mhDisponible) {
+        // MH no disponible - Agregar a cola de contingencia
+        console.log(`[Contingencia] MH no disponible. Agregando DTE ${factura.codigoGeneracion} a cola...`);
+        await storage.addToContingenciaQueue(tenantId, req.params.id, factura.codigoGeneracion || "");
+        
+        return res.status(202).json({ 
+          success: false,
+          mensaje: "Ministerio de Hacienda no disponible. DTE guardado en cola de contingencia.",
+          estado: "pendiente_contingencia",
+          codigoGeneracion: factura.codigoGeneracion
+        });
+      }
+
       // Transmitir al MH pasando el tenantId para usar sus credenciales
       const sello = await mhService.transmitirDTE(factura, tenantId);
 
@@ -421,8 +455,24 @@ export async function registerRoutes(
       });
     } catch (error) {
       console.error("Error al transmitir factura:", error);
+      
+      // Si error es de conexión, agregar a contingencia
+      const errorMsg = error instanceof Error ? error.message : "Error desconocido";
+      if (errorMsg.includes("ECONNREFUSED") || errorMsg.includes("ETIMEDOUT") || errorMsg.includes("ENOTFOUND")) {
+        const factura = await storage.getFactura(req.params.id, getTenantId(req));
+        if (factura && factura.codigoGeneracion) {
+          await storage.addToContingenciaQueue(getTenantId(req), req.params.id, factura.codigoGeneracion);
+          return res.status(202).json({
+            success: false,
+            mensaje: "Error de conexión. DTE agregado a cola de contingencia.",
+            estado: "pendiente_contingencia",
+            error: errorMsg
+          });
+        }
+      }
+      
       res.status(500).json({ 
-        error: error instanceof Error ? error.message : "Error al transmitir al MH" 
+        error: errorMsg
       });
     }
   });
@@ -453,10 +503,107 @@ export async function registerRoutes(
       const factura = await storage.getFactura(req.params.id, tenantId);
       if (!factura) return res.status(404).json({ error: "No encontrada" });
 
-      const estado = await mhService.consultarEstado(factura.codigoGeneracion, tenantId);
+      const estado = await mhService.consultarEstado(factura.codigoGeneracion || "", tenantId);
       res.json(estado);
     } catch (error) {
       res.status(500).json({ error: "Error al consultar MH" });
+    }
+  });
+
+  // ============================================
+  // REPORTES CONTABLES (Libro de Ventas / IVA)
+  // ============================================
+
+  app.get("/api/reportes/iva-mensual", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const { mes, anio } = req.query; // ?mes=1&anio=2026
+
+      const now = new Date();
+      const targetMonth = mes ? parseInt(mes as string) : now.getMonth() + 1;
+      const targetYear = anio ? parseInt(anio as string) : now.getFullYear();
+
+      // Obtener todas las facturas selladas del mes
+      // Nota: En un sistema real esto debería ser una query SQL optimizada con SUM()
+      const facturas = await storage.getFacturas(tenantId);
+      
+      const facturasDelMes = facturas.filter(f => {
+        if (f.estado !== "sellada") return false;
+        const fecha = new Date(f.fecEmi); // Asumiendo formato YYYY-MM-DD
+        return (fecha.getMonth() + 1) === targetMonth && fecha.getFullYear() === targetYear;
+      });
+
+      const reporte = {
+        periodo: `${targetMonth}/${targetYear}`,
+        totalFacturas: facturasDelMes.length,
+        ventasGravadas: facturasDelMes.reduce((sum, f) => sum + (f.resumen.totalGravada || 0), 0),
+        ventasExentas: facturasDelMes.reduce((sum, f) => sum + (f.resumen.totalExenta || 0), 0),
+        totalIva: facturasDelMes.reduce((sum, f) => sum + (f.resumen.totalIva || 0), 0),
+        totalVentas: facturasDelMes.reduce((sum, f) => sum + (f.resumen.totalPagar || 0), 0),
+        detalle: facturasDelMes.map(f => ({
+          fecha: f.fecEmi,
+          numero: f.numeroControl,
+          cliente: f.receptor.nombre,
+          gravado: f.resumen.totalGravada,
+          iva: f.resumen.totalIva,
+          total: f.resumen.totalPagar
+        }))
+      };
+
+      res.json(reporte);
+    } catch (error) {
+      console.error("Error generando reporte IVA:", error);
+      res.status(500).json({ error: "Error al generar reporte de IVA" });
+    }
+  });
+
+  // ============================================
+  // ENDPOINTS DE CONTINGENCIA
+  // ============================================
+
+  app.get("/api/contingencia/estado", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const pendientes = await storage.getContingenciaQueue(tenantId, "pendiente");
+      const procesando = await storage.getContingenciaQueue(tenantId, "procesando");
+      const completadas = await storage.getContingenciaQueue(tenantId, "completado");
+      const errores = await storage.getContingenciaQueue(tenantId, "error");
+
+      res.json({
+        pendientes: pendientes.length,
+        procesando: procesando.length,
+        completadas: completadas.length,
+        errores: errores.length,
+        cola: {
+          pendientes,
+          procesando,
+          completadas,
+          errores
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener estado de contingencia" });
+    }
+  });
+
+  app.post("/api/contingencia/procesar", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      console.log(`[API] Procesando cola de contingencia para tenant ${tenantId}...`);
+      
+      await mhService.procesarColaContingencia(tenantId);
+      
+      const estado = await storage.getContingenciaQueue(tenantId);
+      res.json({
+        success: true,
+        mensaje: "Cola de contingencia procesada",
+        resumen: estado
+      });
+    } catch (error) {
+      console.error("Error procesando contingencia:", error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : "Error al procesar contingencia" 
+      });
     }
   });
 

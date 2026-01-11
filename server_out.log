@@ -1,0 +1,206 @@
+
+> rest-express@1.0.0 dev
+> cross-env NODE_ENV=development tsx server/index.ts
+
+🛠️  Modo Hacienda: MOCK (Simulación activada)
+11:50:59 AM [express] serving on port 5000
+11:51:21 AM [express] GET /api/facturas 401 in 1ms :: {"message":"No autenticado"}
+11:51:21 AM [express] GET /api/emisor 401 in 1ms :: {"message":"No autenticado"}
+11:51:23 AM [express] POST /api/auth/login 200 in 374ms :: {"user":{"id":"13aa775a-92db-40e1-b2b4-b394bfc8a874","username":"admin","email":null,"role":"super_admin","tenantId":"cce535ba-1bae-494c-9021-b23a458cbbac"}}
+11:51:24 AM [express] GET /api/facturas 304 in 622ms :: [{"id":"03224777-9a0f-4b4f-9579-46030be6985b","emisor":{"nit":"06141234561015-5","nrc":"123456","correo":"contacto@sigma.com","nombre":"CLINICA MEDICA SIGMA","telefono":"22223333","direccion":{"municipio":"14","complemento":"Colonia Medica, Pasaje 2, #123","departamento":"06"},"codActividad":"86201","descActividad":"Actividades de ejercicio de la medicina","tipoEstablecimiento":"01"},"estado":"sellada","fecEmi":"2026-01-11","horEmi":"10:51:44","resumen":{"ivaRete1":0,"subTotal":35.4,"totalIva":4.6,"reteRenta":0,"descuNoSuj":0,"saldoFavor":0,"totalDescu":0,"totalNoSuj":0,"totalPagar":40,"descuExenta":0,"totalExenta":0,"totalLetras":"CUARENTA DOLARES EXACTOS","descuGravada":0,"totalGravada":35.4,"subTotalVentas":35.4,"totalNoGravado":0,"condicionOperacion":"1","montoTotalOperacion":40,"porcentajeDescuento":0},"tipoDte":"01","version":1,"ambiente":"00","receptor":{"correo":"paciente@gmail.com","nombre":"PACIENTE DE PRUEBA SIGMA","direccion":{"municipio":"14","complemento":"San Salvador","departamento":"06"},"numDocumento":"00000000-0","tipoDocumento":"13"},"tenantId":"cce535ba-1bae-494c-9021-b23a458cbbac","createdAt":"2026-01-11T16:51:46.903Z","externalId":"SIGMA-CONSULTA-991","tipoModelo":"1","tipoMoneda":"USD","numeroControl":"001-000000000000000004","selloRecibido":"SELLO-1768152200593-1VDKZVG","tipoOperacion":"1","cuerpoDocumento":[{"psv":0,"ivaItem":4.6,"numItem":1,"cantidad":1,"tipoItem":"2","noGravado":0,"precioUni":40,"uniMedida":99,"montoDescu":0,"ventaNoSuj":0,"descripcion":"CONSULTA MEDICA ESPECIALIZADA","ventaExenta":0,"ventaGravada":35.4}],"codigoGeneracion":"CFBFF15A-EF22-4F74-B263-B12DF39CDC19"},{"id":"bbd34afb-a71f-4048-a233-20ca11d56444","emisor":{"nit":"06141234561015-5","nrc":"123456","correo":"contacto@sigma.com","nombre":"CLINICA MEDICA SIGMA","telefono":"22223333","direccion":{"municipio":"14","complemento":"Colonia Medica, Pasaje 2, #123","departamento":"06"},"codActividad":"86201","descActividad":"Actividades de ejercicio de la medicina","tipoEstablecimiento":"01"},"estado":"sellada","fecEmi":"2026-01-11","horEmi":"10:20:17","resumen":{"ivaRete1":0,"subTotal":35.4,"totalIva":4.6,"reteRenta":0,"descuNoSuj":0,"saldoFavor":0,"totalDescu":0,"totalNoSuj":0,"totalPagar":40,"descuExenta":0,"totalExenta":0,"totalLetras":"CUARENTA DOLARES EXACTOS","descuGravada":0,"totalGravada":35.4,"subTotalVentas":35.4,"totalNoGravado":0,"condicionOperacion":"1","montoTotalOperacion":40,"porcentajeDescuento":0},"tipoDte":"01","version":1,"ambiente":"00","receptor":{"correo":"paciente@gmail.com","nombre":"PACIENTE DE PRUEBA SIGMA","direccion":{"municipio":"14","complemento":"San Salvador","departamento":"06"},"numDocumento":"00000000-0","tipoDocumento":"13"},"tenantId":"cce535ba-1bae-494c-9021-b23a458cbbac","createdAt":"2026-01-11T16:20:19.091Z","externalId":"SIGMA-CONSULTA-455","tipoModelo":"1","tipoMoneda":"USD","numeroControl":"001-000000000000000003","selloRecibido":"SELLO-1768152183791-EAW091X","tipoOperacion":"1","cuerpoDocumento":[{"psv":0,"ivaItem":4.6,"numItem":1,"cantidad":1,"tipoItem":"2","noGravado":0,"precioUni":40,"uniMedida":99,"montoDescu":0,"ventaNoSuj":0,"descripcion":"CONSULTA MEDICA ESPECIALIZADA","ventaExenta":0,"ventaGravada":35.4}],"codigoGeneracion":"B3CB8C57-85F5-4381-A996-AD8230296A0C"},{"id":"09b9e7bd-b5fa-473e-b36f-38d66305f5b1","emisor":{"nit":"06141234561015-5","nrc":"123456","correo":"contacto@sigma.com","nombre":"CLINICA MEDICA SIGMA","telefono":"22223333","direccion":{"municipio":"14","complemento":"Colonia Medica, Pasaje 2, #123","departamento":"06"},"codActividad":"86201","descActividad":"Actividades de ejercicio de la medicina","tipoEstablecimiento":"01"},"estado":"sellada","fecEmi":"2026-01-11","horEmi":"10:14:46","resumen":{"ivaRete1":0,"subTotal":35.4,"totalIva":4.6,"reteRenta":0,"descuNoSuj":0,"saldoFavor":0,"totalDescu":0,"totalNoSuj":0,"totalPagar":40,"descuExenta":0,"totalExenta":0,"totalLetras":"CUARENTA DOLARES EXACTOS","descuGravada":0,"totalGravada":35.4,"subTotalVentas":35.4,"totalNoGravado":0,"condicionOperacion":"1","montoTotalOperacion":40,"porcentajeDescuento":0},"tipoDte":"01","version":1,"ambiente":"00","receptor":{"correo":"paciente@gmail.com","nombre":"PACIENTE DE PRUEBA SIGMA","direccion":{"municipio":"14","complemento":"San Salvador","departamento":"06"},"numDocumento":"00000000-0","tipoDocumento":"13"},"tenantId":"cce535ba-1bae-494c-9021-b23a458cbbac","createdAt":"2026-01-11T16:14:48.849Z","tipoModelo":"1","tipoMoneda":"USD","numeroControl":"001-000000000000000002","selloRecibido":"SELLO-1768152193879-FX8EH2R","tipoOperacion":"1","cuerpoDocumento":[{"psv":0,"ivaItem":4.6,"numItem":1,"cantidad":1,"tipoItem":"2","noGravado":0,"precioUni":40,"uniMedida":99,"montoDescu":0,"ventaNoSuj":0,"descripcion":"CONSULTA MEDICA ESPECIALIZADA","ventaExenta":0,"ventaGravada":35.4}],"codigoGeneracion":"EFA577A9-8623-4718-AD25-09260E5613BE"}]
+11:51:29 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:29 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:29 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:30 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:30 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:30 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:30 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:30 AM [express] GET /api/emisor 304 in 630ms :: {}
+11:51:30 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:30 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:30 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:30 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:30 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:30 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:30 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:30 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:30 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:31 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:31 AM [express] GET /api/catalogos/all 500 in 2ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:31 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:31 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:31 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:31 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:31 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:31 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:31 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:31 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:31 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:31 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:31 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:32 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:32 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:32 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:32 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:32 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:32 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:32 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:32 AM [express] GET /api/catalogos/all 500 in 2ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:32 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:32 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:32 AM [express] GET /api/catalogos/all 500 in 2ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:32 AM [express] GET /api/catalogos/all 500 in 2ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:33 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:33 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:33 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:33 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:33 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:33 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:33 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:34 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:34 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:34 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:34 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:34 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:34 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:34 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:34 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:34 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:34 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:34 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:35 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:35 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:35 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:35 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:35 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:35 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:35 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:35 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:35 AM [express] GET /api/catalogos/all 500 in 2ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:35 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:36 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:36 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:36 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:36 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:36 AM [express] GET /api/catalogos/all 500 in 2ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:36 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:36 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:36 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:36 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:37 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:37 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:37 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:37 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:37 AM [express] GET /api/catalogos/all 500 in 2ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:37 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:37 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:37 AM [express] GET /api/catalogos/all 500 in 2ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:37 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:37 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:38 AM [express] GET /api/catalogos/all 500 in 1ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:38 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:38 AM [express] GET /api/catalogos/all 500 in 2ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:38 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+11:51:38 AM [express] GET /api/catalogos/all 500 in 0ms :: {"message":"DEPARTAMENTOS_EL_SALVADOR is not defined"}
+[2m12:03:43 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+[2m12:03:52 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/App.tsx, /src/index.css[22m
+12:06:23 PM [express] GET /api/reportes/iva-mensual 401 in 4ms :: {"message":"Token inválido o expirado"}
+12:06:23 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"Token inválido o expirado"}
+12:06:23 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:24 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:24 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:24 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:24 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:24 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:24 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:25 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:25 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:25 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:25 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:25 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:25 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:26 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:26 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:26 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:26 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:26 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:26 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:26 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:27 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:27 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:27 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:27 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:27 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:27 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:28 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:28 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:28 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:28 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:28 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:28 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:28 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:29 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:29 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:29 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:29 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:29 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:29 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:30 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:30 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:30 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:30 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:30 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:30 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:30 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:30 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:31 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:31 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:31 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:31 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:31 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:31 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:31 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:31 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:32 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:32 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:32 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:32 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:32 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:32 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:32 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:32 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:32 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:32 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:32 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:33 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:33 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:33 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:33 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:33 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:33 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:33 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:33 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:33 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:33 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:34 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:34 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:34 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:34 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:34 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:34 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:34 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:34 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:34 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:34 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:35 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:35 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:35 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:36 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:36 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:37 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:38 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:39 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:40 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:41 PM [express] GET /api/reportes/iva-mensual 401 in 0ms :: {"message":"No autenticado"}
+12:06:42 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}
+12:06:42 PM [express] GET /api/reportes/iva-mensual 401 in 1ms :: {"message":"No autenticado"}

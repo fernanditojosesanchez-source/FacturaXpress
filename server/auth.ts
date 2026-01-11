@@ -5,6 +5,11 @@ import jwt from "jsonwebtoken";
 import { storage } from "./storage";
 
 // Configuración JWT
+if (process.env.NODE_ENV === "production") {
+  if (!process.env.JWT_SECRET) throw new Error("CRITICAL: JWT_SECRET required in production");
+  if (!process.env.JWT_REFRESH_SECRET) throw new Error("CRITICAL: JWT_REFRESH_SECRET required in production");
+}
+
 const JWT_SECRET = process.env.JWT_SECRET || "change-this-in-production-use-long-random-string";
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "change-this-refresh-secret-too";
 const ACCESS_TOKEN_EXPIRY = "15m"; // 15 minutos
@@ -150,6 +155,30 @@ export function requireRole(allowedRoles: string[]) {
     }
     next();
   };
+}
+
+// Middleware para API Keys (Integración SIGMA)
+export async function requireApiKey(req: Request, res: Response, next: NextFunction) {
+  const apiKey = req.headers["x-api-key"] || req.headers["authorization"]?.toString().replace("Bearer ", "");
+  
+  if (!apiKey || typeof apiKey !== "string") {
+    return res.status(401).json({ message: "API Key requerida" });
+  }
+
+  const result = await storage.validateApiKey(apiKey);
+  if (!result) {
+    return res.status(401).json({ message: "API Key inválida o inactiva" });
+  }
+
+  // Inyectar un usuario virtual basado en el Tenant
+  (req as any).user = {
+    id: "api-system",
+    username: "api-system",
+    role: "manager", // Permisos de manager para emitir facturas
+    tenantId: result.tenantId,
+  };
+
+  next();
 }
 
 // Helpers rápidos
@@ -329,5 +358,28 @@ export function registerAuthRoutes(app: Express) {
   app.get("/api/auth/me", requireAuth, async (req: Request, res: Response) => {
     const user = (req as any).user;
     res.json({ user });
+  });
+
+  // --- GESTIÓN DE API KEYS (Solo Tenant Admin) ---
+  
+  app.get("/api/auth/api-keys", ...requireTenantAdmin, async (req: Request, res: Response) => {
+    const user = (req as any).user;
+    const keys = await storage.listApiKeys(user.tenantId);
+    res.json(keys);
+  });
+
+  app.post("/api/auth/api-keys", ...requireTenantAdmin, async (req: Request, res: Response) => {
+    const user = (req as any).user;
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ message: "Nombre de la llave requerido" });
+    
+    const key = await storage.createApiKey(user.tenantId, name);
+    res.status(201).json({ key, name });
+  });
+
+  app.delete("/api/auth/api-keys/:id", ...requireTenantAdmin, async (req: Request, res: Response) => {
+    const user = (req as any).user;
+    await storage.deleteApiKey(req.params.id, user.tenantId);
+    res.status(204).send();
   });
 }

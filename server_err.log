@@ -1,0 +1,1676 @@
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5
+ReferenceError: DEPARTAMENTOS_EL_SALVADOR is not defined
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\routes.ts:79:22)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:284:15
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at <anonymous> (C:\Users\Fher\.vscode\FacturaXpress\server\index.ts:115:3)
+    at Layer.handle [as handle_request] (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:328:13)
+    at C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:286:9
+    at router.process_params (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\Users\Fher\.vscode\FacturaXpress\node_modules\express\lib\router\index.js:280:10)
+    at file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:913:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///C:/Users/Fher/.vscode/FacturaXpress/node_modules/express-rate-limit/dist/index.mjs:796:5

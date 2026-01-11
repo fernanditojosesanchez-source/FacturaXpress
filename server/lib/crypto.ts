@@ -2,6 +2,11 @@ import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "crypt
 
 // La clave maestra debe venir de las variables de entorno para máxima seguridad
 const ALGORITHM = "aes-256-cbc";
+
+if (process.env.NODE_ENV === "production" && !process.env.ENCRYPTION_KEY) {
+  throw new Error("CRITICAL: ENCRYPTION_KEY environment variable is required in production.");
+}
+
 const MASTER_KEY = process.env.ENCRYPTION_KEY || "default-secret-key-change-it-in-prod";
 
 // Derivar una clave de 32 bytes a partir de la MASTER_KEY

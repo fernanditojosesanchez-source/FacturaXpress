@@ -8,8 +8,9 @@ import {
   Calendar,
   Download,
   PieChart,
+  Table as TableIcon
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -19,6 +20,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   BarChart,
   Bar,
@@ -51,14 +60,42 @@ const MONTHS = [
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
 ];
 
+interface IvaReporte {
+  periodo: string;
+  totalFacturas: number;
+  ventasGravadas: number;
+  ventasExentas: number;
+  totalIva: number;
+  totalVentas: number;
+  detalle: Array<{
+    fecha: string;
+    numero: string;
+    cliente: string;
+    gravado: number;
+    iva: number;
+    total: number;
+  }>;
+}
+
 export default function Reportes() {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   const [selectedYear, setSelectedYear] = useState(currentYear.toString());
   const [selectedMonth, setSelectedMonth] = useState((currentMonth + 1).toString().padStart(2, "0"));
 
-  const { data: facturas, isLoading } = useQuery<Factura[]>({
+  // Query general para gráficos (Client-side aggregation)
+  const { data: facturas, isLoading: isLoadingFacturas } = useQuery<Factura[]>({
     queryKey: ["/api/facturas"],
+  });
+
+  // Query específica para el Libro de IVA (Server-side aggregation)
+  const { data: reporteIva, isLoading: isLoadingIva } = useQuery<IvaReporte>({
+    queryKey: ["/api/reportes/iva-mensual", selectedMonth, selectedYear],
+    queryFn: async () => {
+      const res = await fetch(`/api/reportes/iva-mensual?mes=${selectedMonth}&anio=${selectedYear}`);
+      if (!res.ok) throw new Error("Error al obtener reporte");
+      return res.json();
+    },
   });
 
   const stats = useMemo(() => {
@@ -150,46 +187,20 @@ export default function Reportes() {
   }, [facturas, selectedYear, selectedMonth]);
 
   const downloadReport = () => {
-    if (!stats || !facturas) return;
+    if (!reporteIva) return;
 
-    const monthFacturas = facturas.filter((f) => {
-      const fecha = new Date(f.fecEmi);
-      const year = fecha.getFullYear().toString();
-      const month = (fecha.getMonth() + 1).toString().padStart(2, "0");
-      return year === selectedYear && month === selectedMonth && f.estado !== "anulada";
-    });
-
-    const report = {
-      periodo: `${MONTHS[parseInt(selectedMonth) - 1]} ${selectedYear}`,
-      generado: new Date().toISOString(),
-      resumen: {
-        totalVentas: stats.monthVentas,
-        totalIVA: stats.monthIVA,
-        cantidadFacturas: stats.monthCount,
-      },
-      facturas: monthFacturas.map((f) => ({
-        numeroControl: f.numeroControl,
-        fecha: f.fecEmi,
-        receptor: f.receptor.nombre,
-        nit: f.receptor.numDocumento,
-        subtotal: f.resumen.subTotal,
-        iva: f.resumen.totalIva,
-        total: f.resumen.totalPagar,
-      })),
-    };
-
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(reporteIva, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `reporte-${selectedYear}-${selectedMonth}.json`;
+    link.download = `libro-iva-${selectedYear}-${selectedMonth}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
-  if (isLoading) {
+  if (isLoadingFacturas) {
     return (
       <div className="p-6 space-y-6">
         <Skeleton className="h-8 w-48" />
@@ -240,10 +251,6 @@ export default function Reportes() {
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={downloadReport} variant="outline" data-testid="button-download-report" className="hover:bg-white/70 transition-all duration-200">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
         </div>
       </div>
 
@@ -462,6 +469,71 @@ export default function Reportes() {
           </CardContent>
         </Card>
       </div>
+
+      {/* NUEVA SECCIÓN: LIBRO DE IVA */}
+      <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <TableIcon className="h-5 w-5" />
+              Libro de Ventas a Contribuyentes (Detalle IVA)
+            </CardTitle>
+            <CardDescription>
+              Reporte oficial para declaración de impuestos. Periodo: {MONTHS[parseInt(selectedMonth) - 1]} {selectedYear}
+            </CardDescription>
+          </div>
+          <Button onClick={downloadReport} variant="outline" className="gap-2">
+            <Download className="h-4 w-4" />
+            Descargar JSON
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {isLoadingIva ? (
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          ) : reporteIva?.detalle.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No hay facturas selladas en este periodo.
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Número Control</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead className="text-right">Gravado</TableHead>
+                    <TableHead className="text-right">IVA (13%)</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {reporteIva?.detalle.map((row, i) => (
+                    <TableRow key={i}>
+                      <TableCell>{formatDate(new Date(row.fecha))}</TableCell>
+                      <TableCell className="font-mono text-xs">{row.numero}</TableCell>
+                      <TableCell>{row.cliente}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(row.gravado)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(row.iva)}</TableCell>
+                      <TableCell className="text-right font-medium">{formatCurrency(row.total)}</TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="bg-muted/50 font-bold">
+                    <TableCell colSpan={3}>TOTALES DEL PERIODO</TableCell>
+                    <TableCell className="text-right">{formatCurrency(reporteIva?.ventasGravadas || 0)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(reporteIva?.totalIva || 0)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(reporteIva?.totalVentas || 0)}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

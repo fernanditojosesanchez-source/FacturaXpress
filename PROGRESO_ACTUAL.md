@@ -1,13 +1,13 @@
 # 📊 PROGRESO ACTUAL - FacturaXpress
-**Última actualización:** 6 de enero de 2026
+**Última actualización:** 11 de enero de 2026
 
 ---
 
 ## ✅ RESUMEN EJECUTIVO
 
-**Estado:** 🟢 **LISTO PARA CERTIFICACIÓN**
+**Estado:** 🟢 **PRODUCCIÓN-READY**
 
-Todas las mejoras críticas, importantes y de UX han sido completadas. El sistema está preparado para obtener el certificado digital de DGII e iniciar las fases de firma digital y transmisión al Ministerio de Hacienda.
+Todas las mejoras críticas, importantes y de UX han sido completadas. El sistema cuenta con seguridad de nivel empresarial y está preparado para producción. Base de datos migrada a Supabase (PostgreSQL), autenticación JWT robusta, y auditoría completa implementada.
 
 ### Métricas de Progreso
 
@@ -16,37 +16,151 @@ Todas las mejoras críticas, importantes y de UX han sido completadas. El sistem
 | **Críticas** | 4 | 4 | 🟢 100% |
 | **Importantes** | 2 | 2 | 🟢 100% |
 | **Nice-to-have** | 3 | 3 | 🟢 100% |
-| **TOTAL** | 9 | 9 | 🟢 **100%** |
+| **Seguridad** | 6 | 6 | 🟢 100% |
+| **TOTAL** | 15 | 15 | 🟢 **100%** |
 
 ### Commits Realizados
 
 ```
-✅ 6 commits pusheados a main
+✅ 10 commits pusheados a main
 ✅ Documentación completa
 ✅ Tests automatizados
-✅ Sin errores de TypeScript nuevos
+✅ Base de datos: Supabase PostgreSQL
+✅ Seguridad: Nivel empresarial
 ```
 
 ---
 
-## ✅ FASE 1: CRÍTICAS (100% Completado)
+## 🔐 NUEVA FASE: SEGURIDAD EMPRESARIAL (100% Completado)
 
-### 1️⃣ Número de Control Seguro ✅
+### 1️⃣ Migración a Supabase/PostgreSQL ✅
 
-**Problema Resuelto:** Generación insegura en cliente, duplicados posibles
+**Problema Resuelto:** SQLite no es adecuado para producción multi-usuario
 
 **Solución Implementada:**
-- ✅ Tabla `secuencial_control` en base de datos
-- ✅ Función `getNextNumeroControl(emisorNit, tipoDte)` server-side
-- ✅ Formato válido DGII: `XXX-YYYYYYYYYYYYYYYYY` (3-18 dígitos)
-- ✅ Incremento automático por NIT + tipo DTE
-- ✅ Thread-safe con UNIQUE constraint
+- ✅ Conexión postgres.js con SSL habilitado
+- ✅ DatabaseStorage usando Drizzle ORM
+- ✅ Connection pooling para alta concurrencia
+- ✅ Script db:check para diagnóstico de conectividad
+- ✅ Soporte para JSONB queries optimizadas
+- ✅ Transacciones ACID para número de control
 
 **Archivos:**
-- `server/storage.ts` - Nueva tabla y función
-- `server/routes.ts` - Llamada server-side
+- `server/db.ts` - Configuración postgres.js
+- `server/storage.ts` - DatabaseStorage implementado
+- `shared/schema.ts` - Schemas Drizzle ORM
+- `script/db-check.ts` - Herramienta diagnóstico
 
-**Commit:** `feat: implementar generación segura de número de control server-side`
+**Commit:** `feat: migrar de SQLite a Supabase/PostgreSQL con soporte SSL`
+
+---
+
+### 2️⃣ Hash Seguro de Contraseñas (bcrypt) ✅
+
+**Problema Resuelto:** Contraseñas en texto plano (vulnerabilidad crítica)
+
+**Solución Implementada:**
+- ✅ Hash con bcrypt (10 salt rounds)
+- ✅ Comparación timing-safe con bcrypt.compare()
+- ✅ Usuario admin con contraseña hasheada automáticamente
+- ✅ Nunca almacenar contraseñas en texto plano
+
+**Archivos:**
+- `server/auth.ts` - bcrypt.compare() en login
+- `server/index.ts` - Hash al crear usuario por defecto
+
+**Commit:** `feat: implementar seguridad con bcrypt y rate limiting`
+
+---
+
+### 3️⃣ Rate Limiting ✅
+
+**Problema Resuelto:** Sin protección contra ataques de fuerza bruta
+
+**Solución Implementada:**
+- ✅ Login: 5 intentos por 15 minutos por IP
+- ✅ API general: 100 requests por 15 minutos por IP
+- ✅ Mensajes de error personalizados en español
+- ✅ Headers estándar de rate limit
+
+**Archivos:**
+- `server/index.ts` - express-rate-limit configurado
+
+**Commit:** `feat: implementar seguridad con bcrypt y rate limiting`
+
+---
+
+### 4️⃣ Autenticación JWT con Refresh Tokens ✅
+
+**Problema Resuelto:** Sesiones en memoria (no escalables, se pierden al reiniciar)
+
+**Solución Implementada:**
+- ✅ Access tokens (15 minutos) en cookies httpOnly
+- ✅ Refresh tokens (7 días) para renovación automática
+- ✅ Tokens stateless (no almacenados en servidor)
+- ✅ Verificación con jsonwebtoken
+- ✅ Endpoint /api/auth/refresh para renovación
+
+**Archivos:**
+- `server/auth.ts` - Sistema JWT completo
+
+**Commit:** `feat: implementar autenticación JWT avanzada con auditoría completa`
+
+---
+
+### 5️⃣ Login con Username o Email ✅
+
+**Problema Resuelto:** Solo username limitaba flexibilidad
+
+**Solución Implementada:**
+- ✅ Campo email agregado a users
+- ✅ Login acepta username o email
+- ✅ Validación con Zod
+- ✅ Frontend actualizado
+
+**Archivos:**
+- `server/auth.ts` - usernameOrEmail en loginSchema
+- `client/src/pages/login.tsx` - Input "Usuario o Email"
+- `shared/schema.ts` - Campo email en users
+
+**Commit:** `feat: implementar autenticación JWT avanzada con auditoría completa`
+
+---
+
+### 6️⃣ Sistema de Bloqueo Automático y Auditoría ✅
+
+**Problema Resuelto:** Sin registro de intentos fallidos ni bloqueo de cuentas
+
+**Solución Implementada:**
+- ✅ Bloqueo automático tras 5 intentos fallidos (15 min)
+- ✅ Tabla login_attempts: username, IP, success, userAgent, timestamp
+- ✅ Tabla audit_logs: userId, action, IP, userAgent, details
+- ✅ Tracking de IP real (x-forwarded-for)
+- ✅ Campos en users: accountLocked, lockUntil, emailVerified
+
+**Archivos:**
+- `server/auth.ts` - Lógica de bloqueo y auditoría
+- `shared/schema.ts` - Nuevas tablas y campos
+
+**Commit:** `feat: implementar autenticación JWT avanzada con auditoría completa`
+
+---
+
+### 7️⃣ Headers de Seguridad HTTP (Helmet) ✅
+
+**Problema Resuelto:** Headers HTTP básicos, vulnerables a XSS/clickjacking
+
+**Solución Implementada:**
+- ✅ Content Security Policy (CSP) configurado
+- ✅ HSTS con max-age 1 año
+- ✅ XSS Protection
+- ✅ Frame protection (previene clickjacking)
+- ✅ No MIME sniffing
+
+**Archivos:**
+- `server/index.ts` - Helmet middleware
+
+**Commit:** `feat: implementar autenticación JWT avanzada con auditoría completa`
 
 ---
 

@@ -29,9 +29,15 @@ import SuperAdminPage from "@/pages/super-admin";
 function Protected({ children }: { children: JSX.Element }) {
   const { isAuthenticated, isLoading } = useAuth();
   const [location, navigate] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && location !== "/login") {
+      navigate("/login");
+    }
+  }, [isAuthenticated, isLoading, location, navigate]);
+
   if (isLoading) return <div className="p-6 text-center">Cargando...</div>;
   if (!isAuthenticated && location !== "/login") {
-    navigate("/login");
     return <div className="p-6 text-center">Redirigiendo...</div>;
   }
   return children;
@@ -65,6 +71,7 @@ function AppContent() {
     const allItems = [
       { label: "Panel de Control", href: "/", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
       { label: "Facturas", href: "/factura/nueva", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
+      { label: "Historial", href: "/historial", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
       { label: "Notas", href: "/notas", roles: ["super_admin", "tenant_admin", "manager"] }, // Cajero bloqueado
       { label: "Reportes", href: "/reportes", roles: ["super_admin", "tenant_admin", "manager"] }, // Cajero bloqueado
       { label: "Configuración", href: "/configuracion", roles: ["super_admin", "tenant_admin"] }, // Solo admins
@@ -83,10 +90,12 @@ function AppContent() {
 
   const { data: facturas } = useQuery<Factura[]>({
     queryKey: ["/api/facturas"],
+    enabled: !!user,
   });
 
   const { data: emisor } = useQuery<any>({
     queryKey: ["/api/emisor"],
+    enabled: !!user,
   });
 
   const facturasTotal = facturas?.length || 0;

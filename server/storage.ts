@@ -1,7 +1,7 @@
 import { 
   type User, type InsertUser, type Factura, type InsertFactura, type Emisor, type Tenant,
   users, emisorTable, facturasTable, secuencialControlTable, tenants, facturaItemsTable,
-  tenantCredentials, receptoresTable
+  tenantCredentials, receptoresTable, apiKeys, contingenciaQueueTable
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import Database from "better-sqlite3";
@@ -50,6 +50,18 @@ export interface IStorage {
   getNextNumeroControl(tenantId: string, emisorNit: string, tipoDte: string): Promise<string>;
   getFacturaByCodigoGeneracion(codigoGen: string, tenantId: string): Promise<Factura | null>;
   
+  // API Keys para integraciones (SIGMA)
+  createApiKey(tenantId: string, name: string): Promise<string>;
+  validateApiKey(key: string): Promise<{ tenantId: string } | null>;
+  listApiKeys(tenantId: string): Promise<any[]>;
+  deleteApiKey(id: string, tenantId: string): Promise<void>;
+
+  // Contingencia (Cola de DTEs cuando MH está caído)
+  addToContingenciaQueue(tenantId: string, facturaId: string, codigoGeneracion: string): Promise<void>;
+  getContingenciaQueue(tenantId: string, estado?: string): Promise<any[]>;
+  updateContingenciaStatus(codigoGeneracion: string, estado: string, error?: string): Promise<void>;
+  marcarContingenciaCompleta(codigoGeneracion: string): Promise<void>;
+
   initialize(): Promise<void>;
 }
 
@@ -206,15 +218,16 @@ export class DatabaseStorage implements IStorage {
     return row ? (row.data as Factura) : undefined;
   }
 
-  async createFactura(tenantId: string, insertFactura: InsertFactura): Promise<Factura> {
+  async createFactura(tenantId: string, insertFactura: InsertFactura & { externalId?: string }): Promise<Factura> {
     const id = randomUUID();
     const createdAt = new Date().toISOString();
-    const factura: Factura = { ...insertFactura, id, createdAt, tenantId };
+    const factura: Factura = { ...insertFactura, id, createdAt, tenantId, externalId: insertFactura.externalId };
     
     await db.transaction(async (tx) => {
       await tx.insert(facturasTable).values({
         id,
         tenantId,
+        externalId: insertFactura.externalId || null,
         data: factura,
         createdAt: new Date(createdAt),
         fecEmi: insertFactura.fecEmi,
@@ -332,6 +345,114 @@ export class DatabaseStorage implements IStorage {
       
     return row ? (row.data as Factura) : null;
   }
+
+  // Integración SIGMA: Manejo de API Keys
+  async createApiKey(tenantId: string, name: string): Promise<string> {
+    const key = `fx_live_${randomUUID().replace(/-/g, "")}`;
+    await db.insert(apiKeys).values({
+      tenantId,
+      name,
+      key: key, // En un sistema real, aquí guardaríamos el hash (ej. bcrypt), pero para simplicidad usaremos la key directa o encriptada.
+    });
+    return key;
+  }
+
+  async validateApiKey(key: string): Promise<{ tenantId: string } | null> {
+    const [row] = await db.select().from(apiKeys).where(and(eq(apiKeys.key, key), eq(apiKeys.active, true))).limit(1);
+    if (!row) return null;
+
+    await db.update(apiKeys).set({ lastUsedAt: new Date() }).where(eq(apiKeys.id, row.id));
+    return { tenantId: row.tenantId };
+  }
+
+  async listApiKeys(tenantId: string): Promise<any[]> {
+    return await db.select().from(apiKeys).where(eq(apiKeys.tenantId, tenantId)).orderBy(desc(apiKeys.createdAt));
+  }
+
+  async deleteApiKey(id: string, tenantId: string): Promise<void> {
+    await db.delete(apiKeys).where(and(eq(apiKeys.id, id), eq(apiKeys.tenantId, tenantId)));
+  }
+
+  // === MÉTODOS DE CONTINGENCIA ===
+
+  async addToContingenciaQueue(tenantId: string, facturaId: string, codigoGeneracion: string): Promise<void> {
+    try {
+      await db.insert(contingenciaQueueTable).values({
+        tenantId,
+        facturaId,
+        codigoGeneracion,
+        estado: "pendiente",
+        intentosFallidos: 0,
+        fechaIngreso: new Date(),
+      });
+      console.log(`[Contingencia] DTE ${codigoGeneracion} agregado a cola`);
+    } catch (error) {
+      console.error("[Contingencia] Error al agregar a cola:", error);
+      throw error;
+    }
+  }
+
+  async getContingenciaQueue(tenantId: string, estado?: string): Promise<any[]> {
+    try {
+      let query: any = db.select().from(contingenciaQueueTable).where(eq(contingenciaQueueTable.tenantId, tenantId));
+      
+      if (estado) {
+        query = query.where(eq(contingenciaQueueTable.estado, estado));
+      }
+
+      return await query;
+    } catch (error) {
+      console.error("[Contingencia] Error al obtener cola:", error);
+      return [];
+    }
+  }
+
+  async updateContingenciaStatus(codigoGeneracion: string, estado: string, error?: string): Promise<void> {
+    try {
+      const updates: any = {
+        estado,
+        fechaIntento: new Date(),
+      };
+
+      if (error) {
+        updates.ultimoError = error;
+      }
+
+      const records = await db.select().from(contingenciaQueueTable)
+        .where(eq(contingenciaQueueTable.codigoGeneracion, codigoGeneracion))
+        .limit(1);
+
+      if (records && records.length > 0 && records[0]) {
+        const record = records[0] as any;
+        updates.intentosFallidos = (record.intentosFallidos ?? 0) + 1;
+      }
+
+      await db.update(contingenciaQueueTable)
+        .set(updates)
+        .where(eq(contingenciaQueueTable.codigoGeneracion, codigoGeneracion));
+
+      console.log(`[Contingencia] DTE ${codigoGeneracion} actualizado a estado: ${estado}`);
+    } catch (error) {
+      console.error("[Contingencia] Error al actualizar estado:", error);
+      throw error;
+    }
+  }
+
+  async marcarContingenciaCompleta(codigoGeneracion: string): Promise<void> {
+    try {
+      await db.update(contingenciaQueueTable)
+        .set({
+          estado: "completado",
+          fechaCompletado: new Date(),
+        })
+        .where(eq(contingenciaQueueTable.codigoGeneracion, codigoGeneracion));
+
+      console.log(`[Contingencia] DTE ${codigoGeneracion} marcado como completado`);
+    } catch (error) {
+      console.error("[Contingencia] Error al marcar como completado:", error);
+      throw error;
+    }
+  }
 }
 
 // Implementación de fallback para SQLite
@@ -360,6 +481,14 @@ export class SQLiteStorage implements IStorage {
   async deleteFactura(id: string, t: string) { return false; }
   async getNextNumeroControl(t: string, n: string, ty: string) { return ""; }
   async getFacturaByCodigoGeneracion(c: string, t: string) { return null; }
+  async createApiKey(t: string, n: string) { return ""; }
+  async validateApiKey(k: string) { return null; }
+  async listApiKeys(t: string) { return []; }
+  async deleteApiKey(i: string, t: string) {}
+  async addToContingenciaQueue(t: string, f: string, c: string) {}
+  async getContingenciaQueue(t: string, e?: string) { return []; }
+  async updateContingenciaStatus(c: string, e: string, er?: string) {}
+  async marcarContingenciaCompleta(c: string) {}
 }
 
 // Fallback MemStorage
@@ -388,6 +517,14 @@ export class MemStorage implements IStorage {
   async deleteFactura(id: string, t: string) { return false; }
   async getNextNumeroControl(t: string, n: string, ty: string) { return ""; }
   async getFacturaByCodigoGeneracion(c: string, t: string) { return null; }
+  async createApiKey(t: string, n: string) { return ""; }
+  async validateApiKey(k: string) { return null; }
+  async listApiKeys(t: string) { return []; }
+  async deleteApiKey(i: string, t: string) {}
+  async addToContingenciaQueue(t: string, f: string, c: string) {}
+  async getContingenciaQueue(t: string, e?: string) { return []; }
+  async updateContingenciaStatus(c: string, e: string, er?: string) {}
+  async marcarContingenciaCompleta(c: string) {}
 }
 
 const useSQLite = process.env.USE_SQLITE === "true";

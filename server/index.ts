@@ -19,18 +19,18 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Vite dev needs unsafe-eval
-        styleSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // ✅ Permitir Google Fonts CSS
+        fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"], // ✅ Permitir archivos de fuentes (.woff2)
         imgSrc: ["'self'", "data:", "https:"],
         connectSrc: ["'self'", "ws:", "wss:"],
-        fontSrc: ["'self'", "data:"],
         objectSrc: ["'none'"],
         mediaSrc: ["'self'"],
         frameSrc: ["'none'"],
       },
     },
-    crossOriginEmbedderPolicy: false, // Desactivar si usa iframes externos
+    crossOriginEmbedderPolicy: false,
     hsts: {
-      maxAge: 31536000, // 1 año
+      maxAge: 31536000,
       includeSubDomains: true,
       preload: true,
     },
@@ -122,10 +122,25 @@ app.use((req, res, next) => {
   // Crear usuario por defecto si no existe
   const existingUser = await storage.getUserByUsername("admin");
   if (!existingUser) {
+    const adminPassword = process.env.ADMIN_PASSWORD || "admin";
+    
+    if (process.env.NODE_ENV === "production" && !process.env.ADMIN_PASSWORD) {
+      log("⚠️ ADVERTENCIA: Creando usuario admin con contraseña por defecto en producción. Configure ADMIN_PASSWORD.");
+    }
+
     const bcrypt = await import("bcrypt");
-    const hashedPassword = await bcrypt.hash("admin", 10);
-    await storage.createUser({ username: "admin", password: hashedPassword });
-    log("✅ Usuario por defecto creado: admin/admin (contraseña hasheada)");
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+    
+    // Crear tenant por defecto primero si no existe
+    const defaultTenant = await storage.ensureDefaultTenant();
+    
+    await storage.createUser({ 
+      username: "admin", 
+      password: hashedPassword,
+      role: "super_admin",
+      tenantId: defaultTenant.id 
+    });
+    log(`✅ Usuario admin creado (Password: ${process.env.ADMIN_PASSWORD ? "********" : "admin"})`);
   }
 
   await registerRoutes(httpServer, app);
