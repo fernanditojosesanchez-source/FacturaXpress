@@ -1,10 +1,11 @@
 import { 
   type User, type InsertUser, type Factura, type InsertFactura, type Emisor, type Tenant,
+  type Producto, type InsertProducto,
   users, emisorTable, facturasTable, secuencialControlTable, tenants, facturaItemsTable,
-  tenantCredentials, receptoresTable, apiKeys, contingenciaQueueTable, anulacionesTable
+  tenantCredentials, receptoresTable, apiKeys, contingenciaQueueTable, anulacionesTable,
+  productosTable
 } from "@shared/schema";
-import { randomUUID } from "crypto";
-import Database from "better-sqlite3";
+import { randomUUID, createHash } from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
 import { db } from "./db";
@@ -36,6 +37,15 @@ export interface IStorage {
   getReceptores(tenantId: string): Promise<any[]>;
   getReceptorByDoc(tenantId: string, numDocumento: string): Promise<any | undefined>;
   upsertReceptor(tenantId: string, receptor: any): Promise<void>;
+  updateReceptor(id: string, tenantId: string, updates: any): Promise<any>;
+  deleteReceptor(id: string, tenantId: string): Promise<boolean>;
+
+  // Productos / Servicios
+  getProductos(tenantId: string): Promise<Producto[]>;
+  getProducto(id: string, tenantId: string): Promise<Producto | undefined>;
+  createProducto(tenantId: string, producto: InsertProducto): Promise<Producto>;
+  updateProducto(id: string, tenantId: string, producto: Partial<InsertProducto>): Promise<Producto | undefined>;
+  deleteProducto(id: string, tenantId: string): Promise<boolean>;
 
   // Emisor (Configuración por Tenant)
   getEmisor(tenantId: string): Promise<Emisor | undefined>;
@@ -197,6 +207,64 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async updateReceptor(id: string, tenantId: string, updates: any): Promise<any> {
+    const [row] = await db.update(receptoresTable)
+      .set(updates)
+      .where(and(eq(receptoresTable.id, id), eq(receptoresTable.tenantId, tenantId)))
+      .returning();
+    return row;
+  }
+
+  async deleteReceptor(id: string, tenantId: string): Promise<boolean> {
+    const result = await db.delete(receptoresTable)
+      .where(and(eq(receptoresTable.id, id), eq(receptoresTable.tenantId, tenantId)))
+      .returning();
+    return result.length > 0;
+  }
+
+  // === MÉTODOS DE PRODUCTOS ===
+
+  async getProductos(tenantId: string): Promise<Producto[]> {
+    return await db.select().from(productosTable)
+      .where(eq(productosTable.tenantId, tenantId))
+      .orderBy(desc(productosTable.createdAt));
+  }
+
+  async getProducto(id: string, tenantId: string): Promise<Producto | undefined> {
+    const [row] = await db.select().from(productosTable)
+      .where(and(eq(productosTable.id, id), eq(productosTable.tenantId, tenantId)));
+    return row;
+  }
+
+  async createProducto(tenantId: string, p: InsertProducto): Promise<Producto> {
+    const [row] = await db.insert(productosTable).values({
+      ...p,
+      tenantId,
+      precioUnitario: p.precioUnitario.toString(),
+    }).returning();
+    return row;
+  }
+
+  async updateProducto(id: string, tenantId: string, updates: Partial<InsertProducto>): Promise<Producto | undefined> {
+    const data: any = { ...updates, updatedAt: new Date() };
+    if (updates.precioUnitario !== undefined) {
+      data.precioUnitario = updates.precioUnitario.toString();
+    }
+
+    const [row] = await db.update(productosTable)
+      .set(data)
+      .where(and(eq(productosTable.id, id), eq(productosTable.tenantId, tenantId)))
+      .returning();
+    return row;
+  }
+
+  async deleteProducto(id: string, tenantId: string): Promise<boolean> {
+    const result = await db.delete(productosTable)
+      .where(and(eq(productosTable.id, id), eq(productosTable.tenantId, tenantId)))
+      .returning();
+    return result.length > 0;
+  }
+
   async getEmisor(tenantId: string): Promise<Emisor | undefined> {
     const [row] = await db.select().from(emisorTable).where(eq(emisorTable.tenantId, tenantId)).limit(1);
     return row ? (row.data as Emisor) : undefined;
@@ -355,17 +423,21 @@ export class DatabaseStorage implements IStorage {
 
   // Integración SIGMA: Manejo de API Keys
   async createApiKey(tenantId: string, name: string): Promise<string> {
-    const key = `fx_live_${randomUUID().replace(/-/g, "")}`;
+    const rawKey = `fx_live_${randomUUID().replace(/-/g, "")}`;
+    const hashedKey = createHash("sha256").update(rawKey).digest("hex");
+    
     await db.insert(apiKeys).values({
       tenantId,
       name,
-      key: key, // En un sistema real, aquí guardaríamos el hash (ej. bcrypt), pero para simplicidad usaremos la key directa o encriptada.
+      key: hashedKey, // Guardamos el hash
     });
-    return key;
+    return rawKey; // Retornamos la key original al usuario (SOLO UNA VEZ)
   }
 
   async validateApiKey(key: string): Promise<{ tenantId: string } | null> {
-    const [row] = await db.select().from(apiKeys).where(and(eq(apiKeys.key, key), eq(apiKeys.active, true))).limit(1);
+    const hashedKey = createHash("sha256").update(key).digest("hex");
+    
+    const [row] = await db.select().from(apiKeys).where(and(eq(apiKeys.key, hashedKey), eq(apiKeys.active, true))).limit(1);
     if (!row) return null;
 
     await db.update(apiKeys).set({ lastUsedAt: new Date() }).where(eq(apiKeys.id, row.id));
@@ -383,269 +455,127 @@ export class DatabaseStorage implements IStorage {
   // === MÉTODOS DE CONTINGENCIA ===
 
   async addToContingenciaQueue(tenantId: string, facturaId: string, codigoGeneracion: string): Promise<void> {
-    try {
-      await db.insert(contingenciaQueueTable).values({
-        tenantId,
-        facturaId,
-        codigoGeneracion,
-        estado: "pendiente",
-        intentosFallidos: 0,
-        fechaIngreso: new Date(),
-      });
-      console.log(`[Contingencia] DTE ${codigoGeneracion} agregado a cola`);
-    } catch (error) {
-      console.error("[Contingencia] Error al agregar a cola:", error);
-      throw error;
-    }
+    await db.insert(contingenciaQueueTable).values({
+      tenantId,
+      facturaId,
+      codigoGeneracion,
+      estado: "pendiente",
+      intentosFallidos: 0,
+      fechaIngreso: new Date(),
+    });
   }
 
   async getContingenciaQueue(tenantId: string, estado?: string): Promise<any[]> {
-    try {
-      let query: any = db.select().from(contingenciaQueueTable).where(eq(contingenciaQueueTable.tenantId, tenantId));
-      
-      if (estado) {
-        query = query.where(eq(contingenciaQueueTable.estado, estado));
-      }
-
-      return await query;
-    } catch (error) {
-      console.error("[Contingencia] Error al obtener cola:", error);
-      return [];
+    let query: any = db.select().from(contingenciaQueueTable).where(eq(contingenciaQueueTable.tenantId, tenantId));
+    
+    if (estado) {
+      query = query.where(eq(contingenciaQueueTable.estado, estado));
     }
+
+    return await query;
   }
 
   async updateContingenciaStatus(codigoGeneracion: string, estado: string, error?: string): Promise<void> {
-    try {
-      const updates: any = {
-        estado,
-        fechaIntento: new Date(),
-      };
+    const updates: any = {
+      estado,
+      fechaIntento: new Date(),
+    };
 
-      if (error) {
-        updates.ultimoError = error;
-      }
-
-      const records = await db.select().from(contingenciaQueueTable)
-        .where(eq(contingenciaQueueTable.codigoGeneracion, codigoGeneracion))
-        .limit(1);
-
-      if (records && records.length > 0 && records[0]) {
-        const record = records[0] as any;
-        updates.intentosFallidos = (record.intentosFallidos ?? 0) + 1;
-      }
-
-      await db.update(contingenciaQueueTable)
-        .set(updates)
-        .where(eq(contingenciaQueueTable.codigoGeneracion, codigoGeneracion));
-
-      console.log(`[Contingencia] DTE ${codigoGeneracion} actualizado a estado: ${estado}`);
-    } catch (error) {
-      console.error("[Contingencia] Error al actualizar estado:", error);
-      throw error;
+    if (error) {
+      updates.ultimoError = error;
     }
+
+    const records = await db.select().from(contingenciaQueueTable)
+      .where(eq(contingenciaQueueTable.codigoGeneracion, codigoGeneracion))
+      .limit(1);
+
+    if (records && records.length > 0 && records[0]) {
+      const record = records[0] as any;
+      updates.intentosFallidos = (record.intentosFallidos ?? 0) + 1;
+    }
+
+    await db.update(contingenciaQueueTable)
+      .set(updates)
+      .where(eq(contingenciaQueueTable.codigoGeneracion, codigoGeneracion));
   }
 
   async marcarContingenciaCompleta(codigoGeneracion: string): Promise<void> {
-    try {
-      await db.update(contingenciaQueueTable)
-        .set({
-          estado: "completado",
-          fechaCompletado: new Date(),
-        })
-        .where(eq(contingenciaQueueTable.codigoGeneracion, codigoGeneracion));
-
-      console.log(`[Contingencia] DTE ${codigoGeneracion} marcado como completado`);
-    } catch (error) {
-      console.error("[Contingencia] Error al marcar como completado:", error);
-      throw error;
-    }
+    await db.update(contingenciaQueueTable)
+      .set({
+        estado: "completado",
+        fechaCompletado: new Date(),
+      })
+      .where(eq(contingenciaQueueTable.codigoGeneracion, codigoGeneracion));
   }
 
   // === MÉTODOS DE ANULACIÓN ===
 
   async crearAnulacion(tenantId: string, facturaId: string, codigoGeneracion: string, motivo: string, usuarioId: string, observaciones?: string): Promise<void> {
-    try {
-      await db.insert(anulacionesTable).values({
-        tenantId,
-        facturaId,
-        codigoGeneracion,
-        motivo,
-        observaciones: observaciones || "",
-        estado: "pendiente",
-        usuarioAnulo: usuarioId,
-        fechaAnulo: new Date(),
-        intentosFallidos: 0,
-      });
-      console.log(`[Anulación] DTE ${codigoGeneracion} creado para anular`);
-    } catch (error) {
-      console.error("[Anulación] Error al crear anulación:", error);
-      throw error;
-    }
+    await db.insert(anulacionesTable).values({
+      tenantId,
+      facturaId,
+      codigoGeneracion,
+      motivo,
+      observaciones: observaciones || "",
+      estado: "pendiente",
+      usuarioAnulo: usuarioId,
+      fechaAnulo: new Date(),
+      intentosFallidos: 0,
+    });
   }
 
   async getAnulacion(codigoGeneracion: string, tenantId: string): Promise<any | null> {
-    try {
-      const results = await db.select().from(anulacionesTable)
-        .where(and(
-          eq(anulacionesTable.codigoGeneracion, codigoGeneracion),
-          eq(anulacionesTable.tenantId, tenantId)
-        ))
-        .limit(1);
+    const results = await db.select().from(anulacionesTable)
+      .where(and(
+        eq(anulacionesTable.codigoGeneracion, codigoGeneracion),
+        eq(anulacionesTable.tenantId, tenantId)
+      ))
+      .limit(1);
 
-      return results && results.length > 0 ? results[0] : null;
-    } catch (error) {
-      console.error("[Anulación] Error al obtener anulación:", error);
-      return null;
-    }
+    return results && results.length > 0 ? results[0] : null;
   }
 
   async getAnulacionesPendientes(tenantId: string): Promise<any[]> {
-    try {
-      return await db.select().from(anulacionesTable)
-        .where(and(
-          eq(anulacionesTable.tenantId, tenantId),
-          eq(anulacionesTable.estado, "pendiente")
-        ));
-    } catch (error) {
-      console.error("[Anulación] Error al obtener pendientes:", error);
-      return [];
-    }
+    return await db.select().from(anulacionesTable)
+      .where(and(
+        eq(anulacionesTable.tenantId, tenantId),
+        eq(anulacionesTable.estado, "pendiente")
+      ));
   }
 
   async updateAnulacionStatus(codigoGeneracion: string, estado: string, selloAnulacion?: string, respuestaMH?: any, error?: string): Promise<void> {
-    try {
-      const updates: any = {
-        estado,
-        fechaProcesso: new Date(),
-      };
+    const updates: any = {
+      estado,
+      fechaProcesso: new Date(),
+    };
 
-      if (selloAnulacion) updates.selloAnulacion = selloAnulacion;
-      if (respuestaMH) updates.respuestaMH = respuestaMH;
-      if (error) {
-        updates.ultimoError = error;
-        const record = await db.select().from(anulacionesTable)
-          .where(eq(anulacionesTable.codigoGeneracion, codigoGeneracion))
-          .limit(1);
-        if (record && record.length > 0 && record[0]) {
-          const r = record[0] as any;
-          updates.intentosFallidos = (r.intentosFallidos ?? 0) + 1;
-        }
+    if (selloAnulacion) updates.selloAnulacion = selloAnulacion;
+    if (respuestaMH) updates.respuestaMH = respuestaMH;
+    if (error) {
+      updates.ultimoError = error;
+      const record = await db.select().from(anulacionesTable)
+        .where(eq(anulacionesTable.codigoGeneracion, codigoGeneracion))
+        .limit(1);
+      if (record && record.length > 0 && record[0]) {
+        const r = record[0] as any;
+        updates.intentosFallidos = (r.intentosFallidos ?? 0) + 1;
       }
-
-      await db.update(anulacionesTable)
-        .set(updates)
-        .where(eq(anulacionesTable.codigoGeneracion, codigoGeneracion));
-
-      console.log(`[Anulación] DTE ${codigoGeneracion} actualizado a estado: ${estado}`);
-    } catch (error) {
-      console.error("[Anulación] Error al actualizar estado:", error);
-      throw error;
     }
+
+    await db.update(anulacionesTable)
+      .set(updates)
+      .where(eq(anulacionesTable.codigoGeneracion, codigoGeneracion));
   }
 
   async getHistoricoAnulaciones(tenantId: string, limit?: number): Promise<any[]> {
-    try {
-      let query: any = db.select().from(anulacionesTable)
-        .where(eq(anulacionesTable.tenantId, tenantId))
-        .orderBy(desc(anulacionesTable.fechaAnulo));
-      
-      if (limit) query = query.limit(limit);
-      
-      return await query;
-    } catch (error) {
-      console.error("[Anulación] Error al obtener histórico:", error);
-      return [];
-    }
+    let query: any = db.select().from(anulacionesTable)
+      .where(eq(anulacionesTable.tenantId, tenantId))
+      .orderBy(desc(anulacionesTable.fechaAnulo));
+    
+    if (limit) query = query.limit(limit);
+    
+    return await query;
   }
 }
 
-// Implementación de fallback para SQLite
-export class SQLiteStorage implements IStorage {
-  async initialize(): Promise<void> {}
-  async getTenant(id: string) { return undefined; }
-  async getTenantBySlug(slug: string) { return undefined; }
-  async listTenants() { return []; }
-  async createTenant(n: string, s: string): Promise<Tenant> { throw new Error("Not implemented"); }
-  async ensureDefaultTenant(): Promise<Tenant> { return { id: "1", nombre: "Local", slug: "local", tipo: "clinic", estado: "activo", modules: {}, createdAt: new Date() }; }
-  async getTenantCredentials(tId: string) { return undefined; }
-  async saveTenantCredentials(tId: string, c: any) {}
-  async getUser(id: string) { return undefined; }
-  async getUserByUsername(u: string) { return undefined; }
-  async createUser(u: any) { return u as any; }
-  async updateUserRole(uId: string, r: string) {}
-  async getReceptores(t: string) { return []; }
-  async getReceptorByDoc(t: string, d: string) { return undefined; }
-  async upsertReceptor(t: string, r: any) {}
-  async getEmisor(t: string) { return undefined; }
-  async saveEmisor(t: string, e: any) { return e; }
-  async getFacturas(t: string) { return []; }
-  async getFactura(id: string, t: string) { return undefined; }
-  async createFactura(t: string, f: any) { return f; }
-  async updateFactura(id: string, t: string, f: any) { return undefined; }
-  async deleteFactura(id: string, t: string) { return false; }
-  async getNextNumeroControl(t: string, n: string, ty: string) { return ""; }
-  async getFacturaByCodigoGeneracion(c: string, t: string) { return null; }
-  async createApiKey(t: string, n: string) { return ""; }
-  async validateApiKey(k: string) { return null; }
-  async listApiKeys(t: string) { return []; }
-  async deleteApiKey(i: string, t: string) {}
-  async addToContingenciaQueue(t: string, f: string, c: string) {}
-  async getContingenciaQueue(t: string, e?: string) { return []; }
-  async updateContingenciaStatus(c: string, e: string, er?: string) {}
-  async marcarContingenciaCompleta(c: string) {}
-  async crearAnulacion(t: string, f: string, c: string, m: string, u: string, o?: string) {}
-  async getAnulacion(c: string, t: string) { return null; }
-  async getAnulacionesPendientes(t: string) { return []; }
-  async updateAnulacionStatus(c: string, e: string, s?: string, r?: any, er?: string) {}
-  async getHistoricoAnulaciones(t: string, l?: number) { return []; }
-}
-
-// Fallback MemStorage
-export class MemStorage implements IStorage {
-  async initialize() {}
-  async getTenant(id: string) { return undefined; }
-  async getTenantBySlug(slug: string) { return undefined; }
-  async listTenants() { return []; }
-  async createTenant(n: string, s: string): Promise<Tenant> { throw new Error("Not implemented"); }
-  async ensureDefaultTenant(): Promise<Tenant> { return { id: "1", nombre: "Mem", slug: "mem", tipo: "clinic", estado: "activo", modules: {}, createdAt: new Date() }; }
-  async getTenantCredentials(tId: string) { return undefined; }
-  async saveTenantCredentials(tId: string, c: any) {}
-  async getUser(id: string) { return undefined; }
-  async getUserByUsername(u: string) { return undefined; }
-  async createUser(u: any) { return u; }
-  async updateUserRole(uId: string, r: string) {}
-  async getReceptores(t: string) { return []; }
-  async getReceptorByDoc(t: string, d: string) { return undefined; }
-  async upsertReceptor(t: string, r: any) {}
-  async getEmisor(t: string) { return undefined; }
-  async saveEmisor(t: string, e: any) { return e; }
-  async getFacturas(t: string) { return []; }
-  async getFactura(id: string, t: string) { return undefined; }
-  async createFactura(t: string, f: any) { return f; }
-  async updateFactura(id: string, t: string, f: any) { return undefined; }
-  async deleteFactura(id: string, t: string) { return false; }
-  async getNextNumeroControl(t: string, n: string, ty: string) { return ""; }
-  async getFacturaByCodigoGeneracion(c: string, t: string) { return null; }
-  async createApiKey(t: string, n: string) { return ""; }
-  async validateApiKey(k: string) { return null; }
-  async listApiKeys(t: string) { return []; }
-  async deleteApiKey(i: string, t: string) {}
-  async addToContingenciaQueue(t: string, f: string, c: string) {}
-  async getContingenciaQueue(t: string, e?: string) { return []; }
-  async updateContingenciaStatus(c: string, e: string, er?: string) {}
-  async marcarContingenciaCompleta(c: string) {}
-  async crearAnulacion(t: string, f: string, c: string, m: string, u: string, o?: string) {}
-  async getAnulacion(c: string, t: string) { return null; }
-  async getAnulacionesPendientes(t: string) { return []; }
-  async updateAnulacionStatus(c: string, e: string, s?: string, r?: any, er?: string) {}
-  async getHistoricoAnulaciones(t: string, l?: number) { return []; }
-}
-
-const useSQLite = process.env.USE_SQLITE === "true";
-const usePostgres = process.env.DATABASE_URL && !useSQLite;
-
-export const storage: IStorage = usePostgres 
-  ? new DatabaseStorage() 
-  : useSQLite 
-    ? new SQLiteStorage() 
-    : new MemStorage();
+export const storage = new DatabaseStorage();

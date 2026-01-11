@@ -311,7 +311,6 @@ export default function Historial() {
         description: `Archivo FACTURA-${factura.numeroControl}.pdf descargado`,
       });
     } catch (error) {
-      console.error("Error generando PDF:", error);
       toast({
         title: "Error",
         description: "No se pudo generar el PDF",

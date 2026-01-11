@@ -16,8 +16,10 @@ import Emisor from "@/pages/emisor";
 import Configuracion from "@/pages/configuracion";
 import NotaCreditoDebito from "@/pages/nota-credito-debito";
 import Reportes from "@/pages/reportes";
+import ProductosPage from "@/pages/productos";
+import ClientesPage from "@/pages/clientes";
 import { cn } from "@/lib/utils";
-import { User, FileText } from "lucide-react";
+import { User, FileText, Package, Users } from "lucide-react";
 import type { Factura } from "@shared/schema";
 import Login from "@/pages/login";
 import { useAuth } from "@/hooks/use-auth";
@@ -52,6 +54,8 @@ function Router() {
       <Route path="/factura/nueva" component={() => (<Protected><NuevaFactura /></Protected>)} />
       <Route path="/notas" component={() => (<Protected><NotaCreditoDebito /></Protected>)} />
       <Route path="/historial" component={() => (<Protected><Historial /></Protected>)} />
+      <Route path="/productos" component={() => (<Protected><ProductosPage /></Protected>)} />
+      <Route path="/clientes" component={() => (<Protected><ClientesPage /></Protected>)} />
       <Route path="/reportes" component={() => (<Protected><Reportes /></Protected>)} />
       <Route path="/emisor" component={() => (<Protected><Emisor /></Protected>)} />
       <Route path="/configuracion" component={() => (<Protected><Configuracion /></Protected>)} />
@@ -69,18 +73,20 @@ function AppContent() {
     const role = user?.role || "cashier"; // Fallback seguro
     
     const allItems = [
-      { label: "Panel de Control", href: "/", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
+      { label: "Dashboard", href: "/", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
       { label: "Facturas", href: "/factura/nueva", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
       { label: "Historial", href: "/historial", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
-      { label: "Notas", href: "/notas", roles: ["super_admin", "tenant_admin", "manager"] }, // Cajero bloqueado
-      { label: "Reportes", href: "/reportes", roles: ["super_admin", "tenant_admin", "manager"] }, // Cajero bloqueado
-      { label: "Configuración", href: "/configuracion", roles: ["super_admin", "tenant_admin"] }, // Solo admins
+      { label: "Clientes", href: "/clientes", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
+      { label: "Productos", href: "/productos", roles: ["super_admin", "tenant_admin", "manager"] },
+      { label: "Notas", href: "/notas", roles: ["super_admin", "tenant_admin", "manager"] }, 
+      { label: "Reportes", href: "/reportes", roles: ["super_admin", "tenant_admin", "manager"] },
+      { label: "Configuración", href: "/configuracion", roles: ["super_admin", "tenant_admin"] },
     ];
 
     const filtered = allItems.filter(item => item.roles.includes(role));
 
     if (role === "super_admin") {
-      filtered.unshift({ label: "Super Admin", href: "/admin", roles: ["super_admin"] });
+      filtered.unshift({ label: "Admin SaaS", href: "/admin", roles: ["super_admin"] });
     }
 
     return filtered;
@@ -88,7 +94,7 @@ function AppContent() {
 
   const [location, navigate] = useLocation();
 
-  const { data: facturas } = useQuery<Factura[]>({
+  const { data: facturas } = useQuery<Factura[]> ({
     queryKey: ["/api/facturas"],
     enabled: !!user,
   });
@@ -118,6 +124,14 @@ function AppContent() {
           case 'h':
             e.preventDefault();
             navigate('/historial');
+            break;
+          case 'p':
+            e.preventDefault();
+            navigate('/productos');
+            break;
+          case 'c':
+            e.preventDefault();
+            navigate('/clientes');
             break;
           case 'k':
             e.preventDefault();

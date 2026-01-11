@@ -12,6 +12,10 @@ import { apiGeneralRateLimiter, loginRateLimiter } from "./lib/rate-limiters";
 const app = express();
 const httpServer = createServer(app);
 
+// Seguridad: Confiar en el primer proxy (necesario para Rate Limiting detrás de Nginx/LoadBalancers)
+// Esto asegura que req.ip y x-forwarded-for sean procesados correctamente y no spoofed fácilmente.
+app.set("trust proxy", 1);
+
 // CORS mejorado: Solo permitir orígenes específicos en producción
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || ["http://localhost:5000", "http://localhost:3015"];
 
@@ -104,10 +108,7 @@ app.use((req, res, next) => {
       if (path === "/api/auth/me") {
         return;
       }
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
+      const logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
 
       log(logLine);
     }

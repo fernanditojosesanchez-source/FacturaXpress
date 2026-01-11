@@ -6,13 +6,21 @@ import { storage } from "./storage";
 import { logAudit, logLoginAttempt, AuditActions, getClientIP, getUserAgent } from "./lib/audit";
 
 // Configuración JWT
+import { randomBytes } from "crypto";
+
 if (process.env.NODE_ENV === "production") {
-  if (!process.env.JWT_SECRET) throw new Error("CRITICAL: JWT_SECRET required in production");
-  if (!process.env.JWT_REFRESH_SECRET) throw new Error("CRITICAL: JWT_REFRESH_SECRET required in production");
+  if (!process.env.JWT_SECRET) throw new Error("CRITICAL SECURITY: JWT_SECRET environment variable is required in production.");
+  if (!process.env.JWT_REFRESH_SECRET) throw new Error("CRITICAL SECURITY: JWT_REFRESH_SECRET environment variable is required in production.");
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || "change-this-in-production-use-long-random-string";
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "change-this-refresh-secret-too";
+// Si no hay secretos (Dev/Test), generamos uno aleatorio EFÍMERO.
+// Esto es seguro porque nadie puede adivinarlo, pero invalidará todas las sesiones al reiniciar el servidor.
+const JWT_SECRET = process.env.JWT_SECRET || randomBytes(64).toString("hex");
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || randomBytes(64).toString("hex");
+
+if (!process.env.JWT_SECRET) {
+  console.warn("⚠️  ADVERTENCIA DE SEGURIDAD: Usando secretos JWT generados aleatoriamente. Las sesiones se invalidarán al reiniciar.");
+}
 const ACCESS_TOKEN_EXPIRY = "15m"; // 15 minutos
 const REFRESH_TOKEN_EXPIRY = "7d"; // 7 días
 const MAX_LOGIN_ATTEMPTS = 5;

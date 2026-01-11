@@ -176,6 +176,20 @@ export const secuencialControlTable = pgTable("secuencial_control", {
   unq: unique().on(t.tenantId, t.emisorNit, t.tipoDte),
 }));
 
+export const productosTable = pgTable("productos", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: uuid("tenant_id").references(() => tenants.id).notNull(),
+  codigo: text("codigo"), // Código interno o de barras
+  nombre: text("nombre").notNull(),
+  descripcion: text("descripcion"),
+  precioUnitario: decimal("precio_unitario", { precision: 12, scale: 6 }).notNull(),
+  uniMedida: integer("uni_medida").notNull().default(20), // Default: Unidad
+  tipoItem: text("tipo_item").notNull().default("2"), // Default: Servicio
+  activo: boolean("activo").default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // --- CATÁLOGOS GLOBALES ---
 
 export const mhCatalogosTable = pgTable("mh_catalogos", {
@@ -351,6 +365,25 @@ export type Factura = z.infer<typeof facturaSchema>;
 
 export const insertFacturaSchema = facturaSchema.omit({ id: true, createdAt: true });
 export type InsertFactura = z.infer<typeof insertFacturaSchema>;
+
+// --- PRODUCTOS ---
+export const productoSchema = z.object({
+  id: z.string().optional(),
+  tenantId: z.string().optional(),
+  codigo: z.string().optional().nullable(),
+  nombre: z.string().min(1, "El nombre es requerido"),
+  descripcion: z.string().optional().nullable(),
+  precioUnitario: z.coerce.number().min(0, "El precio debe ser mayor o igual a 0"),
+  uniMedida: z.coerce.number().default(20),
+  tipoItem: z.enum(["1", "2", "3", "4"]).default("2"),
+  activo: z.boolean().default(true),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+});
+
+export const insertProductoSchema = productoSchema.omit({ id: true, tenantId: true, createdAt: true, updatedAt: true });
+export type Producto = typeof productosTable.$inferSelect;
+export type InsertProducto = z.infer<typeof insertProductoSchema>;
 
 export const DEPARTAMENTOS_EL_SALVADOR = [
   { codigo: "01", nombre: "Ahuachapán" },

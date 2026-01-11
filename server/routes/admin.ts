@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { z } from "zod";
+import { randomBytes } from "crypto";
 import { requireSuperAdmin } from "../auth";
 import { storage } from "../storage";
 
@@ -47,15 +48,21 @@ export function registerAdminRoutes(app: Express) {
 
       const tenant = await storage.createTenant(nombre, slug);
       
+      // Generar contraseña segura
+      const plainPassword = randomBytes(12).toString("hex");
+      const bcrypt = await import("bcrypt");
+      const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
       // Crear usuario tenant_admin por defecto
       const adminUser = await storage.createUser({
         username: `admin-${slug}`,
-        password: "password123", 
+        password: hashedPassword, 
         tenantId: tenant.id,
         role: "tenant_admin"
       });
 
-      res.status(201).json({ tenant, adminUser });
+      // Retornar la contraseña en texto plano SOLO una vez al crear
+      res.status(201).json({ tenant, adminUser, initialPassword: plainPassword });
     } catch (error) {
       console.error("Error creating tenant:", error);
       res.status(500).json({ message: "Error al crear tenant" });

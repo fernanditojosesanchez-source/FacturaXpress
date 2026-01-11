@@ -53,6 +53,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useValidateDTE } from "@/hooks/use-validate-dte";
 import { useCatalogos } from "@/hooks/use-catalogos";
+import { useProductos } from "@/hooks/use-productos";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   formatCurrency,
@@ -61,6 +62,30 @@ import {
   numberToWords,
   calculateIVA,
 } from "@/lib/utils";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Check,
+  ChevronsUpDown,
+  Plus,
+  Trash2,
+  FileJson,
+  FileDown,
+  Save,
+  Eye,
+  ArrowLeft,
+} from "lucide-react";
 import {
   DEPARTAMENTOS_EL_SALVADOR,
   TIPOS_DOCUMENTO,
@@ -120,6 +145,72 @@ const countErrors = (errors: Record<string, any>): number => {
     return acc;
   }, 0);
 };
+
+function ProductSearch({ 
+  onSelect, 
+  value 
+}: { 
+  onSelect: (product: any) => void;
+  value: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const { productos } = useProductos();
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <div className="relative group cursor-pointer w-full">
+          <Input
+            value={value}
+            onChange={(e) => onSelect({ descripcion: e.target.value })}
+            placeholder="Buscar o escribir descripción..."
+            className="pr-8 table-input-focus"
+          />
+          <ChevronsUpDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 shrink-0 opacity-50" />
+        </div>
+      </PopoverTrigger>
+      <PopoverContent className="w-[350px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Buscar producto..." />
+          <CommandList>
+            <CommandEmpty>No se encontraron productos.</CommandEmpty>
+            <CommandGroup heading="Catálogo de Productos">
+              {productos.filter(p => p.activo).map((producto) => (
+                <CommandItem
+                  key={producto.id}
+                  value={producto.nombre}
+                  onSelect={() => {
+                    onSelect({
+                      descripcion: producto.nombre,
+                      precioUni: Number(producto.precioUnitario),
+                      uniMedida: producto.uniMedida,
+                      tipoItem: producto.tipoItem,
+                      codigo: producto.codigo
+                    });
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === producto.nombre ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  <div className="flex flex-col">
+                    <span className="font-medium">{producto.nombre}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatCurrency(Number(producto.precioUnitario))} - {producto.codigo || "Sin código"}
+                    </span>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 function InvoicePreview({ data, emisor }: { data: FacturaFormData; emisor: Emisor | null }) {
   const subtotal = data.items.reduce(
@@ -362,7 +453,7 @@ export default function NuevaFactura() {
           description: "Los datos han sido cargados. Revise y confirme antes de generar.",
         });
       } catch (e) {
-        console.error("Error loading duplicated factura:", e);
+        // Silently fail if data is corrupted, user will start fresh
       }
     }
   }, [form, toast]);
@@ -978,11 +1069,17 @@ export default function NuevaFactura() {
                                   control={form.control}
                                   name={`items.${index}.descripcion`}
                                   render={({ field }) => (
-                                    <Input
-                                      {...field}
-                                      placeholder="Descripción del item"
-                                      data-testid={`input-descripcion-${index}`}
-                                      className="table-input-focus"
+                                    <ProductSearch 
+                                      value={field.value}
+                                      onSelect={(p) => {
+                                        field.onChange(p.descripcion);
+                                        if (p.precioUni !== undefined) {
+                                          form.setValue(`items.${index}.precioUni`, p.precioUni);
+                                          form.setValue(`items.${index}.uniMedida`, p.uniMedida);
+                                          form.setValue(`items.${index}.tipoItem`, p.tipoItem);
+                                          if (p.codigo) form.setValue(`items.${index}.codigo`, p.codigo);
+                                        }
+                                      }}
                                     />
                                   )}
                                 />
