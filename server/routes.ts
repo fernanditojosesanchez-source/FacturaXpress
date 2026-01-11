@@ -23,11 +23,10 @@ import {
   TIPOS_ITEM,
   UNIDADES_MEDIDA
 } from "./catalogs";
-
-// ... (existing imports)
-
 import { validateDTESchema } from "./dgii-validator";
 import { registerAdminRoutes } from "./routes/admin";
+import { facturaCreationRateLimiter, transmisionRateLimiter } from "./lib/rate-limiters";
+import { logAudit, AuditActions, getClientIP, getUserAgent } from "./lib/audit";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -212,9 +211,12 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/facturas", requireAuthOrApiKey, async (req: Request, res: Response) => {
+  app.post("/api/facturas", requireAuthOrApiKey, facturaCreationRateLimiter, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
+      const userId = (req as any).user?.id;
+      const ipAddress = getClientIP(req);
+      
       const parsed = insertFacturaSchema.safeParse(req.body);
       if (!parsed.success) {
         return res.status(400).json({ 
@@ -263,6 +265,15 @@ export async function registerRoutes(
       if (facturaConNumero.receptor) {
         await storage.upsertReceptor(tenantId, facturaConNumero.receptor);
       }
+
+      // Auditoría
+      await logAudit({ 
+        userId, 
+        action: AuditActions.FACTURA_CREATED, 
+        ipAddress, 
+        userAgent: getUserAgent(req),
+        details: { facturaId: factura.id, codigoGeneracion: factura.codigoGeneracion }
+      });
 
       res.status(201).json(factura);
     } catch (error) {
@@ -410,9 +421,12 @@ export async function registerRoutes(
   // ENDPOINTS DE INTEGRACIÓN MH
   // ============================================
   
-  app.post("/api/facturas/:id/transmitir", requireAuth, async (req: Request, res: Response) => {
+  app.post("/api/facturas/:id/transmitir", requireAuth, transmisionRateLimiter, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
+      const userId = (req as any).user?.id;
+      const ipAddress = getClientIP(req);
+      
       const factura = await storage.getFactura(req.params.id, tenantId);
       if (!factura) {
         return res.status(404).json({ error: "Factura no encontrada" });
@@ -430,6 +444,14 @@ export async function registerRoutes(
         console.log(`[Contingencia] MH no disponible. Agregando DTE ${factura.codigoGeneracion} a cola...`);
         await storage.addToContingenciaQueue(tenantId, req.params.id, factura.codigoGeneracion || "");
         
+        await logAudit({
+          userId,
+          action: AuditActions.CONTINGENCIA_ADDED,
+          ipAddress,
+          userAgent: getUserAgent(req),
+          details: { facturaId: req.params.id, codigoGeneracion: factura.codigoGeneracion }
+        });
+        
         return res.status(202).json({ 
           success: false,
           mensaje: "Ministerio de Hacienda no disponible. DTE guardado en cola de contingencia.",
@@ -446,6 +468,20 @@ export async function registerRoutes(
       const facturaActualizada = await storage.updateFactura(req.params.id, tenantId, {
         selloRecibido: sello.selloRecibido,
         estado: nuevoEstado
+      });
+
+      // Auditoría
+      await logAudit({
+        userId,
+        action: AuditActions.FACTURA_TRANSMITTED,
+        ipAddress,
+        userAgent: getUserAgent(req),
+        details: { 
+          facturaId: req.params.id, 
+          codigoGeneracion: factura.codigoGeneracion,
+          selloRecibido: sello.selloRecibido,
+          estado: nuevoEstado
+        }
       });
 
       res.json({ 

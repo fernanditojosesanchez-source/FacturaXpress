@@ -2,15 +2,33 @@ import "dotenv/config";
 import dns from "node:dns";
 dns.setDefaultResultOrder("ipv4first");
 import express, { type Request, Response, NextFunction } from "express";
-import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import { storage } from "./storage";
+import { apiGeneralRateLimiter, loginRateLimiter } from "./lib/rate-limiters";
 
 const app = express();
 const httpServer = createServer(app);
+
+// CORS mejorado: Solo permitir orígenes específicos en producción
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || ["http://localhost:5000", "http://localhost:3015"];
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && (process.env.NODE_ENV !== "production" || allowedOrigins.includes(origin))) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key");
+  }
+  
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+  next();
+});
 
 // Helmet: Headers de seguridad HTTP
 app.use(
@@ -53,26 +71,9 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
-// Rate limiting: protección contra fuerza bruta
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 5, // 5 intentos
-  message: { message: "Demasiados intentos de login. Intenta de nuevo en 15 minutos." },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // 100 requests
-  message: { message: "Demasiadas peticiones desde esta IP. Intenta de nuevo más tarde." },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Aplicar limiters
-app.use("/api/auth/login", loginLimiter);
-app.use("/api", apiLimiter);
+// Rate limiting mejorado: por tenant + IP
+app.use("/api/auth/login", loginRateLimiter);
+app.use("/api", apiGeneralRateLimiter);
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {

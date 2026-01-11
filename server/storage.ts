@@ -566,7 +566,7 @@ export class SQLiteStorage implements IStorage {
   async getTenantBySlug(slug: string) { return undefined; }
   async listTenants() { return []; }
   async createTenant(n: string, s: string): Promise<Tenant> { throw new Error("Not implemented"); }
-  async ensureDefaultTenant(): Promise<Tenant> { return { id: "1", nombre: "Local", slug: "local", tipo: "clinic", estado: "activo", createdAt: new Date() }; }
+  async ensureDefaultTenant(): Promise<Tenant> { return { id: "1", nombre: "Local", slug: "local", tipo: "clinic", estado: "activo", modules: {}, createdAt: new Date() }; }
   async getTenantCredentials(tId: string) { return undefined; }
   async saveTenantCredentials(tId: string, c: any) {}
   async getUser(id: string) { return undefined; }
@@ -607,7 +607,7 @@ export class MemStorage implements IStorage {
   async getTenantBySlug(slug: string) { return undefined; }
   async listTenants() { return []; }
   async createTenant(n: string, s: string): Promise<Tenant> { throw new Error("Not implemented"); }
-  async ensureDefaultTenant(): Promise<Tenant> { return { id: "1", nombre: "Mem", slug: "mem", tipo: "clinic", estado: "activo", createdAt: new Date() }; }
+  async ensureDefaultTenant(): Promise<Tenant> { return { id: "1", nombre: "Mem", slug: "mem", tipo: "clinic", estado: "activo", modules: {}, createdAt: new Date() }; }
   async getTenantCredentials(tId: string) { return undefined; }
   async saveTenantCredentials(tId: string, c: any) {}
   async getUser(id: string) { return undefined; }

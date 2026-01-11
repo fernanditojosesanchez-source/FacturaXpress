@@ -3,6 +3,7 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { storage } from "./storage";
+import { logAudit, logLoginAttempt, AuditActions, getClientIP, getUserAgent } from "./lib/audit";
 
 // Configuración JWT
 if (process.env.NODE_ENV === "production") {
@@ -63,36 +64,6 @@ function parseCookies(req: Request): Record<string, string> {
     result[key] = decodeURIComponent(rest.join("="));
   }
   return result;
-}
-
-// Obtener IP real del cliente
-function getClientIP(req: Request): string {
-  const forwarded = req.headers["x-forwarded-for"];
-  if (typeof forwarded === "string") {
-    return forwarded.split(",")[0].trim();
-  }
-  return req.socket.remoteAddress || "unknown";
-}
-
-// Helper functions para auditoría (safe fallback si storage no tiene los métodos)
-async function logLoginAttempt(username: string, ipAddress: string, success: boolean, userAgent?: string): Promise<void> {
-  try {
-    if (typeof (storage as any).logLoginAttempt === "function") {
-      await (storage as any).logLoginAttempt({ username, ipAddress, success, userAgent });
-    }
-  } catch (error) {
-    console.error("Error logging login attempt:", error);
-  }
-}
-
-async function logAudit(userId: string | null, action: string, ipAddress: string, userAgent?: string, details?: any): Promise<void> {
-  try {
-    if (typeof (storage as any).logAudit === "function") {
-      await (storage as any).logAudit({ userId, action, ipAddress, userAgent, details });
-    }
-  } catch (error) {
-    console.error("Error logging audit:", error);
-  }
 }
 
 async function checkAccountLock(user: any): Promise<{ locked: boolean; reason?: string }> {
@@ -219,29 +190,29 @@ export function registerAuthRoutes(app: Express) {
       }
 
       if (!user) {
-        await logLoginAttempt(usernameOrEmail, ipAddress, false, userAgent);
-        await logAudit(null, "login_failed", ipAddress, userAgent, { reason: "user_not_found" });
+        await logLoginAttempt({ username: usernameOrEmail, ipAddress, success: false, userAgent });
+        await logAudit({ userId: null, action: AuditActions.LOGIN_FAILED, ipAddress, userAgent, details: { reason: "user_not_found" } });
         return res.status(401).json({ message: "Credenciales inválidas" });
       }
 
       // Verificar bloqueo de cuenta
       const lockStatus = await checkAccountLock(user);
       if (lockStatus.locked) {
-        await logAudit(user.id, "login_blocked", ipAddress, userAgent);
+        await logAudit({ userId: user.id, action: "login_blocked", ipAddress, userAgent });
         return res.status(403).json({ message: lockStatus.reason });
       }
 
       // Verificar contraseña
       const passwordMatch = await bcrypt.compare(password, user.password);
       if (!passwordMatch) {
-        await logLoginAttempt(user.username, ipAddress, false, userAgent);
-        await logAudit(user.id, "login_failed", ipAddress, userAgent, { reason: "wrong_password" });
+        await logLoginAttempt({ username: user.username, ipAddress, success: false, userAgent });
+        await logAudit({ userId: user.id, action: AuditActions.LOGIN_FAILED, ipAddress, userAgent, details: { reason: "wrong_password" } });
         return res.status(401).json({ message: "Credenciales inválidas" });
       }
 
       // Login exitoso
-      await logLoginAttempt(user.username, ipAddress, true, userAgent);
-      await logAudit(user.id, "login_success", ipAddress, userAgent);
+      await logLoginAttempt({ username: user.username, ipAddress, success: true, userAgent });
+      await logAudit({ userId: user.id, action: AuditActions.LOGIN_SUCCESS, ipAddress, userAgent });
 
       // Generar tokens JWT
       const tokenPayload: TokenPayload = {
@@ -283,7 +254,7 @@ export function registerAuthRoutes(app: Express) {
       });
     } catch (error) {
       console.error("Login error:", error);
-      await logAudit(null, "login_error", ipAddress, userAgent, { error: String(error) });
+      await logAudit({ userId: null, action: "login_error", ipAddress, userAgent, details: { error: String(error) } });
       res.status(500).json({ message: "Error en login" });
     }
   });
@@ -342,11 +313,11 @@ export function registerAuthRoutes(app: Express) {
   // Logout
   app.post("/api/auth/logout", async (req: Request, res: Response) => {
     const ipAddress = getClientIP(req);
-    const userAgent = req.headers["user-agent"];
+    const userAgent = getUserAgent(req);
     const user = (req as any).user;
 
     if (user) {
-      await logAudit(user.id, "logout", ipAddress, userAgent);
+      await logAudit({ userId: user.id, action: AuditActions.LOGOUT, ipAddress, userAgent });
     }
 
     res.cookie("accessToken", "", { maxAge: 0 });
