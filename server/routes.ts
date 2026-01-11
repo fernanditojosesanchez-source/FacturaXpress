@@ -119,6 +119,23 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/receptores", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const parsed = receptorSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: parsed.error.errors });
+      }
+      const receptor = await storage.createReceptor(tenantId, parsed.data);
+      res.status(201).json(receptor);
+    } catch (error: any) {
+      if (error.message?.includes("unique")) {
+        return res.status(409).json({ error: "Ya existe un cliente con este número de documento" });
+      }
+      res.status(500).json({ error: "Error al crear cliente" });
+    }
+  });
+
   app.patch("/api/receptores/:id", ...requireTenantAdmin, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);

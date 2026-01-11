@@ -10,6 +10,27 @@ export function useClientes() {
     queryKey: ["/api/receptores"],
   });
 
+  const createMutation = useMutation({
+    mutationFn: async (data: Omit<Receptor, "id" | "tenantId" | "createdAt">) => {
+      const res = await apiRequest("POST", "/api/receptores", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/receptores"] });
+      toast({
+        title: "Cliente creado",
+        description: "El cliente ha sido guardado exitosamente.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error al crear cliente",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Receptor> }) => {
       const res = await apiRequest("PATCH", `/api/receptores/${id}`, data);
@@ -55,8 +76,10 @@ export function useClientes() {
     clientes: query.data ?? [],
     isLoading: query.isLoading,
     error: query.error,
+    createCliente: createMutation.mutateAsync,
     updateCliente: updateMutation.mutateAsync,
     deleteCliente: deleteMutation.mutateAsync,
+    isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
   };
