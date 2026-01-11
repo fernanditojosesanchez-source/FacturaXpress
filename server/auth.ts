@@ -1,5 +1,6 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { z } from "zod";
+import bcrypt from "bcrypt";
 import { storage } from "./storage";
 
 const sessions = new Map<string, string>();
@@ -79,7 +80,13 @@ export function registerAuthRoutes(app: Express) {
       const { username, password } = parsed.data;
       const user = await storage.getUserByUsername(username);
       
-      if (!user || user.password !== password) {
+      if (!user) {
+        return res.status(401).json({ message: "Credenciales inválidas" });
+      }
+
+      // Verificar contraseña con bcrypt
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      if (!passwordMatch) {
         return res.status(401).json({ message: "Credenciales inválidas" });
       }
 

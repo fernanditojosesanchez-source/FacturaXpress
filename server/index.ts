@@ -2,6 +2,7 @@ import "dotenv/config";
 import dns from "node:dns";
 dns.setDefaultResultOrder("ipv4first");
 import express, { type Request, Response, NextFunction } from "express";
+import rateLimit from "express-rate-limit";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -25,6 +26,27 @@ app.use(
 );
 
 app.use(express.urlencoded({ extended: false }));
+
+// Rate limiting: protección contra fuerza bruta
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 5, // 5 intentos
+  message: { message: "Demasiados intentos de login. Intenta de nuevo en 15 minutos." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // 100 requests
+  message: { message: "Demasiadas peticiones desde esta IP. Intenta de nuevo más tarde." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Aplicar limiters
+app.use("/api/auth/login", loginLimiter);
+app.use("/api", apiLimiter);
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -74,8 +96,10 @@ app.use((req, res, next) => {
   // Crear usuario por defecto si no existe
   const existingUser = await storage.getUserByUsername("admin");
   if (!existingUser) {
-    await storage.createUser({ username: "admin", password: "admin" });
-    log("✅ Usuario por defecto creado: admin/admin");
+    const bcrypt = await import("bcrypt");
+    const hashedPassword = await bcrypt.hash("admin", 10);
+    await storage.createUser({ username: "admin", password: hashedPassword });
+    log("✅ Usuario por defecto creado: admin/admin (contraseña hasheada)");
   }
 
   await registerRoutes(httpServer, app);
