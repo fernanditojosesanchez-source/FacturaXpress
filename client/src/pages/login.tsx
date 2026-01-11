@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Login() {
   const { login } = useAuth();
-  const [username, setUsername] = useState("");
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -14,7 +14,7 @@ export default function Login() {
     e.preventDefault();
     setError(null);
     try {
-      await login.mutateAsync({ username, password });
+      await login.mutateAsync({ usernameOrEmail, password });
     } catch (err) {
       setError((err as Error).message);
     }
@@ -35,11 +35,11 @@ export default function Login() {
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Usuario</label>
+              <label className="text-sm font-medium">Usuario o Email</label>
               <Input
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="admin"
+                value={usernameOrEmail}
+                onChange={(e) => setUsernameOrEmail(e.target.value)}
+                placeholder="admin o email@ejemplo.com"
               />
             </div>
             <div>
@@ -48,7 +48,7 @@ export default function Login() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="admin"
+                placeholder="••••••••"
               />
             </div>
             {error && (
@@ -58,7 +58,7 @@ export default function Login() {
               {login.isPending ? "Accediendo..." : "Entrar"}
             </Button>
             <p className="text-xs text-muted-foreground text-center">
-              Usa el usuario de prueba: admin / admin
+              Usuario de prueba: admin / admin
             </p>
           </form>
         </CardContent>

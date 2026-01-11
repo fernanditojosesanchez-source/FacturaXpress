@@ -34,8 +34,32 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tenantId: uuid("tenant_id").references(() => tenants.id),
   username: text("username").notNull().unique(),
+  email: text("email").unique(),
   password: text("password").notNull(),
   role: text("role").notNull().default("user"), // super_admin, tenant_admin, manager, cashier
+  emailVerified: boolean("email_verified").default(false),
+  accountLocked: boolean("account_locked").default(false),
+  lockUntil: timestamp("lock_until"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const loginAttempts = pgTable("login_attempts", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull(),
+  ipAddress: text("ip_address").notNull(),
+  success: boolean("success").notNull(),
+  userAgent: text("user_agent"),
+  attemptedAt: timestamp("attempted_at").notNull().defaultNow(),
+});
+
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id),
+  action: text("action").notNull(), // login, logout, login_failed, password_change, etc.
+  ipAddress: text("ip_address").notNull(),
+  userAgent: text("user_agent"),
+  details: jsonb("details"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const emisorTable = pgTable("emisor", {
