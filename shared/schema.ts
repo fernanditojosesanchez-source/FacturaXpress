@@ -115,6 +115,28 @@ export const contingenciaQueueTable = pgTable("contingencia_queue", {
   unq: unique().on(t.tenantId, t.codigoGeneracion),
 }));
 
+// --- HISTÓRICO DE ANULACIONES (Para invalidación de DTEs) ---
+
+export const anulacionesTable = pgTable("anulaciones", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: uuid("tenant_id").references(() => tenants.id).notNull(),
+  facturaId: text("factura_id").references(() => facturasTable.id).notNull(),
+  codigoGeneracion: text("codigo_generacion").notNull(),
+  motivo: text("motivo").notNull(), // 01-Anulacion por error, 02-Anulacion por contingencia, 03-Anulacion por cambio de operacion, 04-Anulacion por cambio de referencia, 05-Anulacion por cambio de datos
+  observaciones: text("observaciones"),
+  estado: text("estado").notNull().default("pendiente"), // pendiente, procesando, aceptado, rechazado, error
+  selloAnulacion: text("sello_anulacion"), // Sello del MH para la anulación
+  jwsFirmado: text("jws_firmado"), // Documento firmado enviado al MH
+  respuestaMH: jsonb("respuesta_mh"), // Respuesta completa del MH
+  usuarioAnulo: varchar("usuario_anulo").references(() => users.id),
+  fechaAnulo: timestamp("fecha_anulo").notNull().defaultNow(),
+  fechaProcesso: timestamp("fecha_proceso"),
+  ultimoError: text("ultimo_error"),
+  intentosFallidos: integer("intentos_fallidos").default(0),
+}, (t) => ({
+  unq: unique().on(t.tenantId, t.codigoGeneracion),
+}));
+
 export const apiKeys = pgTable("api_keys", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   tenantId: uuid("tenant_id").references(() => tenants.id).notNull(),

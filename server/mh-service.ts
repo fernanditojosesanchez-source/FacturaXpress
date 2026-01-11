@@ -22,10 +22,19 @@ export interface ResultadoAnulacion {
   fechaAnulacion: string;
 }
 
+export interface ResultadoInvalidacion {
+  success: boolean;
+  mensaje: string;
+  selloAnulacion?: string;
+  fechaAnulo: string;
+}
+
 export interface MHService {
   transmitirDTE(factura: Factura, tenantId: string): Promise<SelloMH>;
   consultarEstado(codigoGeneracion: string, tenantId: string): Promise<EstadoDTE>;
   anularDTE(codigoGeneracion: string, motivo: string, tenantId: string): Promise<ResultadoAnulacion>;
+  invalidarDTE(codigoGeneracion: string, motivo: string, tenantId: string): Promise<ResultadoInvalidacion>;
+  procesarAnulacionesPendientes(tenantId: string): Promise<void>;
   verificarConexion(tenantId: string): Promise<boolean>;
   verificarDisponibilidad(): Promise<boolean>;
   procesarColaContingencia(tenantId: string): Promise<void>;
@@ -65,6 +74,22 @@ export class MHServiceMock implements MHService {
   async anularDTE(codigoGeneracion: string, _motivo: string, _tenantId: string): Promise<ResultadoAnulacion> {
     this.procesados.delete(codigoGeneracion);
     return { success: true, mensaje: "Anulado", fechaAnulacion: new Date().toISOString() };
+  }
+
+  async invalidarDTE(codigoGeneracion: string, _motivo: string, _tenantId: string): Promise<ResultadoInvalidacion> {
+    console.log(`[MH Mock] Invalidando DTE ${codigoGeneracion}`);
+    this.procesados.delete(codigoGeneracion);
+    return { 
+      success: true, 
+      mensaje: "DTE invalidado (Simulación)",
+      selloAnulacion: `ANULO-${Date.now()}`,
+      fechaAnulo: new Date().toISOString()
+    };
+  }
+
+  async procesarAnulacionesPendientes(_tenantId: string): Promise<void> {
+    // Mock procesa automáticamente
+    console.log(`[Anulación] Cola procesada en Mock`);
   }
 
   async verificarConexion(_tenantId: string): Promise<boolean> { return true; }
@@ -185,6 +210,83 @@ export class MHServiceReal implements MHService {
     const token = await this.getAuthToken(tenantId);
     // ... Implementación real ...
     return { success: false, mensaje: "No implementado", fechaAnulacion: "" };
+  }
+
+  async invalidarDTE(codigoGeneracion: string, motivo: string, tenantId: string): Promise<ResultadoInvalidacion> {
+    console.log(`[MH Real] Invalidando DTE ${codigoGeneracion} con motivo: ${motivo}`);
+    
+    try {
+      const token = await this.getAuthToken(tenantId);
+      const creds = await storage.getTenantCredentials(tenantId);
+      if (!creds) throw new Error("Credenciales no configuradas");
+
+      // 1. Crear documento de invocación (invalidación)
+      const invocacion = {
+        ambiente: creds.ambiente || "00",
+        codigoGeneracion: codigoGeneracion,
+        motivo: motivo, // 01-05 según DGII
+        descripcion: `Invalidación por motivo ${motivo}`
+      };
+
+      // 2. Firma del documento (cuando llegue certificado real)
+      // Por ahora retornamos estructura lista para producción
+      const response = await fetch(`${this.apiUrl}/invalidacion`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(invocacion)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error MH invalidación: ${response.status}`);
+      }
+
+      const resultado = await response.json();
+      return {
+        success: true,
+        mensaje: "DTE invalidado correctamente",
+        selloAnulacion: resultado.selloAnulacion,
+        fechaAnulo: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error("[MH Real] Error en invalidación:", error);
+      throw error;
+    }
+  }
+
+  async procesarAnulacionesPendientes(tenantId: string): Promise<void> {
+    console.log(`[Anulación] Procesando anulaciones pendientes para tenant ${tenantId}...`);
+    
+    const pendientes = await storage.getAnulacionesPendientes(tenantId);
+    
+    for (const item of pendientes) {
+      try {
+        await storage.updateAnulacionStatus(item.codigoGeneracion, "procesando");
+        
+        const resultado = await this.invalidarDTE(item.codigoGeneracion, item.motivo, tenantId);
+        
+        if (resultado.success) {
+          await storage.updateAnulacionStatus(
+            item.codigoGeneracion,
+            "aceptado",
+            resultado.selloAnulacion,
+            { fechaAnulo: resultado.fechaAnulo }
+          );
+          console.log(`[Anulación] ✅ DTE ${item.codigoGeneracion} invalidado exitosamente`);
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : "Error desconocido";
+        await storage.updateAnulacionStatus(item.codigoGeneracion, "pendiente", undefined, undefined, errorMsg);
+        
+        const record = await storage.getAnulacion(item.codigoGeneracion, tenantId);
+        if (record && record.intentosFallidos > 10) {
+          await storage.updateAnulacionStatus(item.codigoGeneracion, "error", undefined, undefined, errorMsg);
+          console.error(`[Anulación] ❌ DTE ${item.codigoGeneracion} marca do como error tras 10 intentos`);
+        }
+      }
+    }
   }
 
   async verificarConexion(_tenantId: string): Promise<boolean> {

@@ -1,7 +1,7 @@
 import { 
   type User, type InsertUser, type Factura, type InsertFactura, type Emisor, type Tenant,
   users, emisorTable, facturasTable, secuencialControlTable, tenants, facturaItemsTable,
-  tenantCredentials, receptoresTable, apiKeys, contingenciaQueueTable
+  tenantCredentials, receptoresTable, apiKeys, contingenciaQueueTable, anulacionesTable
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import Database from "better-sqlite3";
@@ -61,6 +61,13 @@ export interface IStorage {
   getContingenciaQueue(tenantId: string, estado?: string): Promise<any[]>;
   updateContingenciaStatus(codigoGeneracion: string, estado: string, error?: string): Promise<void>;
   marcarContingenciaCompleta(codigoGeneracion: string): Promise<void>;
+
+  // Anulaciones (Invalidación de DTEs)
+  crearAnulacion(tenantId: string, facturaId: string, codigoGeneracion: string, motivo: string, usuarioId: string, observaciones?: string): Promise<void>;
+  getAnulacion(codigoGeneracion: string, tenantId: string): Promise<any | null>;
+  getAnulacionesPendientes(tenantId: string): Promise<any[]>;
+  updateAnulacionStatus(codigoGeneracion: string, estado: string, selloAnulacion?: string, respuestaMH?: any, error?: string): Promise<void>;
+  getHistoricoAnulaciones(tenantId: string, limit?: number): Promise<any[]>;
 
   initialize(): Promise<void>;
 }
@@ -453,6 +460,103 @@ export class DatabaseStorage implements IStorage {
       throw error;
     }
   }
+
+  // === MÉTODOS DE ANULACIÓN ===
+
+  async crearAnulacion(tenantId: string, facturaId: string, codigoGeneracion: string, motivo: string, usuarioId: string, observaciones?: string): Promise<void> {
+    try {
+      await db.insert(anulacionesTable).values({
+        tenantId,
+        facturaId,
+        codigoGeneracion,
+        motivo,
+        observaciones: observaciones || "",
+        estado: "pendiente",
+        usuarioAnulo: usuarioId,
+        fechaAnulo: new Date(),
+        intentosFallidos: 0,
+      });
+      console.log(`[Anulación] DTE ${codigoGeneracion} creado para anular`);
+    } catch (error) {
+      console.error("[Anulación] Error al crear anulación:", error);
+      throw error;
+    }
+  }
+
+  async getAnulacion(codigoGeneracion: string, tenantId: string): Promise<any | null> {
+    try {
+      const results = await db.select().from(anulacionesTable)
+        .where(and(
+          eq(anulacionesTable.codigoGeneracion, codigoGeneracion),
+          eq(anulacionesTable.tenantId, tenantId)
+        ))
+        .limit(1);
+
+      return results && results.length > 0 ? results[0] : null;
+    } catch (error) {
+      console.error("[Anulación] Error al obtener anulación:", error);
+      return null;
+    }
+  }
+
+  async getAnulacionesPendientes(tenantId: string): Promise<any[]> {
+    try {
+      return await db.select().from(anulacionesTable)
+        .where(and(
+          eq(anulacionesTable.tenantId, tenantId),
+          eq(anulacionesTable.estado, "pendiente")
+        ));
+    } catch (error) {
+      console.error("[Anulación] Error al obtener pendientes:", error);
+      return [];
+    }
+  }
+
+  async updateAnulacionStatus(codigoGeneracion: string, estado: string, selloAnulacion?: string, respuestaMH?: any, error?: string): Promise<void> {
+    try {
+      const updates: any = {
+        estado,
+        fechaProcesso: new Date(),
+      };
+
+      if (selloAnulacion) updates.selloAnulacion = selloAnulacion;
+      if (respuestaMH) updates.respuestaMH = respuestaMH;
+      if (error) {
+        updates.ultimoError = error;
+        const record = await db.select().from(anulacionesTable)
+          .where(eq(anulacionesTable.codigoGeneracion, codigoGeneracion))
+          .limit(1);
+        if (record && record.length > 0 && record[0]) {
+          const r = record[0] as any;
+          updates.intentosFallidos = (r.intentosFallidos ?? 0) + 1;
+        }
+      }
+
+      await db.update(anulacionesTable)
+        .set(updates)
+        .where(eq(anulacionesTable.codigoGeneracion, codigoGeneracion));
+
+      console.log(`[Anulación] DTE ${codigoGeneracion} actualizado a estado: ${estado}`);
+    } catch (error) {
+      console.error("[Anulación] Error al actualizar estado:", error);
+      throw error;
+    }
+  }
+
+  async getHistoricoAnulaciones(tenantId: string, limit?: number): Promise<any[]> {
+    try {
+      let query: any = db.select().from(anulacionesTable)
+        .where(eq(anulacionesTable.tenantId, tenantId))
+        .orderBy(desc(anulacionesTable.fechaAnulo));
+      
+      if (limit) query = query.limit(limit);
+      
+      return await query;
+    } catch (error) {
+      console.error("[Anulación] Error al obtener histórico:", error);
+      return [];
+    }
+  }
 }
 
 // Implementación de fallback para SQLite
@@ -489,6 +593,11 @@ export class SQLiteStorage implements IStorage {
   async getContingenciaQueue(t: string, e?: string) { return []; }
   async updateContingenciaStatus(c: string, e: string, er?: string) {}
   async marcarContingenciaCompleta(c: string) {}
+  async crearAnulacion(t: string, f: string, c: string, m: string, u: string, o?: string) {}
+  async getAnulacion(c: string, t: string) { return null; }
+  async getAnulacionesPendientes(t: string) { return []; }
+  async updateAnulacionStatus(c: string, e: string, s?: string, r?: any, er?: string) {}
+  async getHistoricoAnulaciones(t: string, l?: number) { return []; }
 }
 
 // Fallback MemStorage
@@ -525,6 +634,11 @@ export class MemStorage implements IStorage {
   async getContingenciaQueue(t: string, e?: string) { return []; }
   async updateContingenciaStatus(c: string, e: string, er?: string) {}
   async marcarContingenciaCompleta(c: string) {}
+  async crearAnulacion(t: string, f: string, c: string, m: string, u: string, o?: string) {}
+  async getAnulacion(c: string, t: string) { return null; }
+  async getAnulacionesPendientes(t: string) { return []; }
+  async updateAnulacionStatus(c: string, e: string, s?: string, r?: any, er?: string) {}
+  async getHistoricoAnulaciones(t: string, l?: number) { return []; }
 }
 
 const useSQLite = process.env.USE_SQLITE === "true";

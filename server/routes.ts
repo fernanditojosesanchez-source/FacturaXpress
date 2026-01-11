@@ -511,6 +511,158 @@ export async function registerRoutes(
   });
 
   // ============================================
+  // ENDPOINTS DE INVALIDACIÓN (Anulación de DTEs)
+  // ============================================
+
+  app.post("/api/facturas/:id/invalidar", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const userId = (req as any).userId || (req as any).user?.id || "system";
+      const { motivo, observaciones } = req.body;
+
+      if (!motivo) {
+        return res.status(400).json({ error: "Motivo de invalidación es requerido" });
+      }
+
+      const factura = await storage.getFactura(req.params.id, tenantId);
+      if (!factura) {
+        return res.status(404).json({ error: "Factura no encontrada" });
+      }
+
+      if (!factura.codigoGeneracion) {
+        return res.status(400).json({ error: "Factura no tiene código de generación" });
+      }
+
+      // Validar que el motivo sea válido según DGII
+      const motivosValidos = ["01", "02", "03", "04", "05"];
+      if (!motivosValidos.includes(motivo)) {
+        return res.status(400).json({ 
+          error: "Motivo inválido. Válidos: 01-05",
+          motivosValidos: {
+            "01": "Anulación por error",
+            "02": "Anulación por contingencia",
+            "03": "Anulación por cambio de operación",
+            "04": "Anulación por cambio de referencia",
+            "05": "Anulación por cambio de datos"
+          }
+        });
+      }
+
+      // Crear registro de anulación
+      await storage.crearAnulacion(
+        tenantId,
+        req.params.id,
+        factura.codigoGeneracion,
+        motivo,
+        userId,
+        observaciones
+      );
+
+      // Intentar invalidar inmediatamente
+      try {
+        const resultado = await mhService.invalidarDTE(
+          factura.codigoGeneracion,
+          motivo,
+          tenantId
+        );
+
+        if (resultado.success) {
+          await storage.updateAnulacionStatus(
+            factura.codigoGeneracion,
+            "aceptado",
+            resultado.selloAnulacion,
+            { fechaAnulo: resultado.fechaAnulo }
+          );
+
+          // Actualizar factura a anulada
+          await storage.updateFactura(req.params.id, tenantId, {
+            estado: "anulada"
+          });
+
+          return res.json({
+            success: true,
+            mensaje: "DTE invalidado correctamente",
+            selloAnulacion: resultado.selloAnulacion,
+            estado: "aceptado"
+          });
+        }
+      } catch (error) {
+        // Si falla, marcar como pendiente para reintento
+        const errorMsg = error instanceof Error ? error.message : "Error desconocido";
+        await storage.updateAnulacionStatus(
+          factura.codigoGeneracion,
+          "pendiente",
+          undefined,
+          undefined,
+          errorMsg
+        );
+
+        return res.status(202).json({
+          success: false,
+          mensaje: "Anulación guardada en cola (MH no disponible)",
+          estado: "pendiente",
+          error: errorMsg
+        });
+      }
+    } catch (error) {
+      console.error("Error al invalidar factura:", error);
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Error al invalidar"
+      });
+    }
+  });
+
+  app.get("/api/anulaciones/pendientes", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const pendientes = await storage.getAnulacionesPendientes(tenantId);
+      
+      res.json({
+        total: pendientes.length,
+        anulaciones: pendientes
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener anulaciones pendientes" });
+    }
+  });
+
+  app.get("/api/anulaciones/historico", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+      
+      const historico = await storage.getHistoricoAnulaciones(tenantId, limit);
+      res.json({
+        total: historico.length,
+        anulaciones: historico
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener histórico de anulaciones" });
+    }
+  });
+
+  app.post("/api/anulaciones/procesar", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      console.log(`[API] Procesando anulaciones pendientes para tenant ${tenantId}...`);
+      
+      await mhService.procesarAnulacionesPendientes(tenantId);
+      
+      const pendientes = await storage.getAnulacionesPendientes(tenantId);
+      res.json({
+        success: true,
+        mensaje: "Anulaciones procesadas",
+        aunPendientes: pendientes.length
+      });
+    } catch (error) {
+      console.error("Error procesando anulaciones:", error);
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Error al procesar anulaciones"
+      });
+    }
+  });
+
+  // ============================================
   // REPORTES CONTABLES (Libro de Ventas / IVA)
   // ============================================
 
