@@ -1,7 +1,7 @@
 import { 
   type User, type InsertUser, type Factura, type InsertFactura, type Emisor, type Tenant,
   users, emisorTable, facturasTable, secuencialControlTable, tenants, facturaItemsTable,
-  tenantCredentials
+  tenantCredentials, receptoresTable
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import Database from "better-sqlite3";
@@ -32,6 +32,11 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUserRole(userId: string, role: string): Promise<void>;
   
+  // Clientes (Receptores)
+  getReceptores(tenantId: string): Promise<any[]>;
+  getReceptorByDoc(tenantId: string, numDocumento: string): Promise<any | undefined>;
+  upsertReceptor(tenantId: string, receptor: any): Promise<void>;
+
   // Emisor (Configuración por Tenant)
   getEmisor(tenantId: string): Promise<Emisor | undefined>;
   saveEmisor(tenantId: string, emisor: Emisor): Promise<Emisor>;
@@ -130,6 +135,47 @@ export class DatabaseStorage implements IStorage {
 
   async updateUserRole(userId: string, role: string): Promise<void> {
     await db.update(users).set({ role }).where(eq(users.id, userId));
+  }
+
+  async getReceptores(tenantId: string): Promise<any[]> {
+    return await db.select().from(receptoresTable).where(eq(receptoresTable.tenantId, tenantId)).orderBy(desc(receptoresTable.createdAt));
+  }
+
+  async getReceptorByDoc(tenantId: string, numDocumento: string): Promise<any | undefined> {
+    const [row] = await db.select().from(receptoresTable)
+      .where(and(eq(receptoresTable.tenantId, tenantId), eq(receptoresTable.numDocumento, numDocumento)));
+    return row;
+  }
+
+  async upsertReceptor(tenantId: string, r: any): Promise<void> {
+    const existing = await this.getReceptorByDoc(tenantId, r.numDocumento);
+    if (existing) {
+      await db.update(receptoresTable)
+        .set({
+          nombre: r.nombre,
+          tipoDocumento: r.tipoDocumento,
+          nrc: r.nrc || null,
+          codActividad: r.codActividad || null,
+          descActividad: r.descActividad || null,
+          direccion: r.direccion,
+          telefono: r.telefono || null,
+          correo: r.correo || null,
+        })
+        .where(eq(receptoresTable.id, existing.id));
+    } else {
+      await db.insert(receptoresTable).values({
+        tenantId,
+        tipoDocumento: r.tipoDocumento,
+        numDocumento: r.numDocumento,
+        nombre: r.nombre,
+        nrc: r.nrc || null,
+        codActividad: r.codActividad || null,
+        descActividad: r.descActividad || null,
+        direccion: r.direccion,
+        telefono: r.telefono || null,
+        correo: r.correo || null,
+      });
+    }
   }
 
   async getEmisor(tenantId: string): Promise<Emisor | undefined> {
@@ -302,6 +348,9 @@ export class SQLiteStorage implements IStorage {
   async getUserByUsername(u: string) { return undefined; }
   async createUser(u: any) { return u as any; }
   async updateUserRole(uId: string, r: string) {}
+  async getReceptores(t: string) { return []; }
+  async getReceptorByDoc(t: string, d: string) { return undefined; }
+  async upsertReceptor(t: string, r: any) {}
   async getEmisor(t: string) { return undefined; }
   async saveEmisor(t: string, e: any) { return e; }
   async getFacturas(t: string) { return []; }
@@ -327,6 +376,9 @@ export class MemStorage implements IStorage {
   async getUserByUsername(u: string) { return undefined; }
   async createUser(u: any) { return u; }
   async updateUserRole(uId: string, r: string) {}
+  async getReceptores(t: string) { return []; }
+  async getReceptorByDoc(t: string, d: string) { return undefined; }
+  async upsertReceptor(t: string, r: any) {}
   async getEmisor(t: string) { return undefined; }
   async saveEmisor(t: string, e: any) { return e; }
   async getFacturas(t: string) { return []; }

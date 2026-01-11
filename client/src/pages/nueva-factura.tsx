@@ -270,6 +270,43 @@ export default function NuevaFactura() {
     name: "items",
   });
 
+  // Autocompletar datos del receptor al ingresar número de documento
+  const watchedNumDoc = form.watch("receptor.numDocumento");
+  useEffect(() => {
+    const fetchReceptor = async () => {
+      if (watchedNumDoc && (watchedNumDoc.length >= 9)) { // Mínimo caracteres para buscar
+        try {
+          const response = await fetch(`/api/receptores/${watchedNumDoc}`);
+          if (response.ok) {
+            const data = await response.json();
+            // Solo autocompletar si los campos están vacíos para no sobreescribir accidentalmente
+            const currentNombre = form.getValues("receptor.nombre");
+            if (!currentNombre || currentNombre === "") {
+              form.setValue("receptor.nombre", data.nombre);
+              if (data.nrc) form.setValue("receptor.nrc", data.nrc);
+              if (data.telefono) form.setValue("receptor.telefono", data.telefono);
+              if (data.correo) form.setValue("receptor.correo", data.correo);
+              if (data.direccion) {
+                form.setValue("receptor.direccion.departamento", data.direccion.departamento);
+                form.setValue("receptor.direccion.municipio", data.direccion.municipio);
+                form.setValue("receptor.direccion.complemento", data.direccion.complemento);
+              }
+              toast({
+                title: "Cliente encontrado",
+                description: `Se han cargado los datos de ${data.nombre}`,
+              });
+            }
+          }
+        } catch (error) {
+          // Silencioso si no encuentra
+        }
+      }
+    };
+
+    const timer = setTimeout(fetchReceptor, 500); // Debounce de 500ms
+    return () => clearTimeout(timer);
+  }, [watchedNumDoc, form]);
+
   useEffect(() => {
     const duplicatedData = sessionStorage.getItem("duplicatedFactura");
     if (duplicatedData) {

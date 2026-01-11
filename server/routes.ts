@@ -80,6 +80,31 @@ export async function registerRoutes(
   });
 
   // ============================================
+  // ENDPOINTS DE CLIENTES (RECEPTORES)
+  // ============================================
+
+  app.get("/api/receptores", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const receptores = await storage.getReceptores(tenantId);
+      res.json(receptores);
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener clientes" });
+    }
+  });
+
+  app.get("/api/receptores/:doc", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const receptor = await storage.getReceptorByDoc(tenantId, req.params.doc);
+      if (!receptor) return res.status(404).json({ error: "Cliente no encontrado" });
+      res.json(receptor);
+    } catch (error) {
+      res.status(500).json({ error: "Error al buscar cliente" });
+    }
+  });
+
+  // ============================================
   // VALIDACIÓN DTE CONTRA SCHEMA DGII
   // ============================================
   app.post("/api/validar-dte", requireAuth, (req: Request, res: Response) => {
@@ -215,6 +240,12 @@ export async function registerRoutes(
       }
 
       const factura = await storage.createFactura(tenantId, facturaConNumero);
+      
+      // ✅ NUEVO: Guardar automáticamente al cliente en el catálogo
+      if (facturaConNumero.receptor) {
+        await storage.upsertReceptor(tenantId, facturaConNumero.receptor);
+      }
+
       res.status(201).json(factura);
     } catch (error) {
       console.error("Error creating factura:", error);

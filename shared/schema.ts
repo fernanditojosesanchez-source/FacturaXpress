@@ -44,6 +44,23 @@ export const emisorTable = pgTable("emisor", {
   data: jsonb("data").notNull(),
 });
 
+export const receptoresTable = pgTable("receptores", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: uuid("tenant_id").references(() => tenants.id),
+  tipoDocumento: text("tipo_documento").notNull(), // 36, 13, etc.
+  numDocumento: text("num_documento").notNull(),
+  nombre: text("nombre").notNull(),
+  nrc: text("nrc"),
+  codActividad: text("cod_actividad"),
+  descActividad: text("desc_actividad"),
+  direccion: jsonb("direccion").notNull(),
+  telefono: text("telefono"),
+  correo: text("correo"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (t) => ({
+  unq_doc: unique().on(t.tenantId, t.numDocumento),
+}));
+
 export const facturasTable = pgTable("facturas", {
   id: text("id").primaryKey(),
   tenantId: uuid("tenant_id").references(() => tenants.id),
