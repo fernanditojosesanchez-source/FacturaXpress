@@ -43,7 +43,7 @@ describe("Flujo Completo de Factura", () => {
       tipoMoneda: "USD",
       emisor: {
         nit: "00123456789012-0",
-        nrc: "123456-7",
+        nrc: "123456", // Corregido: solo dígitos sin guión
         nombre: "Mi Empresa",
         codActividad: "62010", // Corregido a 5 dígitos según estándar común
         descActividad: "Consultoria",
