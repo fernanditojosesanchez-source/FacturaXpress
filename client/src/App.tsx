@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { useGlobalLoadingIndicator } from "@/hooks/use-global-loading";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import NuevaFactura from "@/pages/nueva-factura";
@@ -397,6 +398,7 @@ function App() {
         <TooltipProvider>
           <AppContent />
           <Toaster />
+          <OfflineIndicator />
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
