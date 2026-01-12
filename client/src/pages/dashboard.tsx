@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Zap,
   User,
+  DollarSign,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -157,39 +158,9 @@ function SkeletonCard() {
 }
 
 export default function Dashboard() {
-  const { data: facturas, isLoading } = useQuery<Factura[]>({
-    queryKey: ["/api/facturas"],
+  const { data: stats, isLoading } = useQuery<any>({
+    queryKey: ["/api/stats/dashboard"],
   });
-
-  const stats = {
-    total: facturas?.length || 0,
-    hoy: facturas?.filter((f) => {
-      const today = new Date().toISOString().split("T")[0];
-      return f.fecEmi === today;
-    }).length || 0,
-    pendientes: facturas?.filter((f) => f.estado === "generada").length || 0,
-    selladas: facturas?.filter((f) => f.estado === "sellada").length || 0,
-  };
-
-  const totalVentas = facturas?.reduce((sum, f) => sum + f.resumen.totalPagar, 0) || 0;
-  const outstanding =
-    facturas?.filter((f) => f.estado === "generada").reduce((sum, f) => sum + f.resumen.totalPagar, 0) || 0;
-  
-  // Calcular métricas adicionales
-  const ventasPorCliente = facturas?.reduce((acc, f) => {
-    const cliente = f.receptor.nombre;
-    acc[cliente] = (acc[cliente] || 0) + f.resumen.totalPagar;
-    return acc;
-  }, {} as Record<string, number>) || {};
-  
-  const clientePrincipal = Object.entries(ventasPorCliente).sort((a, b) => b[1] - a[1])[0];
-  
-  const mesActual = new Date().toISOString().slice(0, 7);
-  const ventasEsteMes = facturas?.filter(f => f.fecEmi.startsWith(mesActual))
-    .reduce((sum, f) => sum + f.resumen.totalPagar, 0) || 0;
-  
-  const recentFacturas = facturas?.slice(0, 5) || [];
-  const isEmpty = recentFacturas.length === 0;
 
   if (isLoading) {
     return (
@@ -210,9 +181,13 @@ export default function Dashboard() {
     );
   }
 
+  const recentFacturas = stats?.recentInvoices || [];
+  const isEmpty = recentFacturas.length === 0;
+
   const heroStats = [
-    { title: "Ventas Totales", value: formatCurrency(totalVentas), description: "Este mes" },
-    { title: "Pendiente por transmitir", value: formatCurrency(outstanding), description: "Por enviar al MH" },
+    { title: "Ventas Totales", value: formatCurrency(stats?.totalVentas || 0), description: "Histórico" },
+    { title: "Ventas del Mes", value: formatCurrency(stats?.ventasEsteMes || 0), description: "Mes actual" },
+    { title: "Pendiente por transmitir", value: formatCurrency(stats?.outstanding || 0), description: "Por enviar al MH" },
   ];
 
   return (
@@ -234,7 +209,7 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      <AlertBanner pendientes={stats.pendientes} />
+      <AlertBanner pendientes={stats?.pendientes || 0} />
 
       <Accordion type="single" collapsible className="w-fit">
         <AccordionItem value="info-dte" className="border-none">
@@ -289,7 +264,7 @@ export default function Dashboard() {
           <div className="xl:col-span-2 animate-fade-in-up" style={{ animationDelay: '0s' }}>
             <StatCard
               title="Total Facturas"
-              value={stats.total}
+              value={stats?.totalInvoices || 0}
               description="Facturas emitidas"
               icon={FileText}
               index={0}
@@ -297,21 +272,21 @@ export default function Dashboard() {
           </div>
           <StatCard
             title="Ventas Este Mes"
-            value={formatCurrency(ventasEsteMes)}
+            value={formatCurrency(stats?.ventasEsteMes || 0)}
             description="Monto facturado en el mes actual"
             icon={TrendingUp}
             index={1}
           />
           <StatCard
-            title="Cliente Principal"
-            value={clientePrincipal ? clientePrincipal[0].substring(0, 15) : "N/A"}
-            description={clientePrincipal ? `Ventas: ${formatCurrency(clientePrincipal[1])}` : "Sin datos"}
-            icon={User}
+            title="Ventas Totales"
+            value={formatCurrency(stats?.totalVentas || 0)}
+            description="Histórico acumulado"
+            icon={DollarSign}
             index={2}
           />
           <StatCard
             title="Pendientes"
-            value={stats.pendientes}
+            value={stats?.pendientes || 0}
             description="Por transmitir a DGII"
             icon={Clock}
             index={3}
@@ -329,12 +304,12 @@ export default function Dashboard() {
                   <span className="font-semibold">100%</span>
                 </div>
                 <div className="flex justify-between items-center pb-3 border-b border-white/40">
-                  <span className="text-sm text-muted-foreground">Últimas 30 días</span>
-                  <span className="font-semibold">{stats.total} facturas</span>
+                  <span className="text-sm text-muted-foreground">Ventas Hoy</span>
+                  <span className="font-semibold">{stats?.hoy || 0} facturas</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Promedio por día</span>
-                  <span className="font-semibold">{Math.round(stats.total / 30)}</span>
+                  <span className="text-sm text-muted-foreground">Sello MH</span>
+                  <span className="font-semibold text-emerald-600">{stats?.selladas || 0} recibidos</span>
                 </div>
               </CardContent>
             </Card>
@@ -356,11 +331,11 @@ export default function Dashboard() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Hace</span>
-                  <span className="text-sm font-medium">2 horas</span>
+                  <span className="text-sm font-medium">En tiempo real</span>
                 </div>
                 <div className="flex items-center justify-between pt-2 border-t border-white/40">
                   <span className="text-sm text-muted-foreground">Sincronizadas</span>
-                  <span className="text-sm font-semibold">{stats.selladas}</span>
+                  <span className="text-sm font-semibold">{stats?.selladas || 0}</span>
                 </div>
               </CardContent>
             </Card>

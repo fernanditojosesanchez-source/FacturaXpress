@@ -277,9 +277,14 @@ export class DatabaseStorage implements IStorage {
   // ============================================
 
   async getCertificados(tenantId: string): Promise<Certificado[]> {
-    return await db.select().from(certificadosTable)
-      .where(eq(certificadosTable.tenantId, tenantId))
-      .orderBy(desc(certificadosTable.createdAt));
+    try {
+      return await db.select().from(certificadosTable)
+        .where(eq(certificadosTable.tenantId, tenantId))
+        .orderBy(desc(certificadosTable.createdAt));
+    } catch (error) {
+      console.error("Error in storage.getCertificados:", error);
+      throw error;
+    }
   }
 
   async getCertificado(id: string, tenantId: string): Promise<Certificado | undefined> {

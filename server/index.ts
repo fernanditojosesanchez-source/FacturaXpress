@@ -1,3 +1,4 @@
+// Restart: 2026-01-11 12:15
 import "dotenv/config";
 import dns from "node:dns";
 dns.setDefaultResultOrder("ipv4first");

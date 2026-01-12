@@ -1,13 +1,35 @@
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Receptor } from "@shared/schema";
 import { useToast } from "./use-toast";
 
-export function useClientes() {
-  const { toast } = useToast();
+interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
 
-  const query = useQuery<Receptor[]>({
-    queryKey: ["/api/receptores"],
+const EMPTY_ARRAY: any[] = [];
+
+export function useClientes(initialPage = 1, initialLimit = 25) {
+  const { toast } = useToast();
+  const [page, setPage] = useState(initialPage);
+  const [limit, setLimit] = useState(initialLimit);
+
+  const query = useQuery<PaginatedResponse<Receptor>>({
+    queryKey: ["/api/receptores", page, limit],
+    queryFn: async () => {
+      const res = await fetch(`/api/receptores?page=${page}&limit=${limit}`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Error fetching customers");
+      return res.json();
+    }
   });
 
   const createMutation = useMutation({
@@ -73,9 +95,14 @@ export function useClientes() {
   });
 
   return {
-    clientes: query.data ?? [],
+    clientes: query.data?.data ?? EMPTY_ARRAY,
+    pagination: query.data?.pagination ?? { page, limit, total: 0, pages: 0 },
     isLoading: query.isLoading,
     error: query.error,
+    page,
+    setPage,
+    limit,
+    setLimit,
     createCliente: createMutation.mutateAsync,
     updateCliente: updateMutation.mutateAsync,
     deleteCliente: deleteMutation.mutateAsync,

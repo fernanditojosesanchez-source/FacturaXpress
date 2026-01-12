@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { 
@@ -82,6 +82,7 @@ import { Switch } from "@/components/ui/switch";
 import { useProductos } from "@/hooks/use-productos";
 import { useCatalogos } from "@/hooks/use-catalogos";
 import { useAuth } from "@/hooks/use-auth";
+import { PaginationCustom } from "@/components/ui/pagination-custom";
 import { 
   insertProductoSchema, 
   type Producto, 
@@ -105,7 +106,11 @@ export default function ProductosPage() {
 
   const { 
     productos, 
+    pagination,
     isLoading, 
+    page,
+    setPage,
+    limit,
     createProducto, 
     updateProducto, 
     deleteProducto,
@@ -130,6 +135,13 @@ export default function ProductosPage() {
       activo: true,
     },
   });
+
+  // Efecto para resetear página cuando cambian los filtros (con protección)
+  useEffect(() => {
+    if (page !== 1) {
+      setPage(1);
+    }
+  }, [search, activoFilter, tipoItemFilter, page, setPage]);
 
   const filteredProductos = useMemo(() => {
     return productos.filter((p) => {
@@ -489,6 +501,15 @@ export default function ProductosPage() {
                   )}
                 </TableBody>
               </Table>
+              <div className="p-4 border-t">
+                <PaginationCustom
+                  currentPage={page}
+                  totalPages={pagination.pages}
+                  onPageChange={setPage}
+                  totalItems={pagination.total}
+                  itemsPerPage={limit}
+                />
+              </div>
             </div>
           )}
         </CardContent>

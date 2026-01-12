@@ -7,22 +7,8 @@ import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 import { mhService } from "./mh-service";
 import { generarFacturasPrueba, EMISOR_PRUEBA } from "./seed-data";
-import { 
-  registerAuthRoutes, 
-  requireAuth, 
-  requireTenantAdmin, 
-  requireManager,
-  requireApiKey
-} from "./auth";
-import { 
-  DEPARTAMENTOS_EL_SALVADOR,
-  TIPOS_DOCUMENTO,
-  TIPOS_DTE,
-  CONDICIONES_OPERACION,
-  FORMAS_PAGO,
-  TIPOS_ITEM,
-  UNIDADES_MEDIDA
-} from "./catalogs";
+import { requireAuth, requireTenantAdmin, requireManager, requireApiKey, registerAuthRoutes } from "./auth";
+import * as catalogs from "./catalogs";
 import { validateDTESchema } from "./dgii-validator";
 import { registerAdminRoutes } from "./routes/admin";
 import { facturaCreationRateLimiter, transmisionRateLimiter } from "./lib/rate-limiters";
@@ -55,48 +41,91 @@ export async function registerRoutes(
   // ============================================
 
   app.get("/api/catalogos/departamentos", (_req: Request, res: Response) => {
-    res.json(DEPARTAMENTOS_EL_SALVADOR);
+    try {
+      return res.json(catalogs.DEPARTAMENTOS_EL_SALVADOR || []);
+    } catch (error) {
+      return res.status(500).json({ message: "Error al cargar departamentos" });
+    }
   });
 
   app.get("/api/catalogos/tipos-documento", (_req: Request, res: Response) => {
-    res.json(TIPOS_DOCUMENTO);
+    return res.json(catalogs.TIPOS_DOCUMENTO || []);
   });
 
   app.get("/api/catalogos/tipos-dte", (_req: Request, res: Response) => {
-    res.json(TIPOS_DTE);
+    return res.json(catalogs.TIPOS_DTE || []);
   });
 
   app.get("/api/catalogos/condiciones-operacion", (_req: Request, res: Response) => {
-    res.json(CONDICIONES_OPERACION);
+    return res.json(catalogs.CONDICIONES_OPERACION || []);
   });
 
   app.get("/api/catalogos/formas-pago", (_req: Request, res: Response) => {
-    res.json(FORMAS_PAGO);
+    return res.json(catalogs.FORMAS_PAGO || []);
   });
 
   app.get("/api/catalogos/tipos-item", (_req: Request, res: Response) => {
-    res.json(TIPOS_ITEM);
+    return res.json(catalogs.TIPOS_ITEM || []);
   });
 
   app.get("/api/catalogos/unidades-medida", (_req: Request, res: Response) => {
-    res.json(UNIDADES_MEDIDA);
+    return res.json(catalogs.UNIDADES_MEDIDA || []);
   });
 
   app.get("/api/catalogos/all", (_req: Request, res: Response) => {
-    res.json({
-      departamentos: DEPARTAMENTOS_EL_SALVADOR,
-      tiposDocumento: TIPOS_DOCUMENTO,
-      tiposDte: TIPOS_DTE,
-      condicionesOperacion: CONDICIONES_OPERACION,
-      formasPago: FORMAS_PAGO,
-      tiposItem: TIPOS_ITEM,
-      unidadesMedida: UNIDADES_MEDIDA,
-    });
+    try {
+      return res.json({
+        departamentos: catalogs.DEPARTAMENTOS_EL_SALVADOR || [],
+        tiposDocumento: catalogs.TIPOS_DOCUMENTO || [],
+        tiposDte: catalogs.TIPOS_DTE || [],
+        condicionesOperacion: catalogs.CONDICIONES_OPERACION || [],
+        formasPago: catalogs.FORMAS_PAGO || [],
+        tiposItem: catalogs.TIPOS_ITEM || [],
+        unidadesMedida: catalogs.UNIDADES_MEDIDA || [],
+      });
+    } catch (error: any) {
+      console.error("Error en /api/catalogos/all:", error);
+      return res.status(500).json({ message: "Error al cargar catálogos", details: error.message });
+    }
   });
 
   // ============================================
-  // ENDPOINTS DE CLIENTES (RECEPTORES)
+  // ENDPOINTS DE ESTADÍSTICAS
   // ============================================
+
+  app.get("/api/stats/dashboard", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const facturas = await storage.getFacturas(tenantId);
+      
+      const today = new Date().toISOString().split("T")[0];
+      const mesActual = new Date().toISOString().slice(0, 7);
+      
+      const stats = {
+        totalInvoices: facturas.length,
+        hoy: facturas.filter(f => f.fecEmi === today).length,
+        pendientes: facturas.filter(f => f.estado === "generada").length,
+        selladas: facturas.filter(f => f.estado === "sellada").length,
+        totalVentas: facturas.reduce((sum, f) => sum + f.resumen.totalPagar, 0),
+        outstanding: facturas
+          .filter(f => f.estado === "generada")
+          .reduce((sum, f) => sum + f.resumen.totalPagar, 0),
+        ventasEsteMes: facturas
+          .filter(f => f.fecEmi.startsWith(mesActual))
+          .reduce((sum, f) => sum + f.resumen.totalPagar, 0),
+        recentInvoices: facturas.slice(0, 5)
+      };
+      
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener estadísticas" });
+    }
+  });
+
+  // ============================================
+  // ENDPOINTS DE RECEPTORES (Clientes)
+  // ============================================
+
 
   app.get("/api/receptores", requireAuth, async (req: Request, res: Response) => {
     try {
@@ -279,7 +308,11 @@ export async function registerRoutes(
       
       const offset = (page - 1) * limit;
       
-      const certificados = await storage.getCertificados(tenantId);
+      const certificados = await storage.getCertificados(tenantId) || [];
+      if (!Array.isArray(certificados)) {
+        throw new Error("El almacenamiento no devolvió un arreglo de certificados");
+      }
+      
       const total = certificados.length;
       const paginated = certificados.slice(offset, offset + limit);
       
@@ -292,8 +325,13 @@ export async function registerRoutes(
           pages: Math.ceil(total / limit),
         },
       });
-    } catch (error) {
-      res.status(500).json({ error: "Error al obtener certificados" });
+    } catch (error: any) {
+      console.error("Error en GET /api/certificados:", error);
+      res.status(500).json({ 
+        error: "Error al obtener certificados", 
+        details: error.message,
+        stack: process.env.NODE_ENV === "development" ? error.stack : undefined 
+      });
     }
   });
 
@@ -485,16 +523,29 @@ export async function registerRoutes(
   app.get("/api/facturas", requireAuth, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
+      const facturas = await storage.getFacturas(tenantId);
+      
+      // Si se solicita explícitamente sin paginación (ej: para reportes)
+      if (req.query.limit === "all") {
+        return res.json({
+          data: facturas,
+          pagination: {
+            page: 1,
+            limit: facturas.length,
+            total: facturas.length,
+            pages: 1,
+          },
+        });
+      }
+
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 25;
       
-      if (page < 1 || limit < 1 || limit > 100) {
+      if (page < 1 || limit < 1 || limit > 500) {
         return res.status(400).json({ error: "Parámetros de paginación inválidos" });
       }
       
       const offset = (page - 1) * limit;
-      
-      const facturas = await storage.getFacturas(tenantId);
       const total = facturas.length;
       const paginated = facturas.slice(offset, offset + limit);
       

@@ -64,59 +64,87 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
-      <Route path="/" component={() => (<Protected><Dashboard /></Protected>)} />
-      <Route path="/admin" component={() => (
+      
+      <Route path="/">
         <Protected>
-          <Suspense fallback={<PageLoader />}>
-            <SuperAdminPage />
-          </Suspense>
+          <Dashboard />
         </Protected>
-      )} />
-      <Route path="/factura/nueva" component={() => (<Protected><NuevaFactura /></Protected>)} />
-      <Route path="/notas" component={() => (
+      </Route>
+
+      <Route path="/factura/nueva">
         <Protected>
-          <Suspense fallback={<PageLoader />}>
-            <NotaCreditoDebito />
-          </Suspense>
+          <NuevaFactura />
         </Protected>
-      )} />
-      <Route path="/historial" component={() => (
+      </Route>
+
+      <Route path="/historial">
         <Protected>
           <Suspense fallback={<PageLoader />}>
             <Historial />
           </Suspense>
         </Protected>
-      )} />
-      <Route path="/productos" component={() => (
+      </Route>
+
+      <Route path="/notas">
+        <Protected>
+          <Suspense fallback={<PageLoader />}>
+            <NotaCreditoDebito />
+          </Suspense>
+        </Protected>
+      </Route>
+
+      <Route path="/productos">
         <Protected>
           <Suspense fallback={<PageLoader />}>
             <ProductosPage />
           </Suspense>
         </Protected>
-      )} />
-      <Route path="/clientes" component={() => (
+      </Route>
+
+      <Route path="/clientes">
         <Protected>
           <Suspense fallback={<PageLoader />}>
             <ClientesPage />
           </Suspense>
         </Protected>
-      )} />
-      <Route path="/reportes" component={() => (
+      </Route>
+
+      <Route path="/reportes">
         <Protected>
           <Suspense fallback={<PageLoader />}>
             <Reportes />
           </Suspense>
         </Protected>
-      )} />
-      <Route path="/emisor" component={() => (<Protected><Emisor /></Protected>)} />
-      <Route path="/configuracion" component={() => (<Protected><Configuracion /></Protected>)} />
-      <Route path="/certificados" component={() => (
+      </Route>
+
+      <Route path="/emisor">
+        <Protected>
+          <Emisor />
+        </Protected>
+      </Route>
+
+      <Route path="/configuracion">
+        <Protected>
+          <Configuracion />
+        </Protected>
+      </Route>
+
+      <Route path="/certificados">
         <Protected>
           <Suspense fallback={<PageLoader />}>
             <CertificadosPage />
           </Suspense>
         </Protected>
-      )} />
+      </Route>
+
+      <Route path="/super-admin">
+        <Protected>
+          <Suspense fallback={<PageLoader />}>
+            <SuperAdminPage />
+          </Suspense>
+        </Protected>
+      </Route>
+      
       <Route component={NotFound} />
     </Switch>
   );
@@ -125,67 +153,38 @@ function Router() {
 function AppContent() {
   const { user, logout, isLoading: authLoading } = useAuth();
   const { theme } = useTheme();
-  
-  // No renderizar nada mientras se verifica autenticación
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Skeleton className="h-12 w-48" />
-      </div>
-    );
-  }
-
-  // Si no hay usuario autenticado, renderizar login
-  if (!user) {
-    return <Login />;
-  }
-  
-  // Lógica de filtrado de roles aplicada directamente al Header
-  const navItems = useMemo(() => {
-    const role = user?.role || "cashier"; // Fallback seguro
-    
-    const allItems = [
-      { label: "Dashboard", href: "/", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
-      { label: "Facturas", href: "/factura/nueva", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
-      { label: "Historial", href: "/historial", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
-      { label: "Clientes", href: "/clientes", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
-      { label: "Productos", href: "/productos", roles: ["super_admin", "tenant_admin", "manager"] },
-      { label: "Notas", href: "/notas", roles: ["super_admin", "tenant_admin", "manager"] }, 
-      { label: "Reportes", href: "/reportes", roles: ["super_admin", "tenant_admin", "manager"] },
-      { label: "Certificados", href: "/certificados", roles: ["super_admin", "tenant_admin"] },
-      { label: "Configuración", href: "/configuracion", roles: ["super_admin", "tenant_admin"] },
-    ];
-
-    const filtered = allItems.filter(item => item.roles.includes(role));
-
-    if (role === "super_admin") {
-      filtered.unshift({ label: "Admin SaaS", href: "/admin", roles: ["super_admin"] });
-    }
-
-    return filtered;
-  }, [user]);
-
   const [location, navigate] = useLocation();
 
+  // Consultas deben declararse SIEMPRE; controlar con `enabled`
   const { data: facturasResponse } = useQuery<any>({
     queryKey: ["/api/facturas"],
-    enabled: !!user,
+    queryFn: async () => {
+      const res = await fetch("/api/facturas?limit=25", { credentials: "include" });
+      if (!res.ok) throw new Error("Error fetching facturas for app state");
+      return res.json();
+    },
+    enabled: !authLoading && !!user,
+    staleTime: 30000, // Evitar re-fetch constantes
   });
-
-  // Extraer array de facturas de la respuesta paginada
-  const facturas = facturasResponse?.data || [];
 
   const { data: emisor } = useQuery<any>({
     queryKey: ["/api/emisor"],
-    enabled: !!user,
+    enabled: !authLoading && !!user,
   });
 
-  const facturasTotal = Array.isArray(facturas) ? facturas.length : 0;
-  const facturasPendientes = Array.isArray(facturas) ? facturas.filter(
-    (f) => f.estado === "generada" && !f.selloRecibido
-  ).length : 0;
+  // Extraer array de facturas de forma estable
+  const facturas = useMemo(() => 
+    Array.isArray(facturasResponse?.data) ? facturasResponse.data : [],
+    [facturasResponse?.data]
+  );
 
-  // Barra de progreso global
+  const facturasTotal = facturasResponse?.pagination?.total ?? facturas.length;
+  const facturasPendientes = useMemo(() => 
+    facturas.filter((f: any) => f.estado === "generada" && !f.selloRecibido).length,
+    [facturas]
+  );
+
+  // Barra de progreso global (siempre declarada)
   useGlobalLoadingIndicator();
 
   // Atajos de teclado globales
@@ -221,6 +220,44 @@ function AppContent() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [navigate]);
+
+  // Lógica de filtrado de roles aplicada directamente al Header
+  const navItems = useMemo(() => {
+    const role = user?.role || "cashier"; // Fallback seguro
+
+    const allItems = [
+      { label: "Dashboard", href: "/", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
+      { label: "Facturas", href: "/factura/nueva", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
+      { label: "Historial", href: "/historial", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
+      { label: "Clientes", href: "/clientes", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
+      { label: "Productos", href: "/productos", roles: ["super_admin", "tenant_admin", "manager"] },
+      { label: "Notas", href: "/notas", roles: ["super_admin", "tenant_admin", "manager"] },
+      { label: "Reportes", href: "/reportes", roles: ["super_admin", "tenant_admin", "manager"] },
+      { label: "Certificados", href: "/certificados", roles: ["super_admin", "tenant_admin"] },
+      { label: "Configuración", href: "/configuracion", roles: ["super_admin", "tenant_admin"] },
+    ];
+
+    const filtered = allItems.filter((item) => item.roles.includes(role));
+
+    if (role === "super_admin") {
+      filtered.unshift({ label: "Admin SaaS", href: "/admin", roles: ["super_admin"] });
+    }
+
+    return filtered;
+  }, [user]);
+
+  // Early-returns DESPUÉS de declarar todos los hooks
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Skeleton className="h-12 w-48" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login />;
+  }
 
   // Determinar el fondo según el tema
   const bgClass = theme === 'dark' 

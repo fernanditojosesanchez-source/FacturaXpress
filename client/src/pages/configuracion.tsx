@@ -39,9 +39,13 @@ export default function Configuracion() {
     refetchInterval: 30000,
   });
 
-  const { data: facturas } = useQuery<any[]>({
+  const { data: facturasResponse } = useQuery<any>({
     queryKey: ["/api/facturas"],
   });
+
+  const facturas: any[] = Array.isArray(facturasResponse?.data)
+    ? facturasResponse.data
+    : [];
 
   const { data: emisor } = useQuery<Emisor>({
     queryKey: ["/api/emisor"],
@@ -426,7 +430,7 @@ export default function Configuracion() {
                 </div>
               </div>
               <Badge variant="outline">
-                 <span className="text-[#3d2f28] font-semibold">{facturas?.length || 0}</span> facturas
+                 <span className="text-[#3d2f28] font-semibold">{facturasResponse?.pagination?.total ?? (Array.isArray(facturas) ? facturas.length : 0)}</span> facturas
               </Badge>
             </div>
           </CardHeader>
@@ -463,7 +467,7 @@ export default function Configuracion() {
                 <Button
                   variant="destructive"
                   onClick={() => setShowClearDialog(true)}
-                  disabled={limpiarDatosMutation.isPending || !facturas?.length}
+                  disabled={limpiarDatosMutation.isPending || (facturasResponse?.pagination?.total === 0)}
                                     className="hover:bg-red-600 transition-all duration-200"
                   size="default"
                 >
@@ -588,10 +592,10 @@ export default function Configuracion() {
       <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar todas las facturas?</AlertDialogTitle>
+            <AlertDialogTitle>¿Estás completamente seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción eliminará permanentemente todas las facturas ({facturas?.length || 0} en total).
-              Esta operación no se puede deshacer.
+              Esta acción eliminará permanentemente todas las facturas ({facturasResponse?.pagination?.total ?? (Array.isArray(facturas) ? facturas.length : 0)} en total). 
+              Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

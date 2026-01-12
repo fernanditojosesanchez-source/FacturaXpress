@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -80,19 +80,33 @@ export default function NotaCreditoDebito() {
   const [searchTerm, setSearchTerm] = useState("");
   const [correlativo, setCorrelativo] = useState(1);
 
-  const { data: facturas } = useQuery<Factura[]>({
-    queryKey: ["/api/facturas"],
+  const { data: facturasResponse } = useQuery<any>({
+    queryKey: ["/api/facturas", "all"],
+    queryFn: async () => {
+      const res = await fetch("/api/facturas?limit=all", {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Error fetching all invoices");
+      return res.json();
+    }
   });
+
+  const facturas: Factura[] = useMemo(() => 
+    Array.isArray(facturasResponse?.data) ? (facturasResponse.data as Factura[]) : [],
+    [facturasResponse?.data]
+  );
 
   const { data: emisor } = useQuery<Emisor>({
     queryKey: ["/api/emisor"],
   });
 
   useEffect(() => {
-    if (facturas) {
-      setCorrelativo(facturas.length + 1);
+    const total = facturasResponse?.pagination?.total ?? facturas.length;
+    const nextCorrelativo = total + 1;
+    if (correlativo !== nextCorrelativo) {
+      setCorrelativo(nextCorrelativo);
     }
-  }, [facturas]);
+  }, [facturas.length, facturasResponse?.pagination?.total, correlativo]);
 
   const form = useForm<NotaFormData>({
     resolver: zodResolver(notaFormSchema),
@@ -111,13 +125,15 @@ export default function NotaCreditoDebito() {
   const errorCount = countErrors(form.formState.errors);
   const hasErrors = errorCount > 0;
 
-  const facturasElegibles = facturas?.filter(
-    (f) =>
-      (f.estado === "generada" || f.estado === "sellada") &&
-      (f.tipoDte === "01" || f.tipoDte === "03") &&
-      (f.receptor.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        f.numeroControl.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const facturasElegibles = Array.isArray(facturas)
+    ? facturas.filter(
+        (f) =>
+          (f.estado === "generada" || f.estado === "sellada") &&
+          (f.tipoDte === "01" || f.tipoDte === "03") &&
+          (f.receptor.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            f.numeroControl.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+    : [];
 
   const createNotaMutation = useMutation({
     mutationFn: async (data: NotaFormData) => {

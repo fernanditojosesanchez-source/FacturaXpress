@@ -84,9 +84,20 @@ export default function Reportes() {
   const [selectedMonth, setSelectedMonth] = useState((currentMonth + 1).toString().padStart(2, "0"));
 
   // Query general para gráficos (Client-side aggregation)
-  const { data: facturas, isLoading: isLoadingFacturas } = useQuery<Factura[]>({
-    queryKey: ["/api/facturas"],
+  const { data: facturasResponse, isLoading: isLoadingFacturas } = useQuery<any>({
+    queryKey: ["/api/facturas", "all"],
+    queryFn: async () => {
+      const res = await fetch("/api/facturas?limit=all", {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Error fetching all invoices for reports");
+      return res.json();
+    }
   });
+
+  const facturas: Factura[] = Array.isArray(facturasResponse?.data)
+    ? (facturasResponse.data as Factura[])
+    : [];
 
   // Query específica para el Libro de IVA (Server-side aggregation)
   const { data: reporteIva, isLoading: isLoadingIva } = useQuery<IvaReporte>({
@@ -99,7 +110,7 @@ export default function Reportes() {
   });
 
   const stats = useMemo(() => {
-    if (!facturas) return null;
+    if (!facturas || !Array.isArray(facturas)) return null;
 
     const validFacturas = facturas.filter((f) => f.estado !== "anulada");
     

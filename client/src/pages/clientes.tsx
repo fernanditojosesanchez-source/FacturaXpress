@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { 
@@ -81,6 +81,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { useClientes } from "@/hooks/use-clientes";
 import { useCatalogos } from "@/hooks/use-catalogos";
+import { PaginationCustom } from "@/components/ui/pagination-custom";
 import { useAuth } from "@/hooks/use-auth";
 import { receptorSchema, type Receptor, TIPOS_DOCUMENTO, DEPARTAMENTOS_EL_SALVADOR } from "@shared/schema";
 import { z } from "zod";
@@ -100,7 +101,11 @@ export default function ClientesPage() {
 
   const { 
     clientes, 
+    pagination,
     isLoading,
+    page,
+    setPage,
+    limit,
     createCliente,
     updateCliente, 
     deleteCliente,
@@ -108,6 +113,13 @@ export default function ClientesPage() {
     isUpdating,
     isDeleting
   } = useClientes();
+
+  // Resetear página al filtrar (con protección)
+  useEffect(() => {
+    if (page !== 1) {
+      setPage(1);
+    }
+  }, [search, tipoDocFilter, page, setPage]);
   
   const { data: catalogos } = useCatalogos();
   const tiposDocumento = catalogos?.tiposDocumento ?? TIPOS_DOCUMENTO;
@@ -445,6 +457,15 @@ export default function ClientesPage() {
                   )}
                 </TableBody>
               </Table>
+              <div className="p-4 border-t">
+                <PaginationCustom
+                  currentPage={page}
+                  totalPages={pagination.pages}
+                  onPageChange={setPage}
+                  totalItems={pagination.total}
+                  itemsPerPage={limit}
+                />
+              </div>
             </div>
           )}
         </CardContent>

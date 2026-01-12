@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import {
@@ -65,12 +65,14 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useFacturas } from "@/hooks/use-facturas";
+import { PaginationCustom } from "@/components/ui/pagination-custom";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import type { Factura } from "@shared/schema";
+import { TIPOS_DTE } from "@shared/schema";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { AnularDTEDialog } from "@/components/anular-dte-dialog";
 import { AnulacionesList } from "@/components/anulaciones-list";
-import type { Factura } from "@shared/schema";
-import { TIPOS_DTE } from "@shared/schema";
 
 const statusConfig = {
   borrador: { label: "Borrador", variant: "secondary" as const },
@@ -118,30 +120,44 @@ export default function Historial() {
     tipoDte: "all",
   });
 
-  const { data: facturas, isLoading } = useQuery<Factura[]>({
-    queryKey: ["/api/facturas"],
-  });
+  const { 
+    facturas, 
+    pagination, 
+    isLoading, 
+    page, 
+    setPage, 
+    limit,
+    deleteFactura: deleteFacturaAction,
+    isDeleting
+  } = useFacturas();
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await apiRequest("DELETE", `/api/facturas/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/facturas"] });
-      toast({
-        title: "Factura eliminada",
-        description: "La factura ha sido eliminada correctamente",
-      });
+  // Resetear página al filtrar (con protección y dependencias primitivas)
+  useEffect(() => {
+    if (page !== 1) {
+      setPage(1);
+    }
+  }, [
+    search, 
+    statusFilter, 
+    advancedFilters.dateFrom, 
+    advancedFilters.dateTo, 
+    advancedFilters.minAmount, 
+    advancedFilters.maxAmount, 
+    advancedFilters.tipoDte, 
+    page, 
+    setPage
+  ]);
+
+  const confirmDelete = async () => {
+    if (!deleteFactura?.id) return;
+    try {
+      await deleteFacturaAction(deleteFactura.id);
       setDeleteFactura(null);
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "No se pudo eliminar la factura",
-        variant: "destructive",
-      });
-    },
-  });
+    } catch (error) {
+      // Error is handled by hook
+    }
+  };
+
 
   // Mutation para transmitir al MH
   const transmitirMutation = useMutation({
@@ -798,6 +814,15 @@ export default function Historial() {
                   })}
                 </TableBody>
               </Table>
+              <div className="p-4 border-t">
+                <PaginationCustom
+                  currentPage={page}
+                  totalPages={pagination.pages}
+                  onPageChange={setPage}
+                  totalItems={pagination.total}
+                  itemsPerPage={limit}
+                />
+              </div>
             </div>
           )}
         </CardContent>
@@ -896,11 +921,12 @@ export default function Historial() {
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="button-cancel-delete">Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteFactura && deleteMutation.mutate(deleteFactura.id!)}
+              onClick={confirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               data-testid="button-confirm-delete"
+              disabled={isDeleting}
             >
-              {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
+              {isDeleting ? "Eliminando..." : "Eliminar"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

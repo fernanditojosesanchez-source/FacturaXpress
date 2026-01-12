@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -295,9 +295,14 @@ export default function NuevaFactura() {
     queryKey: ["/api/emisor"],
   });
 
-  const { data: facturas } = useQuery<Factura[]>({
+  const { data: facturasResponse } = useQuery<any>({
     queryKey: ["/api/facturas"],
   });
+
+  const facturas: Factura[] = useMemo(() => 
+    Array.isArray(facturasResponse?.data) ? (facturasResponse.data as Factura[]) : [],
+    [facturasResponse?.data]
+  );
 
   const tiposDteOptions = catalogos?.tiposDte ?? TIPOS_DTE;
   const tiposDocumentoOptions = catalogos?.tiposDocumento ?? TIPOS_DOCUMENTO;
@@ -309,10 +314,12 @@ export default function NuevaFactura() {
   const defaultUniMedida = unidadesMedidaOptions[0]?.codigo ?? 20;
 
   useEffect(() => {
-    if (facturas) {
-      setCorrelativo(facturas.length + 1);
+    const total = facturasResponse?.pagination?.total ?? facturas.length;
+    const nextCorrelativo = total + 1;
+    if (correlativo !== nextCorrelativo) {
+      setCorrelativo(nextCorrelativo);
     }
-  }, [facturas]);
+  }, [facturas.length, facturasResponse?.pagination?.total, correlativo]);
 
   const form = useForm<FacturaFormData>({
     resolver: zodResolver(facturaFormSchema),

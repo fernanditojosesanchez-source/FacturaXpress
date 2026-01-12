@@ -42,7 +42,7 @@ export function useCertificados() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: certificados = [], isLoading, isError } = useQuery({
+  const { data: response, isLoading, isError } = useQuery({
     queryKey: ["certificados"],
     queryFn: async () => {
       return await apiRequest("GET", "/api/certificados");
@@ -52,6 +52,8 @@ export function useCertificados() {
     refetchOnWindowFocus: false, // No refetch al cambiar pestaña
     refetchOnReconnect: true,  // Refetch al reconectar
   });
+
+  const certificados = Array.isArray(response?.data) ? response.data : (Array.isArray(response) ? response : []);
 
   const createMutation = useMutation({
     mutationFn: async (data: CreateCertificadoData) => {
