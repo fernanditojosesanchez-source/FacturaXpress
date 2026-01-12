@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, Suspense, lazy } from "react";
 import { Switch, Route, Link, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
@@ -11,13 +11,8 @@ import { useGlobalLoadingIndicator } from "@/hooks/use-global-loading";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import NuevaFactura from "@/pages/nueva-factura";
-import Historial from "@/pages/historial";
 import Emisor from "@/pages/emisor";
 import Configuracion from "@/pages/configuracion";
-import NotaCreditoDebito from "@/pages/nota-credito-debito";
-import Reportes from "@/pages/reportes";
-import ProductosPage from "@/pages/productos";
-import ClientesPage from "@/pages/clientes";
 import { cn } from "@/lib/utils";
 import { User, FileText, Package, Users } from "lucide-react";
 import type { Factura } from "@shared/schema";
@@ -25,8 +20,27 @@ import Login from "@/pages/login";
 import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
-import SuperAdminPage from "@/pages/super-admin";
+// Lazy loading para páginas pesadas
+const Historial = lazy(() => import("@/pages/historial"));
+const NotaCreditoDebito = lazy(() => import("@/pages/nota-credito-debito"));
+const Reportes = lazy(() => import("@/pages/reportes"));
+const ProductosPage = lazy(() => import("@/pages/productos"));
+const ClientesPage = lazy(() => import("@/pages/clientes"));
+const CertificadosPage = lazy(() => import("@/pages/certificados"));
+const SuperAdminPage = lazy(() => import("@/pages/super-admin"));
+
+// Componente skeleton para loading
+function PageLoader() {
+  return (
+    <div className="space-y-4 p-8">
+      <Skeleton className="h-12 w-1/3" />
+      <Skeleton className="h-40 w-full" />
+      <Skeleton className="h-40 w-full" />
+    </div>
+  );
+}
 
 function Protected({ children }: { children: JSX.Element }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -50,15 +64,58 @@ function Router() {
     <Switch>
       <Route path="/login" component={Login} />
       <Route path="/" component={() => (<Protected><Dashboard /></Protected>)} />
-      <Route path="/admin" component={() => (<Protected><SuperAdminPage /></Protected>)} />
+      <Route path="/admin" component={() => (
+        <Protected>
+          <Suspense fallback={<PageLoader />}>
+            <SuperAdminPage />
+          </Suspense>
+        </Protected>
+      )} />
       <Route path="/factura/nueva" component={() => (<Protected><NuevaFactura /></Protected>)} />
-      <Route path="/notas" component={() => (<Protected><NotaCreditoDebito /></Protected>)} />
-      <Route path="/historial" component={() => (<Protected><Historial /></Protected>)} />
-      <Route path="/productos" component={() => (<Protected><ProductosPage /></Protected>)} />
-      <Route path="/clientes" component={() => (<Protected><ClientesPage /></Protected>)} />
-      <Route path="/reportes" component={() => (<Protected><Reportes /></Protected>)} />
+      <Route path="/notas" component={() => (
+        <Protected>
+          <Suspense fallback={<PageLoader />}>
+            <NotaCreditoDebito />
+          </Suspense>
+        </Protected>
+      )} />
+      <Route path="/historial" component={() => (
+        <Protected>
+          <Suspense fallback={<PageLoader />}>
+            <Historial />
+          </Suspense>
+        </Protected>
+      )} />
+      <Route path="/productos" component={() => (
+        <Protected>
+          <Suspense fallback={<PageLoader />}>
+            <ProductosPage />
+          </Suspense>
+        </Protected>
+      )} />
+      <Route path="/clientes" component={() => (
+        <Protected>
+          <Suspense fallback={<PageLoader />}>
+            <ClientesPage />
+          </Suspense>
+        </Protected>
+      )} />
+      <Route path="/reportes" component={() => (
+        <Protected>
+          <Suspense fallback={<PageLoader />}>
+            <Reportes />
+          </Suspense>
+        </Protected>
+      )} />
       <Route path="/emisor" component={() => (<Protected><Emisor /></Protected>)} />
       <Route path="/configuracion" component={() => (<Protected><Configuracion /></Protected>)} />
+      <Route path="/certificados" component={() => (
+        <Protected>
+          <Suspense fallback={<PageLoader />}>
+            <CertificadosPage />
+          </Suspense>
+        </Protected>
+      )} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -80,6 +137,7 @@ function AppContent() {
       { label: "Productos", href: "/productos", roles: ["super_admin", "tenant_admin", "manager"] },
       { label: "Notas", href: "/notas", roles: ["super_admin", "tenant_admin", "manager"] }, 
       { label: "Reportes", href: "/reportes", roles: ["super_admin", "tenant_admin", "manager"] },
+      { label: "Certificados", href: "/certificados", roles: ["super_admin", "tenant_admin"] },
       { label: "Configuración", href: "/configuracion", roles: ["super_admin", "tenant_admin"] },
     ];
 

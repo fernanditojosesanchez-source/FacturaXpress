@@ -47,7 +47,10 @@ export function useCertificados() {
     queryFn: async () => {
       return await apiRequest("GET", "/api/certificados");
     },
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 60 * 10, // 10 minutos (más que antes)
+    gcTime: 1000 * 60 * 15,    // Mantener en caché 15 minutos
+    refetchOnWindowFocus: false, // No refetch al cambiar pestaña
+    refetchOnReconnect: "stale",  // Solo refetch si está stale
   });
 
   const createMutation = useMutation({
@@ -99,6 +102,12 @@ export function useCertificados() {
     mutationFn: async (id: string) => {
       return await apiRequest("DELETE", `/api/certificados/${id}`);
     },
+    onMutate: (id: string) => {
+      // Optimistic update: remover del caché antes de respuesta del servidor
+      queryClient.setQueryData(["certificados"], (old: Certificado[]) =>
+        old.filter(c => c.id !== id)
+      );
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["certificados"] });
       toast({
@@ -107,6 +116,7 @@ export function useCertificados() {
       });
     },
     onError: (error: Error) => {
+      queryClient.invalidateQueries({ queryKey: ["certificados"] }); // Revertir optimistic update
       toast({
         title: "Error",
         description: error.message,
@@ -147,6 +157,16 @@ export function useCertificados() {
     mutationFn: async (id: string) => {
       return await apiRequest("POST", `/api/certificados/${id}/activar`);
     },
+    onMutate: (id: string) => {
+      // Optimistic update: cambiar estado de certificados sin esperar servidor
+      queryClient.setQueryData(["certificados"], (old: Certificado[]) =>
+        old.map(c => 
+          c.id === id 
+            ? { ...c, activo: true, estado: "activo" } 
+            : { ...c, activo: false }
+        )
+      );
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["certificados"] });
       toast({
@@ -155,6 +175,7 @@ export function useCertificados() {
       });
     },
     onError: (error: Error) => {
+      queryClient.invalidateQueries({ queryKey: ["certificados"] }); // Revertir optimistic update
       toast({
         title: "Error",
         description: error.message,

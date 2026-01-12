@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { FixedSizeList as List } from "react-window";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { 
@@ -378,7 +379,8 @@ export default function CertificadosPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredCertificados.map((cert) => {
+                    // Mostrar máximo 50 filas (si hay más, agregar paginación después)
+                    filteredCertificados.slice(0, 50).map((cert) => {
                       const IconEstado = estadoIcons[cert.estado] || Clock;
                       const diasFalta = cert.diasParaExpiracion || 0;
                       const alertaProxima = diasFalta > 0 && diasFalta <= 30;
@@ -506,6 +508,12 @@ export default function CertificadosPage() {
                   )}
                 </TableBody>
               </Table>
+            </div>
+          )}
+          {filteredCertificados.length > 50 && (
+            <div className="mt-4 flex items-center gap-2 rounded-md bg-amber-50 p-3 text-sm text-amber-800">
+              <AlertTriangle className="h-4 w-4" />
+              <span>Mostrando 50 de {filteredCertificados.length} certificados. Usa los filtros para refinar.</span>
             </div>
           )}
         </CardContent>

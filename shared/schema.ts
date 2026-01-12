@@ -56,6 +56,10 @@ export const certificadosTable = pgTable("certificados", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (t) => ({
   unq_huella: unique().on(t.tenantId, t.huella),
+  idx_tenantId: index("idx_certificados_tenantId").on(t.tenantId),
+  idx_estado: index("idx_certificados_estado").on(t.estado),
+  idx_activo: index("idx_certificados_activo").on(t.activo),
+  idx_tenant_activo: index("idx_certificados_tenant_activo").on(t.tenantId, t.activo),
 }));
 
 // --- TABLAS DE NEGOCIO ACTUALIZADAS ---
@@ -113,6 +117,9 @@ export const receptoresTable = pgTable("receptores", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (t) => ({
   unq_doc: unique().on(t.tenantId, t.numDocumento),
+  idx_tenantId: index("idx_receptores_tenantId").on(t.tenantId),
+  idx_numDocumento: index("idx_receptores_numDocumento").on(t.numDocumento),
+  idx_tenant_numDoc: index("idx_receptores_tenant_numDoc").on(t.tenantId, t.numDocumento),
 }));
 
 export const facturasTable = pgTable("facturas", {
@@ -125,7 +132,12 @@ export const facturasTable = pgTable("facturas", {
   estado: text("estado").notNull().default("borrador"), // borrador, generada, transmitida, sellada, anulada
   codigoGeneracion: text("codigo_generacion").unique(),
   selloRecibido: text("sello_recibido"),
-});
+}, (t) => ({
+  idx_tenantId: index("idx_facturas_tenantId").on(t.tenantId),
+  idx_estado: index("idx_facturas_estado").on(t.estado),
+  idx_fecEmi: index("idx_facturas_fecEmi").on(t.fecEmi),
+  idx_tenant_estado: index("idx_facturas_tenant_estado").on(t.tenantId, t.estado),
+}));
 
 // --- COLA DE CONTINGENCIA (Para DTEs cuando MH está caído) ---
 
@@ -217,7 +229,12 @@ export const productosTable = pgTable("productos", {
   activo: boolean("activo").default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+}, (t) => ({
+  idx_tenantId: index("idx_productos_tenantId").on(t.tenantId),
+  idx_codigo: index("idx_productos_codigo").on(t.codigo),
+  idx_activo: index("idx_productos_activo").on(t.activo),
+  idx_tenant_activo: index("idx_productos_tenant_activo").on(t.tenantId, t.activo),
+}));
 
 // --- CATÁLOGOS GLOBALES ---
 
