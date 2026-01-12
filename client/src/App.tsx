@@ -123,8 +123,22 @@ function Router() {
 }
 
 function AppContent() {
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading: authLoading } = useAuth();
   const { theme } = useTheme();
+  
+  // No renderizar nada mientras se verifica autenticación
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Skeleton className="h-12 w-48" />
+      </div>
+    );
+  }
+
+  // Si no hay usuario autenticado, renderizar login
+  if (!user) {
+    return <Login />;
+  }
   
   // Lógica de filtrado de roles aplicada directamente al Header
   const navItems = useMemo(() => {
@@ -153,20 +167,23 @@ function AppContent() {
 
   const [location, navigate] = useLocation();
 
-  const { data: facturas } = useQuery<Factura[]> ({
+  const { data: facturasResponse } = useQuery<any>({
     queryKey: ["/api/facturas"],
     enabled: !!user,
   });
+
+  // Extraer array de facturas de la respuesta paginada
+  const facturas = facturasResponse?.data || [];
 
   const { data: emisor } = useQuery<any>({
     queryKey: ["/api/emisor"],
     enabled: !!user,
   });
 
-  const facturasTotal = facturas?.length || 0;
-  const facturasPendientes = facturas?.filter(
+  const facturasTotal = Array.isArray(facturas) ? facturas.length : 0;
+  const facturasPendientes = Array.isArray(facturas) ? facturas.filter(
     (f) => f.estado === "generada" && !f.selloRecibido
-  ).length || 0;
+  ).length : 0;
 
   // Barra de progreso global
   useGlobalLoadingIndicator();
