@@ -78,13 +78,6 @@ import {
 import {
   Check,
   ChevronsUpDown,
-  Plus,
-  Trash2,
-  FileJson,
-  FileDown,
-  Save,
-  Eye,
-  ArrowLeft,
 } from "lucide-react";
 import {
   DEPARTAMENTOS_EL_SALVADOR,

@@ -66,7 +66,7 @@ export function useCertificadosPaginated() {
     staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 15,
     refetchOnWindowFocus: false,
-    refetchOnReconnect: "stale",
+    refetchOnReconnect: true,
   }) as { data: PaginatedResponse<Certificado> | undefined; isLoading: boolean; isError: boolean };
 
   const certificados = data?.data || [];

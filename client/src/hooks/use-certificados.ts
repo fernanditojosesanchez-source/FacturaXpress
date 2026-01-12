@@ -50,7 +50,7 @@ export function useCertificados() {
     staleTime: 1000 * 60 * 10, // 10 minutos (más que antes)
     gcTime: 1000 * 60 * 15,    // Mantener en caché 15 minutos
     refetchOnWindowFocus: false, // No refetch al cambiar pestaña
-    refetchOnReconnect: "stale",  // Solo refetch si está stale
+    refetchOnReconnect: true,  // Refetch al reconectar
   });
 
   const createMutation = useMutation({

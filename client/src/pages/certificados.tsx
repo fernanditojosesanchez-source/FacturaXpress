@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { FixedSizeList as List } from "react-window";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { 
@@ -386,7 +385,7 @@ export default function CertificadosPage() {
                     </TableRow>
                   ) : (
                     filteredCertificados.map((cert) => {
-                      const IconEstado = estadoIcons[cert.estado] || Clock;
+                      const IconEstado = cert.estado ? estadoIcons[cert.estado] || Clock : Clock;
                       const diasFalta = cert.diasParaExpiracion || 0;
                       const alertaProxima = diasFalta > 0 && diasFalta <= 30;
                       
@@ -414,7 +413,7 @@ export default function CertificadosPage() {
                                 </Badge>
                               )}
                               {!cert.activo && (
-                                <Badge variant="outline" className={estadoColors[cert.estado]}>
+                                <Badge variant="outline" className={cert.estado ? estadoColors[cert.estado] : ""}>
                                   <IconEstado className="h-3 w-3 mr-1" />
                                   {cert.estado}
                                 </Badge>
