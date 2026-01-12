@@ -29,6 +29,35 @@ export const tenantCredentials = pgTable("tenant_credentials", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// --- TABLA DE CERTIFICADOS DIGITALES ---
+
+export const certificadosTable = pgTable("certificados", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: uuid("tenant_id").references(() => tenants.id).notNull(),
+  nombre: text("nombre").notNull(), // Nombre amigable: "Certificado 2024", "Cert Principal", etc.
+  archivo: text("archivo").notNull(), // Contenido del P12 en base64 (encriptado)
+  huella: text("huella").notNull(), // Fingerprint/Huella del certificado para validación
+  algoritmo: text("algoritmo").default("RSA"), // RSA, ECDSA, etc.
+  emisor: text("emisor"), // Información del emisor del certificado
+  sujeto: text("sujeto"), // Información del sujeto (puede ser NIT)
+  validoDesde: timestamp("valido_desde"), // Fecha de inicio de validez
+  validoHasta: timestamp("valido_hasta"), // Fecha de expiración
+  diasParaExpiracion: integer("dias_para_expiracion"), // Calculado, para alertas
+  contrasena: text("contrasena_enc"), // Contraseña encriptada
+  estado: text("estado").default("pendiente"), // pendiente, validado, activo, expirado, revocado
+  activo: boolean("activo").default(false), // Si es el certificado activo/principal
+  esProductivo: boolean("es_productivo").default(false), // Si es para ambiente productivo o pruebas
+  certificadoValido: boolean("certificado_valido").default(false), // Validado correctamente
+  ultimaValidacion: timestamp("ultima_validacion"),
+  erroresValidacion: jsonb("errores_validacion"), // { "error1": "descripción", ... }
+  urlDescarga: text("url_descarga"), // URL temporal para descargar (si aplica)
+  creadoPor: varchar("creado_por").references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (t) => ({
+  unq_huella: unique().on(t.tenantId, t.huella),
+}));
+
 // --- TABLAS DE NEGOCIO ACTUALIZADAS ---
 
 export const users = pgTable("users", {
@@ -384,6 +413,43 @@ export const productoSchema = z.object({
 export const insertProductoSchema = productoSchema.omit({ id: true, tenantId: true, createdAt: true, updatedAt: true });
 export type Producto = typeof productosTable.$inferSelect;
 export type InsertProducto = z.infer<typeof insertProductoSchema>;
+
+// --- CERTIFICADOS ---
+export const certificadoSchema = z.object({
+  id: z.string().optional(),
+  tenantId: z.string().optional(),
+  nombre: z.string().min(1, "Nombre es requerido"),
+  archivo: z.string().min(1, "Archivo es requerido"),
+  huella: z.string().min(1, "Huella del certificado es requerida"),
+  algoritmo: z.string().default("RSA"),
+  emisor: z.string().optional(),
+  sujeto: z.string().optional(),
+  validoDesde: z.date().optional(),
+  validoHasta: z.date().optional(),
+  diasParaExpiracion: z.number().optional(),
+  contrasena: z.string().min(1, "Contraseña es requerida"),
+  estado: z.enum(["pendiente", "validado", "activo", "expirado", "revocado"]).default("pendiente"),
+  activo: z.boolean().default(false),
+  esProductivo: z.boolean().default(false),
+  certificadoValido: z.boolean().default(false),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+});
+
+export const insertCertificadoSchema = certificadoSchema.omit({ 
+  id: true, 
+  tenantId: true, 
+  createdAt: true, 
+  updatedAt: true,
+  huella: true, // Se calcula
+  diasParaExpiracion: true, // Se calcula
+  ultimaValidacion: true,
+  erroresValidacion: true,
+  certificadoValido: true,
+});
+
+export type Certificado = typeof certificadosTable.$inferSelect;
+export type InsertCertificado = z.infer<typeof insertCertificadoSchema>;
 
 export const DEPARTAMENTOS_EL_SALVADOR = [
   { codigo: "01", nombre: "Ahuachapán" },

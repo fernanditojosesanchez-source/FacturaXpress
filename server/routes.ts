@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { type Server } from "http";
 import { randomUUID } from "crypto";
 import { storage } from "./storage";
-import { emisorSchema, insertFacturaSchema, insertProductoSchema, receptorSchema } from "@shared/schema";
+import { emisorSchema, insertFacturaSchema, insertProductoSchema, receptorSchema, insertCertificadoSchema } from "@shared/schema";
 import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 import { mhService } from "./mh-service";
@@ -220,6 +220,136 @@ export async function registerRoutes(
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: "Error al eliminar producto" });
+    }
+  });
+
+  // ============================================
+  // ENDPOINTS DE CERTIFICADOS DIGITALES
+  // ============================================
+
+  app.get("/api/certificados", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const certificados = await storage.getCertificados(tenantId);
+      res.json(certificados);
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener certificados" });
+    }
+  });
+
+  app.get("/api/certificados/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const certificado = await storage.getCertificado(req.params.id, tenantId);
+      if (!certificado) return res.status(404).json({ error: "Certificado no encontrado" });
+      res.json(certificado);
+    } catch (error) {
+      res.status(500).json({ error: "Error al obtener certificado" });
+    }
+  });
+
+  app.post("/api/certificados", requireAuth, requireTenantAdmin, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const parsed = insertCertificadoSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: parsed.error.errors });
+      }
+      
+      // Calcular huella del certificado (fingerprint SHA-256)
+      // En producción, usar crypto para extraer del P12
+      const crypto = await import("crypto");
+      const huella = crypto
+        .createHash("sha256")
+        .update(parsed.data.archivo)
+        .digest("hex");
+
+      const certificado = await storage.createCertificado(tenantId, {
+        ...parsed.data,
+        huella,
+      });
+      
+      res.status(201).json(certificado);
+    } catch (error: any) {
+      if (error.message?.includes("unique constraint")) {
+        return res.status(409).json({ error: "El certificado ya existe (huella duplicada)" });
+      }
+      res.status(500).json({ error: "Error al crear certificado" });
+    }
+  });
+
+  app.patch("/api/certificados/:id", requireAuth, requireTenantAdmin, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const certificado = await storage.updateCertificado(req.params.id, tenantId, req.body);
+      if (!certificado) return res.status(404).json({ error: "Certificado no encontrado" });
+      res.json(certificado);
+    } catch (error) {
+      res.status(500).json({ error: "Error al actualizar certificado" });
+    }
+  });
+
+  app.delete("/api/certificados/:id", requireAuth, requireTenantAdmin, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const deleted = await storage.deleteCertificado(req.params.id, tenantId);
+      if (!deleted) return res.status(404).json({ error: "Certificado no encontrado" });
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Error al eliminar certificado" });
+    }
+  });
+
+  app.post("/api/certificados/:id/validar", requireAuth, requireTenantAdmin, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const certificado = await storage.getCertificado(req.params.id, tenantId);
+      if (!certificado) return res.status(404).json({ error: "Certificado no encontrado" });
+
+      // Validar certificado (en producción, usar librería de X.509)
+      const ahora = new Date();
+      const errores: Record<string, string> = {};
+
+      if (certificado.validoHasta && new Date(certificado.validoHasta) < ahora) {
+        errores["expirado"] = "El certificado ha expirado";
+      }
+      if (certificado.validoDesde && new Date(certificado.validoDesde) > ahora) {
+        errores["no_valido_aun"] = "El certificado aún no es válido";
+      }
+
+      const esValido = Object.keys(errores).length === 0;
+      const resultado = await storage.updateCertificado(req.params.id, tenantId, {
+        certificadoValido: esValido,
+        estado: esValido ? "validado" : "pendiente",
+        erroresValidacion: errores,
+        ultimaValidacion: new Date(),
+      });
+
+      res.json(resultado);
+    } catch (error) {
+      res.status(500).json({ error: "Error al validar certificado" });
+    }
+  });
+
+  app.post("/api/certificados/:id/activar", requireAuth, requireTenantAdmin, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      
+      // Desactivar todos los demás certificados
+      await storage.db.execute(
+        `UPDATE certificados SET activo = false WHERE tenant_id = '${tenantId}' AND id != '${req.params.id}'`
+      );
+
+      // Activar el certificado seleccionado
+      const certificado = await storage.updateCertificado(req.params.id, tenantId, {
+        activo: true,
+        estado: "activo",
+      });
+
+      if (!certificado) return res.status(404).json({ error: "Certificado no encontrado" });
+      res.json(certificado);
+    } catch (error) {
+      res.status(500).json({ error: "Error al activar certificado" });
     }
   });
 

@@ -1,9 +1,9 @@
 import { 
   type User, type InsertUser, type Factura, type InsertFactura, type Emisor, type Tenant,
-  type Producto, type InsertProducto,
+  type Producto, type InsertProducto, type Certificado, type InsertCertificado,
   users, emisorTable, facturasTable, secuencialControlTable, tenants, facturaItemsTable,
   tenantCredentials, receptoresTable, apiKeys, contingenciaQueueTable, anulacionesTable,
-  productosTable
+  productosTable, certificadosTable
 } from "@shared/schema";
 import { randomUUID, createHash } from "crypto";
 import path from "path";
@@ -46,6 +46,13 @@ export interface IStorage {
   createProducto(tenantId: string, producto: InsertProducto): Promise<Producto>;
   updateProducto(id: string, tenantId: string, producto: Partial<InsertProducto>): Promise<Producto | undefined>;
   deleteProducto(id: string, tenantId: string): Promise<boolean>;
+
+  // Certificados Digitales
+  getCertificados(tenantId: string): Promise<Certificado[]>;
+  getCertificado(id: string, tenantId: string): Promise<Certificado | undefined>;
+  createCertificado(tenantId: string, certificado: Partial<InsertCertificado> & { huella: string }): Promise<Certificado>;
+  updateCertificado(id: string, tenantId: string, certificado: Partial<Certificado>): Promise<Certificado | undefined>;
+  deleteCertificado(id: string, tenantId: string): Promise<boolean>;
 
   // Emisor (Configuración por Tenant)
   getEmisor(tenantId: string): Promise<Emisor | undefined>;
@@ -261,6 +268,57 @@ export class DatabaseStorage implements IStorage {
   async deleteProducto(id: string, tenantId: string): Promise<boolean> {
     const result = await db.delete(productosTable)
       .where(and(eq(productosTable.id, id), eq(productosTable.tenantId, tenantId)))
+      .returning();
+    return result.length > 0;
+  }
+
+  // ============================================
+  // CERTIFICADOS DIGITALES
+  // ============================================
+
+  async getCertificados(tenantId: string): Promise<Certificado[]> {
+    return await db.select().from(certificadosTable)
+      .where(eq(certificadosTable.tenantId, tenantId))
+      .orderBy(desc(certificadosTable.createdAt));
+  }
+
+  async getCertificado(id: string, tenantId: string): Promise<Certificado | undefined> {
+    const [row] = await db.select().from(certificadosTable)
+      .where(and(eq(certificadosTable.id, id), eq(certificadosTable.tenantId, tenantId)));
+    return row;
+  }
+
+  async createCertificado(tenantId: string, c: Partial<InsertCertificado> & { huella: string }): Promise<Certificado> {
+    const [row] = await db.insert(certificadosTable).values({
+      ...c,
+      tenantId,
+      diasParaExpiracion: c.validoHasta 
+        ? Math.floor((new Date(c.validoHasta).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+        : undefined,
+    } as any).returning();
+    return row;
+  }
+
+  async updateCertificado(id: string, tenantId: string, updates: Partial<Certificado>): Promise<Certificado | undefined> {
+    const data: any = { ...updates, updatedAt: new Date() };
+    
+    // Recalcular días para expiración si cambió la fecha
+    if (updates.validoHasta) {
+      data.diasParaExpiracion = Math.floor(
+        (new Date(updates.validoHasta).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+      );
+    }
+
+    const [row] = await db.update(certificadosTable)
+      .set(data)
+      .where(and(eq(certificadosTable.id, id), eq(certificadosTable.tenantId, tenantId)))
+      .returning();
+    return row;
+  }
+
+  async deleteCertificado(id: string, tenantId: string): Promise<boolean> {
+    const result = await db.delete(certificadosTable)
+      .where(and(eq(certificadosTable.id, id), eq(certificadosTable.tenantId, tenantId)))
       .returning();
     return result.length > 0;
   }
