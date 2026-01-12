@@ -101,8 +101,28 @@ export async function registerRoutes(
   app.get("/api/receptores", requireAuth, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 25;
+      
+      if (page < 1 || limit < 1 || limit > 100) {
+        return res.status(400).json({ error: "Parámetros de paginación inválidos" });
+      }
+      
+      const offset = (page - 1) * limit;
+      
       const receptores = await storage.getReceptores(tenantId);
-      res.json(receptores);
+      const total = receptores.length;
+      const paginated = receptores.slice(offset, offset + limit);
+      
+      res.json({
+        data: paginated,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      });
     } catch (error) {
       res.status(500).json({ error: "Error al obtener clientes" });
     }
@@ -169,8 +189,28 @@ export async function registerRoutes(
   app.get("/api/productos", requireAuth, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 25;
+      
+      if (page < 1 || limit < 1 || limit > 100) {
+        return res.status(400).json({ error: "Parámetros de paginación inválidos" });
+      }
+      
+      const offset = (page - 1) * limit;
+      
       const productos = await storage.getProductos(tenantId);
-      res.json(productos);
+      const total = productos.length;
+      const paginated = productos.slice(offset, offset + limit);
+      
+      res.json({
+        data: paginated,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      });
     } catch (error) {
       res.status(500).json({ error: "Error al obtener productos" });
     }
@@ -230,8 +270,28 @@ export async function registerRoutes(
   app.get("/api/certificados", requireAuth, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 25;
+      
+      if (page < 1 || limit < 1 || limit > 100) {
+        return res.status(400).json({ error: "Parámetros de paginación inválidos" });
+      }
+      
+      const offset = (page - 1) * limit;
+      
       const certificados = await storage.getCertificados(tenantId);
-      res.json(certificados);
+      const total = certificados.length;
+      const paginated = certificados.slice(offset, offset + limit);
+      
+      res.json({
+        data: paginated,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      });
     } catch (error) {
       res.status(500).json({ error: "Error al obtener certificados" });
     }
@@ -425,8 +485,28 @@ export async function registerRoutes(
   app.get("/api/facturas", requireAuth, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 25;
+      
+      if (page < 1 || limit < 1 || limit > 100) {
+        return res.status(400).json({ error: "Parámetros de paginación inválidos" });
+      }
+      
+      const offset = (page - 1) * limit;
+      
       const facturas = await storage.getFacturas(tenantId);
-      res.json(facturas);
+      const total = facturas.length;
+      const paginated = facturas.slice(offset, offset + limit);
+      
+      res.json({
+        data: paginated,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      });
     } catch (error) {
       res.status(500).json({ error: "Error al obtener facturas" });
     }

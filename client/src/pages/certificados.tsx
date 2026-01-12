@@ -84,7 +84,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { useCertificados } from "@/hooks/use-certificados";
+import { PaginationCustom } from "@/components/ui/pagination-custom";
+import { useCertificadosPaginated } from "@/hooks/use-certificados-paginated";
 import { useAuth } from "@/hooks/use-auth";
 import { z } from "zod";
 
@@ -125,7 +126,12 @@ export default function CertificadosPage() {
   const isAdmin = user?.role === "super_admin" || user?.role === "tenant_admin";
 
   const { 
-    certificados, 
+    certificados,
+    pagination,
+    page,
+    setPage,
+    limit,
+    setLimit,
     isLoading,
     createCertificado,
     deleteCertificado,
@@ -135,7 +141,7 @@ export default function CertificadosPage() {
     isValidating,
     activarCertificado,
     isActivating,
-  } = useCertificados();
+  } = useCertificadosPaginated();
   
   const form = useForm<CertificadoFormData>({
     resolver: zodResolver(certificadoFormSchema),
@@ -379,8 +385,7 @@ export default function CertificadosPage() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    // Mostrar máximo 50 filas (si hay más, agregar paginación después)
-                    filteredCertificados.slice(0, 50).map((cert) => {
+                    filteredCertificados.map((cert) => {
                       const IconEstado = estadoIcons[cert.estado] || Clock;
                       const diasFalta = cert.diasParaExpiracion || 0;
                       const alertaProxima = diasFalta > 0 && diasFalta <= 30;
@@ -510,10 +515,15 @@ export default function CertificadosPage() {
               </Table>
             </div>
           )}
-          {filteredCertificados.length > 50 && (
-            <div className="mt-4 flex items-center gap-2 rounded-md bg-amber-50 p-3 text-sm text-amber-800">
-              <AlertTriangle className="h-4 w-4" />
-              <span>Mostrando 50 de {filteredCertificados.length} certificados. Usa los filtros para refinar.</span>
+          {pagination.pages > 1 && (
+            <div className="mt-4">
+              <PaginationCustom
+                currentPage={page}
+                totalPages={pagination.pages}
+                onPageChange={setPage}
+                totalItems={pagination.total}
+                itemsPerPage={limit}
+              />
             </div>
           )}
         </CardContent>
