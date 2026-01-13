@@ -8,7 +8,7 @@ interface AnulacionPendiente {
   motivo: string;
   estado: "pendiente" | "procesando" | "aceptado" | "error";
   intentosFallidos: number;
-  createdAt: string;
+  fechaAnulo: string;
 }
 
 interface AnulacionHistorico extends AnulacionPendiente {
@@ -36,13 +36,16 @@ export function useAnulacionesPendientes() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch pending anulaciones");
+        const error = await response.json().catch(() => ({}));
+        console.error("[useAnulacionesPendientes] Error:", response.status, error);
+        throw new Error(error.error || "Failed to fetch pending anulaciones");
       }
 
       const data = await response.json();
       return (data.anulaciones || []) as AnulacionPendiente[];
     },
-    refetchInterval: 5000, // Refetch every 5 seconds
+    retry: false,
+    refetchInterval: 5000,
   });
 }
 
@@ -55,13 +58,16 @@ export function useAnulacionesHistorico(limit: number = 50) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch anulaciones history");
+        const error = await response.json().catch(() => ({}));
+        console.error("[useAnulacionesHistorico] Error:", response.status, error);
+        throw new Error(error.error || "Failed to fetch anulaciones history");
       }
 
       const data = await response.json();
       return (data.anulaciones || []) as AnulacionHistorico[];
     },
-    refetchInterval: 10000, // Refetch every 10 seconds
+    retry: false,
+    refetchInterval: 10000,
   });
 }
 

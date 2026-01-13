@@ -98,4 +98,59 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ message: "Error al actualizar credenciales" });
     }
   });
+
+  // Obtener métricas del sistema
+  app.get("/api/admin/metrics", ...requireSuperAdmin, async (_req: Request, res: Response) => {
+    try {
+      const metrics = await storage.getSystemMetrics();
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error getting metrics:", error);
+      res.status(500).json({ message: "Error al obtener métricas" });
+    }
+  });
+
+  // Suspender/Activar tenant
+  app.patch("/api/admin/tenants/:id/status", ...requireSuperAdmin, async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.params.id;
+      const { estado } = req.body;
+
+      if (!["activo", "suspendido"].includes(estado)) {
+        return res.status(400).json({ message: "Estado inválido" });
+      }
+
+      await storage.updateTenantStatus(tenantId, estado);
+      res.json({ success: true, message: `Empresa ${estado === "activo" ? "activada" : "suspendida"} correctamente` });
+    } catch (error) {
+      console.error("Error updating tenant status:", error);
+      res.status(500).json({ message: "Error al actualizar estado" });
+    }
+  });
+
+  // Eliminar tenant
+  app.delete("/api/admin/tenants/:id", ...requireSuperAdmin, async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.params.id;
+      await storage.deleteTenant(tenantId);
+      res.json({ success: true, message: "Empresa eliminada correctamente" });
+    } catch (error) {
+      console.error("Error deleting tenant:", error);
+      res.status(500).json({ message: "Error al eliminar empresa" });
+    }
+  });
+
+  // Actualizar información de tenant
+  app.patch("/api/admin/tenants/:id", ...requireSuperAdmin, async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.params.id;
+      const { nombre, slug, tipo } = req.body;
+
+      await storage.updateTenant(tenantId, { nombre, slug, tipo });
+      res.json({ success: true, message: "Empresa actualizada correctamente" });
+    } catch (error) {
+      console.error("Error updating tenant:", error);
+      res.status(500).json({ message: "Error al actualizar empresa" });
+    }
+  });
 }

@@ -129,6 +129,10 @@ export function AnulacionesList() {
     error: historico.filter((a) => a.estado === "error").length,
   };
 
+  // Mostrar errores si las queries fallaron
+  const hasPendientesError = pendientesQuery.isError;
+  const hasHistoricoError = historicoQuery.isError;
+
   return (
     <Card className="col-span-full">
       <CardHeader className="space-y-4">
@@ -200,6 +204,24 @@ export function AnulacionesList() {
       </CardHeader>
 
       <CardContent>
+        {hasPendientesError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Error al cargar anulaciones pendientes: {pendientesQuery.error instanceof Error ? pendientesQuery.error.message : "Error desconocido"}
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {hasHistoricoError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Error al cargar histórico de anulaciones: {historicoQuery.error instanceof Error ? historicoQuery.error.message : "Error desconocido"}
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <Tabs defaultValue="pendientes" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="pendientes" className="relative">
@@ -274,7 +296,7 @@ export function AnulacionesList() {
                             {anulacion.intentosFallidos}/10
                           </TableCell>
                           <TableCell className="text-xs text-gray-500">
-                            {formatDate(anulacion.createdAt)}
+                            {formatDate(anulacion.fechaAnulo)}
                           </TableCell>
                         </TableRow>
                       );
@@ -348,7 +370,7 @@ export function AnulacionesList() {
                               : "—"}
                           </TableCell>
                           <TableCell className="text-xs text-gray-500">
-                            {formatDate(anulacion.createdAt)}
+                            {formatDate(anulacion.fechaAnulo)}
                           </TableCell>
                         </TableRow>
                       );
