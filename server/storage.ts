@@ -22,6 +22,15 @@ export interface IStorage {
   createTenant(nombre: string, slug: string): Promise<Tenant>;
   ensureDefaultTenant(): Promise<Tenant>;
   listTenants(): Promise<Tenant[]>;
+  updateTenantStatus(tenantId: string, estado: string): Promise<void>;
+  updateTenant(tenantId: string, updates: Partial<Tenant>): Promise<void>;
+  deleteTenant(tenantId: string): Promise<void>;
+  getSystemMetrics(): Promise<{
+    totalEmpresas: number;
+    empresasActivas: number;
+    totalUsuarios: number;
+    totalFacturas: number;
+  }>;
 
   // Credenciales (Certificados)
   getTenantCredentials(tenantId: string): Promise<any | undefined>;
@@ -32,6 +41,13 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserRole(userId: string, role: string): Promise<void>;
+  updateUserPermissions(userId: string, updates: {
+    role?: string;
+    sucursales_asignadas?: string[] | null;
+    modulos_habilitados?: Record<string, boolean> | null;
+  }): Promise<void>;
+  listUsersByTenant(tenantId: string): Promise<any[]>;
+  deleteUser(userId: string): Promise<void>;
   
   // Clientes (Receptores)
   getReceptores(tenantId: string): Promise<any[]>;
@@ -124,6 +140,48 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(tenants).orderBy(desc(tenants.createdAt));
   }
 
+  async updateTenantStatus(tenantId: string, estado: string): Promise<void> {
+    await db.update(tenants).set({ estado }).where(eq(tenants.id, tenantId));
+  }
+
+  async updateTenant(tenantId: string, updates: Partial<Tenant>): Promise<void> {
+    await db.update(tenants).set(updates).where(eq(tenants.id, tenantId));
+  }
+
+  async deleteTenant(tenantId: string): Promise<void> {
+    // Eliminar en cascada: usuarios, facturas, productos, etc.
+    await db.delete(users).where(eq(users.tenantId, tenantId));
+    await db.delete(facturasTable).where(eq(facturasTable.tenantId, tenantId));
+    await db.delete(productosTable).where(eq(productosTable.tenantId, tenantId));
+    await db.delete(certificadosTable).where(eq(certificadosTable.tenantId, tenantId));
+    await db.delete(receptoresTable).where(eq(receptoresTable.tenantId, tenantId));
+    await db.delete(tenantCredentials).where(eq(tenantCredentials.tenantId, tenantId));
+    await db.delete(anulacionesTable).where(eq(anulacionesTable.tenantId, tenantId));
+    await db.delete(contingenciaQueueTable).where(eq(contingenciaQueueTable.tenantId, tenantId));
+    await db.delete(tenants).where(eq(tenants.id, tenantId));
+  }
+
+  async getSystemMetrics(): Promise<{
+    totalEmpresas: number;
+    empresasActivas: number;
+    totalUsuarios: number;
+    totalFacturas: number;
+  }> {
+    const [empresasCount] = await db.select({ count: sql<number>`count(*)::int` }).from(tenants);
+    const [empresasActivasCount] = await db.select({ count: sql<number>`count(*)::int` })
+      .from(tenants)
+      .where(eq(tenants.estado, "activo"));
+    const [usuariosCount] = await db.select({ count: sql<number>`count(*)::int` }).from(users);
+    const [facturasCount] = await db.select({ count: sql<number>`count(*)::int` }).from(facturasTable);
+
+    return {
+      totalEmpresas: empresasCount.count || 0,
+      empresasActivas: empresasActivasCount.count || 0,
+      totalUsuarios: usuariosCount.count || 0,
+      totalFacturas: facturasCount.count || 0,
+    };
+  }
+
   async getTenantCredentials(tenantId: string): Promise<any | undefined> {
     const [creds] = await db.select().from(tenantCredentials).where(eq(tenantCredentials.tenantId, tenantId)).limit(1);
     if (!creds) return undefined;
@@ -171,6 +229,38 @@ export class DatabaseStorage implements IStorage {
 
   async updateUserRole(userId: string, role: string): Promise<void> {
     await db.update(users).set({ role }).where(eq(users.id, userId));
+  }
+
+  async updateUserPermissions(
+    userId: string,
+    updates: {
+      role?: string;
+      sucursales_asignadas?: string[] | null;
+      modulos_habilitados?: Record<string, boolean> | null;
+    }
+  ): Promise<void> {
+    const updateData: any = {};
+    if (updates.role) updateData.role = updates.role;
+    if (updates.sucursales_asignadas !== undefined) {
+      updateData.sucursales_asignadas = updates.sucursales_asignadas;
+    }
+    if (updates.modulos_habilitados !== undefined) {
+      updateData.modulos_habilitados = updates.modulos_habilitados;
+    }
+
+    await db.update(users).set(updateData).where(eq(users.id, userId));
+  }
+
+  async listUsersByTenant(tenantId: string): Promise<any[]> {
+    return await db
+      .select()
+      .from(users)
+      .where(eq(users.tenantId, tenantId))
+      .orderBy(desc(users.createdAt));
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    await db.delete(users).where(eq(users.id, userId));
   }
 
   async getReceptores(tenantId: string): Promise<any[]> {

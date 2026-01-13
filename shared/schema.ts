@@ -11,6 +11,7 @@ export const tenants = pgTable("tenants", {
   slug: text("slug").unique().notNull(),
   tipo: text("tipo").default("clinic"), // clinic, hospital, lab, store
   estado: text("estado").default("activo"),
+  origen: text("origen"), // null = directo, 'sigma' = viene de Sigma ERP
   modules: jsonb("modules").default({}), // Feature flags: { inventory: false, accounting: true }
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -69,13 +70,54 @@ export const users = pgTable("users", {
   tenantId: uuid("tenant_id").references(() => tenants.id),
   username: text("username").notNull().unique(),
   email: text("email").unique(),
+  nombre: text("nombre"),
   password: text("password").notNull(),
-  role: text("role").notNull().default("user"), // super_admin, tenant_admin, manager, cashier
+  
+  // Sistema de roles
+  role: text("role").notNull().default("cashier"),
+  // Roles disponibles:
+  //   'super_admin'      - Administrador SaaS (FacturaXpress)
+  //   'tenant_admin'     - Dueño/admin de la empresa
+  //   'manager'          - Gerente de sucursal
+  //   'cashier'          - Cajero/facturador
+  //   'accountant'       - Contador (solo lectura + reportes)
+  //   'sigma_readonly'   - Usuario Sigma básico (solo consulta)
+  
+  // Restricciones por sucursal (para manager/cashier)
+  sucursales_asignadas: jsonb("sucursales_asignadas").default(null),
+  // Formato: ["uuid-sucursal-1", "uuid-sucursal-2"] o null si tiene acceso a todas
+  
+  // Controles de módulos personalizados por usuario
+  // Nota: también hereda de tenants.modules, pero puede tener overrides
+  modulos_habilitados: jsonb("modulos_habilitados").default(null),
+  // Ejemplo: {
+  //   "inventario": true,
+  //   "facturacion": true,
+  //   "reportes": true,
+  //   "contabilidad": true,
+  //   "multi_sucursal": true
+  // }
+  // null = heredar de tenant
+  
+  // Datos de contacto
+  telefono: text("telefono"),
+  
+  // Estado de cuenta
   emailVerified: boolean("email_verified").default(false),
   accountLocked: boolean("account_locked").default(false),
   lockUntil: timestamp("lock_until"),
+  activo: boolean("activo").default(true),
+  
+  // Auditoría
+  ultimo_acceso: timestamp("ultimo_acceso"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (t) => ({
+  idx_tenant: index("idx_users_tenant").on(t.tenantId),
+  idx_role: index("idx_users_role").on(t.role),
+  idx_activo: index("idx_users_activo").on(t.activo),
+  idx_tenant_role: index("idx_users_tenant_role").on(t.tenantId, t.role),
+}));
 
 export const loginAttempts = pgTable("login_attempts", {
   id: serial("id").primaryKey(),

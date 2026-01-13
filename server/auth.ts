@@ -32,6 +32,8 @@ interface TokenPayload {
   email?: string;
   role: string;
   tenantId?: string;
+  sucursales_asignadas?: string[] | null;
+  modulos_habilitados?: Record<string, boolean> | null;
 }
 
 // Generar tokens JWT
@@ -361,4 +363,273 @@ export function registerAuthRoutes(app: Express) {
     await storage.deleteApiKey(req.params.id, user.tenantId);
     res.status(204).send();
   });
+}
+
+// ============================================
+// SISTEMA DE PERMISOS Y CONTROL DE ACCESO
+// ============================================
+
+export type Permission =
+  | "create_invoice"
+  | "view_invoices"
+  | "cancel_invoice"
+  | "manage_inventory"
+  | "manage_products"
+  | "manage_branches"
+  | "manage_users"
+  | "assign_roles"
+  | "view_reports"
+  | "download_books"
+  | "export_data"
+  | "configure_company"
+  | "configure_mh_credentials"
+  | "view_dashboard"
+  | "view_global_metrics"
+  | "manage_all_tenants"
+  | "manage_plans"
+  | "view_financial_dashboard"
+  | "view_inventory_branch"
+  | "request_transfers"
+  | "view_reports_branch"
+  | "view_dashboard_branch"
+  | "view_stock"
+  | "search_products"
+  | "search_invoices"
+  | "download_pdf"
+  | "view_audit_logs"
+  | "manage_integrations";
+
+export type Module = "inventario" | "facturacion" | "reportes" | "contabilidad" | "multi_sucursal";
+
+// Obtener permisos por rol
+export function getPermissionsByRole(role: string): Permission[] {
+  switch (role) {
+    case "super_admin":
+      return [
+        "view_global_metrics",
+        "manage_all_tenants",
+        "manage_plans",
+        "manage_integrations",
+        "view_audit_logs",
+        "create_invoice",
+        "view_invoices",
+        "cancel_invoice",
+        "manage_inventory",
+        "manage_products",
+        "manage_branches",
+        "manage_users",
+        "assign_roles",
+        "view_reports",
+        "download_books",
+        "export_data",
+        "configure_company",
+        "configure_mh_credentials",
+        "view_dashboard",
+      ];
+
+    case "tenant_admin":
+      return [
+        "create_invoice",
+        "view_invoices",
+        "cancel_invoice",
+        "manage_inventory",
+        "manage_products",
+        "manage_branches",
+        "manage_users",
+        "assign_roles",
+        "view_reports",
+        "download_books",
+        "export_data",
+        "configure_company",
+        "configure_mh_credentials",
+        "view_dashboard",
+        "view_audit_logs",
+      ];
+
+    case "manager":
+      return [
+        "create_invoice",
+        "view_invoices",
+        "cancel_invoice",
+        "view_inventory_branch",
+        "request_transfers",
+        "view_reports_branch",
+        "view_dashboard_branch",
+      ];
+
+    case "cashier":
+      return [
+        "create_invoice",
+        "view_invoices",
+        "view_stock",
+        "search_products",
+      ];
+
+    case "accountant":
+      return [
+        "view_invoices",
+        "view_reports",
+        "download_books",
+        "export_data",
+        "view_financial_dashboard",
+      ];
+
+    case "sigma_readonly":
+      return [
+        "view_invoices",
+        "search_invoices",
+        "download_pdf",
+      ];
+
+    default:
+      return [];
+  }
+}
+
+// Middleware: Verificar permiso
+export const checkPermission = (requiredPermission: Permission) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const user = (req as any).user;
+    
+    if (!user) {
+      return res.status(401).json({ error: "No autenticado" });
+    }
+
+    const userPermissions = getPermissionsByRole(user.role);
+
+    if (!userPermissions.includes(requiredPermission)) {
+      return res.status(403).json({
+        error: "Sin permisos suficientes",
+        requerido: requiredPermission,
+      });
+    }
+
+    next();
+  };
+};
+
+// Middleware: Verificar acceso a sucursal
+export const checkBranchAccess = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const user = (req as any).user;
+
+  if (!user) {
+    return res.status(401).json({ error: "No autenticado" });
+  }
+
+  // Super admin y tenant_admin no tienen restricción
+  if (["super_admin", "tenant_admin"].includes(user.role)) {
+    next();
+    return;
+  }
+
+  const branchId = req.params.branchId || req.body.branchId;
+
+  // Si no hay sucursal_asignadas, denegar
+  if (!user.sucursales_asignadas || !Array.isArray(user.sucursales_asignadas)) {
+    return res.status(403).json({
+      error: "Usuario no tiene sucursales asignadas",
+    });
+  }
+
+  // Verificar si tiene acceso a esa sucursal
+  if (!user.sucursales_asignadas.includes(branchId)) {
+    return res.status(403).json({
+      error: "No tienes acceso a esta sucursal",
+    });
+  }
+
+  next();
+};
+
+// Middleware: Verificar módulo habilitado
+export const checkModuleEnabled = (module: Module) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const user = (req as any).user;
+
+    if (!user) {
+      return res.status(401).json({ error: "No autenticado" });
+    }
+
+    // Super admin siempre tiene acceso
+    if (user.role === "super_admin") {
+      next();
+      return;
+    }
+
+    // Si el usuario tiene módulos personalizados, usar esos
+    if (user.modulos_habilitados && typeof user.modulos_habilitados === "object") {
+      if (!user.modulos_habilitados[module]) {
+        return res.status(403).json({
+          error: `Módulo '${module}' no habilitado para este usuario`,
+        });
+      }
+      next();
+      return;
+    }
+
+    // Si no hay override, ir al siguiente middleware/ruta
+    // (Probablemente deba cargar los módulos del tenant)
+    next();
+  };
+};
+
+// Helper: Obtener módulos disponibles
+export function getModulesForUser(user: TokenPayload, tenantModules: Record<string, boolean>) {
+  if (user.modulos_habilitados) {
+    return user.modulos_habilitados;
+  }
+  return tenantModules;
+}
+
+// Helper: ¿Puede gestionar usuario?
+export function canManageUser(actor: TokenPayload, targetUserRole: string): boolean {
+  if (actor.role === "super_admin") {
+    return true;
+  }
+
+  if (actor.role === "tenant_admin") {
+    if (targetUserRole === "super_admin") {
+      return false;
+    }
+    return true;
+  }
+
+  return false;
+}
+
+// Helper: ¿Es válido este cambio de rol?
+export function isValidRoleChange(
+  actor: TokenPayload,
+  newRole: string
+): { valid: boolean; reason?: string } {
+  if (actor.role === "super_admin") {
+    return { valid: true };
+  }
+
+  if (actor.role === "tenant_admin" && newRole === "super_admin") {
+    return {
+      valid: false,
+      reason: "No puedes asignar el rol super_admin",
+    };
+  }
+
+  if (actor.role === "tenant_admin") {
+    const allowedRoles = ["manager", "cashier", "accountant", "sigma_readonly"];
+    if (!allowedRoles.includes(newRole)) {
+      return {
+        valid: false,
+        reason: `No puedes asignar el rol ${newRole}`,
+      };
+    }
+    return { valid: true };
+  }
+
+  return {
+    valid: false,
+    reason: "Tu rol no permite gestionar usuarios",
+  };
 }
