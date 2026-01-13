@@ -11,6 +11,7 @@ import { requireAuth, requireTenantAdmin, requireManager, requireApiKey, registe
 import * as catalogs from "./catalogs";
 import { validateDTESchema } from "./dgii-validator";
 import { registerAdminRoutes } from "./routes/admin";
+import { registerUserRoutes } from "./routes/users";
 import { facturaCreationRateLimiter, transmisionRateLimiter } from "./lib/rate-limiters";
 import { logAudit, AuditActions, getClientIP, getUserAgent } from "./lib/audit";
 
@@ -21,6 +22,7 @@ export async function registerRoutes(
   // Rutas de autenticación
   registerAuthRoutes(app);
   registerAdminRoutes(app);
+  registerUserRoutes(app);
 
   // Helper para obtener tenantId del request
   const getTenantId = (req: Request) => (req as any).user?.tenantId;

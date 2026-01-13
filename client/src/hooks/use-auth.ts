@@ -6,9 +6,21 @@ type MeResponse = {
   user?: { 
     id: string; 
     username: string; 
+    email?: string;
+    nombre?: string;
     tenantId?: string;
-    role?: string;
-  } 
+    role?: "super_admin" | "tenant_admin" | "manager" | "cashier" | "accountant" | "sigma_readonly";
+    sucursales_asignadas?: string[] | null;
+    modulos_habilitados?: Record<string, boolean> | null;
+  };
+  tenant?: {
+    id: string;
+    nombre: string;
+    slug: string;
+    tipo?: string;
+    origen?: string | null; // null = directo, 'sigma' = Sigma ERP
+    modules?: Record<string, boolean>;
+  }
 };
 
 export function useAuth() {

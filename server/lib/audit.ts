@@ -93,11 +93,13 @@ export const AuditActions = {
   ACCOUNT_LOCKED: "account_locked",
   
   // Usuarios
-  USER_CREATED: "user_created",
-  USER_UPDATED: "user_updated",
-  USER_DELETED: "user_deleted",
+  USER_CREATE: "user_created",
+  USER_UPDATE: "user_updated",
+  USER_DELETE: "user_deleted",
+  USER_LIST: "user_listed",
+  USER_DEACTIVATE: "user_deactivated",
   USER_ROLE_CHANGED: "user_role_changed",
-  PASSWORD_CHANGED: "password_changed",
+  PASSWORD_CHANGE: "password_changed",
   
   // Tenants
   TENANT_CREATED: "tenant_created",
