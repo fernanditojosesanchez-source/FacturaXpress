@@ -129,7 +129,7 @@ export async function registerRoutes(
   // ============================================
 
 
-  app.get("/api/receptores", requireAuth, async (req: Request, res: Response) => {
+  app.get("/api/receptores", requireAuth, checkPermission("manage_clients"), async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const page = parseInt(req.query.page as string) || 1;
@@ -159,7 +159,7 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/receptores/:doc", requireAuth, async (req: Request, res: Response) => {
+  app.get("/api/receptores/:doc", requireAuth, checkPermission("manage_clients"), async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const receptor = await storage.getReceptorByDoc(tenantId, req.params.doc);
@@ -170,7 +170,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/receptores", requireAuth, async (req: Request, res: Response) => {
+  app.post("/api/receptores", requireAuth, checkPermission("manage_clients"), async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const parsed = receptorSchema.safeParse(req.body);
@@ -187,7 +187,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch("/api/receptores/:id", ...requireTenantAdmin, async (req: Request, res: Response) => {
+  app.patch("/api/receptores/:id", requireAuth, checkPermission("manage_clients"), async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const parsed = receptorSchema.partial().safeParse(req.body);
@@ -202,7 +202,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/receptores/:id", ...requireTenantAdmin, async (req: Request, res: Response) => {
+  app.delete("/api/receptores/:id", requireAuth, checkPermission("manage_clients"), async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const deleted = await storage.deleteReceptor(req.params.id, tenantId);
@@ -522,7 +522,7 @@ export async function registerRoutes(
   // ENDPOINTS DE FACTURACIÓN (DTEs por Tenant)
   // ============================================
 
-  app.get("/api/facturas", requireAuth, async (req: Request, res: Response) => {
+  app.get("/api/facturas", requireAuth, checkPermission("view_invoices"), async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const facturas = await storage.getFacturas(tenantId);
@@ -565,7 +565,7 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/facturas/:id", requireAuth, async (req: Request, res: Response) => {
+  app.get("/api/facturas/:id", requireAuth, checkPermission("view_invoices"), async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const factura = await storage.getFactura(req.params.id, tenantId);
@@ -792,7 +792,7 @@ export async function registerRoutes(
   // ENDPOINTS DE INTEGRACIÓN MH
   // ============================================
   
-  app.post("/api/facturas/:id/transmitir", requireAuth, transmisionRateLimiter, async (req: Request, res: Response) => {
+  app.post("/api/facturas/:id/transmitir", requireAuth, checkPermission("transmit_invoice"), transmisionRateLimiter, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const userId = (req as any).user?.id;
@@ -921,7 +921,7 @@ export async function registerRoutes(
   // ENDPOINTS DE INVALIDACIÓN (Anulación de DTEs)
   // ============================================
 
-  app.post("/api/facturas/:id/invalidar", requireAuth, async (req: Request, res: Response) => {
+  app.post("/api/facturas/:id/invalidar", requireAuth, checkPermission("invalidate_invoice"), async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const userId = (req as any).userId || (req as any).user?.id || "system";
@@ -1073,7 +1073,7 @@ export async function registerRoutes(
   // REPORTES CONTABLES (Libro de Ventas / IVA)
   // ============================================
 
-  app.get("/api/reportes/iva-mensual", requireAuth, async (req: Request, res: Response) => {
+  app.get("/api/reportes/iva-mensual", requireAuth, checkPermission("view_reports"), async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const { mes, anio } = req.query;
