@@ -31,6 +31,7 @@ const ProductosPage = lazy(() => import("@/pages/productos"));
 const ClientesPage = lazy(() => import("@/pages/clientes"));
 const CertificadosPage = lazy(() => import("@/pages/certificados"));
 const SuperAdminPage = lazy(() => import("@/pages/super-admin"));
+const UsuariosPage = lazy(() => import("@/pages/usuarios"));
 
 // Componente skeleton para loading
 function PageLoader() {
@@ -129,6 +130,14 @@ function Router() {
         </Protected>
       </Route>
 
+      <Route path="/usuarios">
+        <Protected>
+          <Suspense fallback={<PageLoader />}>
+            <UsuariosPage />
+          </Suspense>
+        </Protected>
+      </Route>
+
       <Route path="/certificados">
         <Protected>
           <Suspense fallback={<PageLoader />}>
@@ -156,6 +165,9 @@ function AppContent() {
   const [location, navigate] = useLocation();
 
   // Consultas deben declararse SIEMPRE; controlar con `enabled`
+  // Solo cargar datos de negocio si NO es super_admin
+  const isSuperAdmin = user?.role === "super_admin";
+
   const { data: facturasResponse } = useQuery<any>({
     queryKey: ["/api/facturas"],
     queryFn: async () => {
@@ -163,13 +175,13 @@ function AppContent() {
       if (!res.ok) throw new Error("Error fetching facturas for app state");
       return res.json();
     },
-    enabled: !authLoading && !!user,
-    staleTime: 30000, // Evitar re-fetch constantes
+    enabled: !authLoading && !!user && !isSuperAdmin,
+    staleTime: 30000,
   });
 
   const { data: emisor } = useQuery<any>({
     queryKey: ["/api/emisor"],
-    enabled: !authLoading && !!user,
+    enabled: !authLoading && !!user && !isSuperAdmin,
   });
 
   // Extraer array de facturas de forma estable
@@ -187,8 +199,10 @@ function AppContent() {
   // Barra de progreso global (siempre declarada)
   useGlobalLoadingIndicator();
 
-  // Atajos de teclado globales
+  // Atajos de teclado globales (solo para usuarios no super_admin)
   useEffect(() => {
+    if (isSuperAdmin) return; // No aplicar atajos a super_admin
+
     const handler = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {
         switch (e.key.toLowerCase()) {
@@ -219,31 +233,32 @@ function AppContent() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [navigate]);
+  }, [navigate, isSuperAdmin]);
 
   // Lógica de filtrado de roles aplicada directamente al Header
   const navItems = useMemo(() => {
     const role = user?.role || "cashier"; // Fallback seguro
 
-    const allItems = [
-      { label: "Dashboard", href: "/", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
-      { label: "Facturas", href: "/factura/nueva", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
-      { label: "Historial", href: "/historial", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
-      { label: "Clientes", href: "/clientes", roles: ["super_admin", "tenant_admin", "manager", "cashier"] },
-      { label: "Productos", href: "/productos", roles: ["super_admin", "tenant_admin", "manager"] },
-      { label: "Notas", href: "/notas", roles: ["super_admin", "tenant_admin", "manager"] },
-      { label: "Reportes", href: "/reportes", roles: ["super_admin", "tenant_admin", "manager"] },
-      { label: "Certificados", href: "/certificados", roles: ["super_admin", "tenant_admin"] },
-      { label: "Configuración", href: "/configuracion", roles: ["super_admin", "tenant_admin"] },
-    ];
-
-    const filtered = allItems.filter((item) => item.roles.includes(role));
-
+    // Super admin tiene su propio panel SaaS, NO acceso a facturas/ventas
     if (role === "super_admin") {
-      filtered.unshift({ label: "Admin SaaS", href: "/admin", roles: ["super_admin"] });
+      return [
+        { label: "Gestión de Clientes", href: "/super-admin", roles: ["super_admin"] },
+      ];
     }
 
-    return filtered;
+    const allItems = [
+      { label: "Dashboard", href: "/", roles: ["tenant_admin", "manager", "cashier"] },
+      { label: "Facturas", href: "/factura/nueva", roles: ["tenant_admin", "manager", "cashier"] },
+      { label: "Historial", href: "/historial", roles: ["tenant_admin", "manager", "cashier"] },
+      { label: "Clientes", href: "/clientes", roles: ["tenant_admin", "manager", "cashier"] },
+      { label: "Productos", href: "/productos", roles: ["tenant_admin", "manager"] },
+      { label: "Notas", href: "/notas", roles: ["tenant_admin", "manager"] },
+      { label: "Reportes", href: "/reportes", roles: ["tenant_admin", "manager"] },
+      { label: "Certificados", href: "/certificados", roles: ["tenant_admin"] },
+      { label: "Configuración", href: "/configuracion", roles: ["tenant_admin"] },
+    ];
+
+    return allItems.filter((item) => item.roles.includes(role));
   }, [user]);
 
   // Early-returns DESPUÉS de declarar todos los hooks
@@ -257,6 +272,19 @@ function AppContent() {
 
   if (!user) {
     return <Login />;
+  }
+
+  // Redirigir super_admin a su panel
+  if (user.role === "super_admin" && location === "/") {
+    navigate("/super-admin");
+    return null;
+  }
+
+  // Redirigir a home si super_admin intenta acceder a rutas de negocio
+  const businessRoutes = ["/factura/nueva", "/historial", "/clientes", "/productos", "/notas", "/reportes", "/certificados"];
+  if (isSuperAdmin && businessRoutes.includes(location)) {
+    navigate("/super-admin");
+    return null;
   }
 
   // Determinar el fondo según el tema
@@ -381,22 +409,24 @@ function AppContent() {
             theme === 'dark' ? 'bg-slate-600/60' : 'bg-slate-300/60'
           )} />
           <div className="flex items-center gap-2.5 pl-1">
-            <div className="flex items-center gap-1">
-              <FileText className={cn(
-                "h-4 w-4",
-                theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
-              )} />
+            {!isSuperAdmin && (
               <div className="flex items-center gap-1">
-                <Badge variant="secondary" className="text-xs font-medium">
-                  {facturasTotal}
-                </Badge>
-                {facturasPendientes > 0 && (
-                  <Badge variant="default" className="text-xs font-medium bg-amber-500 hover:bg-amber-600">
-                    {facturasPendientes}
+                <FileText className={cn(
+                  "h-4 w-4",
+                  theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+                )} />
+                <div className="flex items-center gap-1">
+                  <Badge variant="secondary" className="text-xs font-medium">
+                    {facturasTotal}
                   </Badge>
-                )}
+                  {facturasPendientes > 0 && (
+                    <Badge variant="default" className="text-xs font-medium bg-amber-500 hover:bg-amber-600">
+                      {facturasPendientes}
+                    </Badge>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
             {user && (
               <div className="flex items-center gap-1.5">
                 <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-blue-500 text-white text-xs font-semibold">
