@@ -7,7 +7,7 @@ import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 import { mhService } from "./mh-service";
 import { generarFacturasPrueba, EMISOR_PRUEBA } from "./seed-data";
-import { requireAuth, requireTenantAdmin, requireManager, requireApiKey, registerAuthRoutes } from "./auth";
+import { requireAuth, requireTenantAdmin, requireManager, requireApiKey, registerAuthRoutes, checkPermission } from "./auth";
 import * as catalogs from "./catalogs";
 import { validateDTESchema } from "./dgii-validator";
 import { registerAdminRoutes } from "./routes/admin";
@@ -217,7 +217,7 @@ export async function registerRoutes(
   // ENDPOINTS DE PRODUCTOS / SERVICIOS
   // ============================================
 
-  app.get("/api/productos", requireAuth, async (req: Request, res: Response) => {
+  app.get("/api/productos", requireAuth, checkPermission("manage_products"), async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const page = parseInt(req.query.page as string) || 1;
@@ -258,7 +258,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/productos", requireAuth, async (req: Request, res: Response) => {
+  app.post("/api/productos", requireAuth, checkPermission("manage_products"), async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const parsed = insertProductoSchema.safeParse(req.body);
@@ -272,7 +272,7 @@ export async function registerRoutes(
     }
   });
 
-  app.patch("/api/productos/:id", requireAuth, async (req: Request, res: Response) => {
+  app.patch("/api/productos/:id", requireAuth, checkPermission("manage_products"), async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const producto = await storage.updateProducto(req.params.id, tenantId, req.body);
@@ -283,7 +283,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete("/api/productos/:id", requireAuth, async (req: Request, res: Response) => {
+  app.delete("/api/productos/:id", requireAuth, checkPermission("manage_products"), async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const deleted = await storage.deleteProducto(req.params.id, tenantId);
@@ -578,7 +578,11 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/facturas", requireAuthOrApiKey, facturaCreationRateLimiter, async (req: Request, res: Response) => {
+  app.post("/api/facturas", 
+    requireAuthOrApiKey, 
+    facturaCreationRateLimiter,
+    checkPermission("create_invoice"),
+    async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const userId = (req as any).user?.id;
