@@ -1,6 +1,9 @@
 import type { Express, Request, Response } from "express";
 import { requireAuth, requireTenantAdmin, requireSuperAdmin, checkPermission, checkBranchAccess, isValidRoleChange, getPermissionsByRole } from "../auth";
 import { storage } from "../storage";
+import { db } from "../db";
+import { users } from "@shared/schema";
+import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { logAudit, AuditActions, getClientIP, getUserAgent } from "../lib/audit";
 import { z } from "zod";
@@ -177,10 +180,13 @@ export function registerUserRoutes(app: Express): void {
           });
         }
 
-        // Agregar teléfono si existe (mediante query directo)
+        // Agregar teléfono, email y nombre si existen
         if (telefono) {
-          // Nota: Para esto necesitarías agregar un método en storage o hacer un update directo
-          // Por ahora, documentar que falta
+          await storage.updateUserPhone(newUser.id, telefono);
+        }
+        if (email || nombre) {
+          // Actualizar email y nombre mediante update directo
+          await db.update(users).set({ email, nombre }).where(eq(users.id, newUser.id));
         }
 
         await logAudit({
@@ -323,8 +329,7 @@ export function registerUserRoutes(app: Express): void {
         }
 
         const passwordHash = await bcrypt.hash(newPassword, 10);
-        // Necesitarías agregar un método updateUserPassword() en storage
-        // await storage.updateUserPassword(userId, passwordHash);
+        await storage.updateUserPassword(userId, passwordHash);
 
         await logAudit({
           userId: actor.id,
@@ -370,8 +375,7 @@ export function registerUserRoutes(app: Express): void {
           return res.status(403).json({ error: "No puedes desactivar un super_admin" });
         }
 
-        // Necesitarías agregar un método updateUserStatus() en storage
-        // await storage.updateUserStatus(userId, false);
+        await storage.updateUserStatus(userId, false);
 
         await logAudit({
           userId: actor.id,

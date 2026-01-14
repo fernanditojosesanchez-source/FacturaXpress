@@ -8,7 +8,20 @@ const createTenantSchema = z.object({
   nombre: z.string().min(1, "El nombre es requerido"),
   slug: z.string().min(1, "El slug es requerido")
     .regex(/^[a-z0-9-]+$/, "El slug solo puede contener letras minúsculas, números y guiones"),
-  tipo: z.enum(["clinic", "hospital", "lab", "store"]).default("clinic"),
+  tipo: z.enum(["clinic", "hospital", "lab", "store", "restaurant", "other"]).default("clinic"),
+  estado: z.enum(["activo", "prueba", "suspendido"]).default("activo"),
+  contactoNombre: z.string().optional(),
+  contactoEmail: z.string().email().optional().or(z.literal("")),
+  contactoTelefono: z.string().optional(),
+  planPago: z.enum(["mensual", "trimestral", "anual", "custom"]).default("mensual"),
+  estadoPago: z.enum(["activo", "pendiente", "vencido", "cortesia"]).default("activo"),
+  modules: z.object({
+    facturacion: z.boolean().default(true),
+    inventario: z.boolean().default(false),
+    reportes: z.boolean().default(true),
+    contabilidad: z.boolean().default(false),
+    multi_sucursal: z.boolean().default(false),
+  }).optional(),
 });
 
 const updateCredentialsSchema = z.object({
@@ -39,7 +52,18 @@ export function registerAdminRoutes(app: Express) {
         return res.status(400).json({ error: parsed.error.errors });
       }
 
-      const { nombre, slug, tipo } = parsed.data;
+      const { 
+        nombre, 
+        slug, 
+        tipo, 
+        estado, 
+        contactoNombre, 
+        contactoEmail, 
+        contactoTelefono,
+        planPago,
+        estadoPago,
+        modules 
+      } = parsed.data;
       
       const existing = await storage.getTenantBySlug(slug);
       if (existing) {
@@ -53,7 +77,7 @@ export function registerAdminRoutes(app: Express) {
       const bcrypt = await import("bcrypt");
       const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-      // Crear usuario tenant_admin por defecto
+      // Crear usuario tenant_admin con módulos y permisos
       const adminUser = await storage.createUser({
         username: `admin-${slug}`,
         password: hashedPassword, 
@@ -61,8 +85,40 @@ export function registerAdminRoutes(app: Express) {
         role: "tenant_admin"
       });
 
+      // Actualizar permisos del admin con módulos habilitados
+      if (modules) {
+        await storage.updateUserPermissions(adminUser.id, {
+          modulos_habilitados: modules,
+        });
+      }
+
+      // Actualizar información de contacto si existe
+      if (contactoEmail || contactoNombre || contactoTelefono) {
+        const { db } = await import("@db");
+        const { users } = await import("@db/schema");
+        const { eq } = await import("drizzle-orm");
+        
+        await db.update(users).set({
+          email: contactoEmail || undefined,
+          nombre: contactoNombre || undefined,
+          telefono: contactoTelefono || undefined,
+        }).where(eq(users.id, adminUser.id));
+      }
+
+      // TODO: Guardar estado, planPago, estadoPago en tabla tenants cuando se agreguen esas columnas
+
       // Retornar la contraseña en texto plano SOLO una vez al crear
-      res.status(201).json({ tenant, adminUser, initialPassword: plainPassword });
+      res.status(201).json({ 
+        tenant, 
+        adminUser, 
+        initialPassword: plainPassword,
+        config: {
+          estado,
+          planPago,
+          estadoPago,
+          modules,
+        }
+      });
     } catch (error) {
       console.error("Error creating tenant:", error);
       res.status(500).json({ message: "Error al crear tenant" });

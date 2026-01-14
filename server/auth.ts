@@ -224,13 +224,15 @@ export function registerAuthRoutes(app: Express) {
       await logLoginAttempt({ username: user.username, ipAddress, success: true, userAgent });
       await logAudit({ userId: user.id, action: AuditActions.LOGIN_SUCCESS, ipAddress, userAgent });
 
-      // Generar tokens JWT
+      // Generar tokens JWT con permisos completos
       const tokenPayload: TokenPayload = {
         userId: user.id,
         username: user.username,
         email: user.email || undefined,
         role: user.role,
         tenantId: user.tenantId || undefined,
+        sucursales_asignadas: (user as any).sucursales_asignadas || null,
+        modulos_habilitados: (user as any).modulos_habilitados || null,
       };
 
       const accessToken = generateAccessToken(tokenPayload);
@@ -260,6 +262,8 @@ export function registerAuthRoutes(app: Express) {
           email: user.email,
           role: user.role,
           tenantId: user.tenantId,
+          sucursales_asignadas: (user as any).sucursales_asignadas,
+          modulos_habilitados: (user as any).modulos_habilitados,
         },
       });
     } catch (error) {

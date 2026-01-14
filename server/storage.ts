@@ -48,6 +48,9 @@ export interface IStorage {
   }): Promise<void>;
   listUsersByTenant(tenantId: string): Promise<any[]>;
   deleteUser(userId: string): Promise<void>;
+  updateUserPassword(userId: string, passwordHash: string): Promise<void>;
+  updateUserStatus(userId: string, activo: boolean): Promise<void>;
+  updateUserPhone(userId: string, telefono: string): Promise<void>;
   
   // Clientes (Receptores)
   getReceptores(tenantId: string): Promise<any[]>;
@@ -261,6 +264,18 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(userId: string): Promise<void> {
     await db.delete(users).where(eq(users.id, userId));
+  }
+
+  async updateUserPassword(userId: string, passwordHash: string): Promise<void> {
+    await db.update(users).set({ password: passwordHash }).where(eq(users.id, userId));
+  }
+
+  async updateUserStatus(userId: string, activo: boolean): Promise<void> {
+    await db.update(users).set({ activo }).where(eq(users.id, userId));
+  }
+
+  async updateUserPhone(userId: string, telefono: string): Promise<void> {
+    await db.update(users).set({ telefono }).where(eq(users.id, userId));
   }
 
   async getReceptores(tenantId: string): Promise<any[]> {
