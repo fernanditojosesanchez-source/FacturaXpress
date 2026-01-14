@@ -181,76 +181,92 @@ export default function SuperAdminPage() {
         </div>
 
         {/* Métricas Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border-blue-400/30">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-blue-100">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700 border-0 shadow-xl hover:shadow-2xl transition-all">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-white/90 uppercase tracking-wide">
                 Total Empresas
               </CardTitle>
-              <Building2 className="h-5 w-5 text-blue-300" />
+              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                <Building2 className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
+            <CardContent className="relative">
+              <div className="text-4xl font-bold text-white mb-1">
                 {isLoadingMetrics ? (
-                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <Loader2 className="h-8 w-8 animate-spin" />
                 ) : (
                   metrics?.totalEmpresas || 0
                 )}
               </div>
+              <p className="text-sm text-white/70">Clientes registrados</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-400/30">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-green-100">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-700 border-0 shadow-xl hover:shadow-2xl transition-all">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-white/90 uppercase tracking-wide">
                 Empresas Activas
               </CardTitle>
-              <TrendingUp className="h-5 w-5 text-green-300" />
+              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                <TrendingUp className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
+            <CardContent className="relative">
+              <div className="text-4xl font-bold text-white mb-1">
                 {isLoadingMetrics ? (
-                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <Loader2 className="h-8 w-8 animate-spin" />
                 ) : (
                   metrics?.empresasActivas || 0
                 )}
               </div>
+              <p className="text-sm text-white/70">En operación actual</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-400/30">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-purple-100">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-purple-600 to-pink-700 border-0 shadow-xl hover:shadow-2xl transition-all">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-white/90 uppercase tracking-wide">
                 Total Usuarios
               </CardTitle>
-              <Users className="h-5 w-5 text-purple-300" />
+              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                <Users className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
+            <CardContent className="relative">
+              <div className="text-4xl font-bold text-white mb-1">
                 {isLoadingMetrics ? (
-                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <Loader2 className="h-8 w-8 animate-spin" />
                 ) : (
                   metrics?.totalUsuarios || 0
                 )}
               </div>
+              <p className="text-sm text-white/70">Usuarios del sistema</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-500/20 to-red-500/20 border-orange-400/30">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-orange-100">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-orange-600 to-red-700 border-0 shadow-xl hover:shadow-2xl transition-all">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
+            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-white/90 uppercase tracking-wide">
                 Total Facturas
               </CardTitle>
-              <FileText className="h-5 w-5 text-orange-300" />
+              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
+                <FileText className="h-5 w-5 text-white" />
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
+            <CardContent className="relative">
+              <div className="text-4xl font-bold text-white mb-1">
                 {isLoadingMetrics ? (
-                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <Loader2 className="h-8 w-8 animate-spin" />
                 ) : (
                   metrics?.totalFacturas || 0
                 )}
               </div>
+              <p className="text-sm text-white/70">Documentos emitidos</p>
             </CardContent>
           </Card>
         </div>
@@ -432,58 +448,247 @@ function CreateTenantDialog({
   onSubmit: (data: any) => void;
   isPending: boolean;
 }) {
-  const [data, setData] = useState({ nombre: "", slug: "", tipo: "clinic" });
+  const [data, setData] = useState({
+    nombre: "",
+    slug: "",
+    tipo: "clinic",
+    estado: "activo",
+    contactoNombre: "",
+    contactoEmail: "",
+    contactoTelefono: "",
+    planPago: "mensual",
+    estadoPago: "activo",
+    modules: {
+      facturacion: true,
+      inventario: false,
+      reportes: true,
+      contabilidad: false,
+      multi_sucursal: false,
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(data);
   };
 
+  const handleModuleToggle = (module: string) => {
+    setData({
+      ...data,
+      modules: { ...data.modules, [module]: !data.modules[module as keyof typeof data.modules] },
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nueva Empresa SaaS</DialogTitle>
           <DialogDescription>
-            Crea un nuevo inquilino (tenant). Se generará un usuario administrador automáticamente.
+            Crea un nuevo inquilino (tenant) con configuración completa. Se generará un usuario administrador automáticamente.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label>Nombre Comercial</Label>
-            <Input
-              value={data.nombre}
-              onChange={(e) => setData({ ...data, nombre: e.target.value })}
-              placeholder="Ej: Ferretería El Clavo"
-              required
-            />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Información Básica */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-foreground">Información Básica</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Nombre Comercial *</Label>
+                <Input
+                  value={data.nombre}
+                  onChange={(e) => setData({ ...data, nombre: e.target.value })}
+                  placeholder="Ej: Ferretería El Clavo"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Slug (Identificador único) *</Label>
+                <Input
+                  value={data.slug}
+                  onChange={(e) => setData({ ...data, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                  placeholder="ej: ferreteria-el-clavo"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Tipo de Negocio</Label>
+                <Select
+                  value={data.tipo}
+                  onValueChange={(val) => setData({ ...data, tipo: val })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="clinic">Clínica Médica</SelectItem>
+                    <SelectItem value="hospital">Hospital</SelectItem>
+                    <SelectItem value="lab">Laboratorio</SelectItem>
+                    <SelectItem value="store">Comercio General</SelectItem>
+                    <SelectItem value="restaurant">Restaurante</SelectItem>
+                    <SelectItem value="other">Otro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Estado Inicial</Label>
+                <Select
+                  value={data.estado}
+                  onValueChange={(val) => setData({ ...data, estado: val })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="activo">Activo</SelectItem>
+                    <SelectItem value="prueba">Prueba (30 días)</SelectItem>
+                    <SelectItem value="suspendido">Suspendido</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label>Slug (Identificador único)</Label>
-            <Input
-              value={data.slug}
-              onChange={(e) => setData({ ...data, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
-              placeholder="ej: ferreteria-el-clavo"
-              required
-            />
+
+          {/* Información de Contacto */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-foreground">Contacto Principal</h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Nombre Completo</Label>
+                <Input
+                  value={data.contactoNombre}
+                  onChange={(e) => setData({ ...data, contactoNombre: e.target.value })}
+                  placeholder="Juan Pérez"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={data.contactoEmail}
+                  onChange={(e) => setData({ ...data, contactoEmail: e.target.value })}
+                  placeholder="admin@empresa.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Teléfono</Label>
+                <Input
+                  value={data.contactoTelefono}
+                  onChange={(e) => setData({ ...data, contactoTelefono: e.target.value })}
+                  placeholder="+503 7123-4567"
+                />
+              </div>
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label>Tipo de Negocio</Label>
-            <Select
-              value={data.tipo}
-              onValueChange={(val) => setData({ ...data, tipo: val })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="clinic">Clínica Médica</SelectItem>
-                <SelectItem value="hospital">Hospital</SelectItem>
-                <SelectItem value="lab">Laboratorio</SelectItem>
-                <SelectItem value="store">Comercio General</SelectItem>
-              </SelectContent>
-            </Select>
+
+          {/* Módulos del Sistema */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-foreground">Módulos Habilitados</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent transition-colors">
+                <input
+                  type="checkbox"
+                  id="mod-facturacion"
+                  checked={data.modules.facturacion}
+                  onChange={() => handleModuleToggle('facturacion')}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <label htmlFor="mod-facturacion" className="text-sm font-medium cursor-pointer">
+                  Facturación Electrónica
+                </label>
+              </div>
+              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent transition-colors">
+                <input
+                  type="checkbox"
+                  id="mod-inventario"
+                  checked={data.modules.inventario}
+                  onChange={() => handleModuleToggle('inventario')}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <label htmlFor="mod-inventario" className="text-sm font-medium cursor-pointer">
+                  Inventario
+                </label>
+              </div>
+              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent transition-colors">
+                <input
+                  type="checkbox"
+                  id="mod-reportes"
+                  checked={data.modules.reportes}
+                  onChange={() => handleModuleToggle('reportes')}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <label htmlFor="mod-reportes" className="text-sm font-medium cursor-pointer">
+                  Reportes y Analytics
+                </label>
+              </div>
+              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent transition-colors">
+                <input
+                  type="checkbox"
+                  id="mod-contabilidad"
+                  checked={data.modules.contabilidad}
+                  onChange={() => handleModuleToggle('contabilidad')}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <label htmlFor="mod-contabilidad" className="text-sm font-medium cursor-pointer">
+                  Contabilidad
+                </label>
+              </div>
+              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent transition-colors">
+                <input
+                  type="checkbox"
+                  id="mod-sucursales"
+                  checked={data.modules.multi_sucursal}
+                  onChange={() => handleModuleToggle('multi_sucursal')}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <label htmlFor="mod-sucursales" className="text-sm font-medium cursor-pointer">
+                  Multi-Sucursal
+                </label>
+              </div>
+            </div>
           </div>
+
+          {/* Configuración de Pagos */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-foreground">Configuración de Pago</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Plan de Facturación</Label>
+                <Select
+                  value={data.planPago}
+                  onValueChange={(val) => setData({ ...data, planPago: val })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="mensual">Mensual ($49/mes)</SelectItem>
+                    <SelectItem value="trimestral">Trimestral ($120/3 meses)</SelectItem>
+                    <SelectItem value="anual">Anual ($450/año)</SelectItem>
+                    <SelectItem value="custom">Personalizado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Estado de Pago</Label>
+                <Select
+                  value={data.estadoPago}
+                  onValueChange={(val) => setData({ ...data, estadoPago: val })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="activo">Activo (Al día)</SelectItem>
+                    <SelectItem value="pendiente">Pendiente</SelectItem>
+                    <SelectItem value="vencido">Vencido</SelectItem>
+                    <SelectItem value="cortesia">Cortesía/Gratis</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
