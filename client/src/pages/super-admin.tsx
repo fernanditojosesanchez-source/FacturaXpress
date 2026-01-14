@@ -92,7 +92,7 @@ export default function SuperAdminPage() {
   // Proteger acceso solo para super_admin
   if (user?.role !== "super_admin") {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-900">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-white">
         <Alert variant="destructive" className="max-w-md">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
@@ -158,7 +158,7 @@ export default function SuperAdminPage() {
   };
 
   return (
-    <div className="flex-1 overflow-auto bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-900">
+    <div className="flex-1 overflow-auto bg-gradient-to-br from-gray-50 via-blue-50/30 to-white">
       <div className="p-6">
         {/* Header Super Admin */}
         <div className="mb-8 rounded-xl border border-blue-500/20 bg-blue-900/10 backdrop-blur-sm p-6">
