@@ -160,29 +160,10 @@ export default function SuperAdminPage() {
   return (
     <div className="flex-1 overflow-auto bg-gradient-to-br from-gray-50 via-blue-50/30 to-white">
       <div className="p-6">
-        {/* Header Super Admin */}
-        <div className="mb-8 rounded-xl border border-blue-500/20 bg-blue-900/10 backdrop-blur-sm p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500">
-                <Shield className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-white">Panel SaaS</h1>
-                <p className="text-blue-200 text-sm mt-1">
-                  Gestión centralizada de clientes y configuración
-                </p>
-              </div>
-            </div>
-            <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-3 py-2">
-              Super Administrador
-            </Badge>
-          </div>
-        </div>
 
         {/* Métricas Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700 border-0 shadow-xl hover:shadow-2xl transition-all">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700 border-0 shadow-2xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-300 transform hover:-translate-y-1">
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
             <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-semibold text-white/90 uppercase tracking-wide">
@@ -204,7 +185,7 @@ export default function SuperAdminPage() {
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-700 border-0 shadow-xl hover:shadow-2xl transition-all">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-700 border-0 shadow-2xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-300 transform hover:-translate-y-1">
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
             <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-semibold text-white/90 uppercase tracking-wide">
@@ -226,7 +207,7 @@ export default function SuperAdminPage() {
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden bg-gradient-to-br from-purple-600 to-pink-700 border-0 shadow-xl hover:shadow-2xl transition-all">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-purple-600 to-pink-700 border-0 shadow-2xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-300 transform hover:-translate-y-1">
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
             <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-semibold text-white/90 uppercase tracking-wide">
@@ -248,7 +229,7 @@ export default function SuperAdminPage() {
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden bg-gradient-to-br from-orange-600 to-red-700 border-0 shadow-xl hover:shadow-2xl transition-all">
+          <Card className="relative overflow-hidden bg-gradient-to-br from-orange-600 to-red-700 border-0 shadow-2xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-300 transform hover:-translate-y-1">
             <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
             <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
               <CardTitle className="text-sm font-semibold text-white/90 uppercase tracking-wide">
@@ -281,21 +262,21 @@ export default function SuperAdminPage() {
               </Button>
             </div>
 
-            <Card className="relative overflow-hidden border-0 shadow-2xl hover:shadow-3xl transition-all bg-white/95 backdrop-blur-sm">
+            <Card className="relative overflow-hidden border-0 shadow-2xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-300 bg-white/98 backdrop-blur-sm">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-indigo-50/50" />
               <CardHeader className="relative">
-                <CardTitle className="text-2xl font-bold text-gray-800">Empresas Registradas</CardTitle>
+                <CardTitle className="text-2xl font-bold text-black">Empresas Registradas</CardTitle>
               </CardHeader>
               <CardContent className="relative overflow-x-auto">
                 <Table>
                   <TableHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 sticky top-0">
                     <TableRow className="border-b-2 border-blue-200/50 hover:bg-blue-50/50">
-                      <TableHead className="font-bold text-gray-700">Nombre</TableHead>
-                      <TableHead className="font-bold text-gray-700">Slug (URL)</TableHead>
-                      <TableHead className="font-bold text-gray-700">Tipo</TableHead>
-                      <TableHead className="font-bold text-gray-700">Estado</TableHead>
-                      <TableHead className="font-bold text-gray-700">Registro</TableHead>
-                      <TableHead className="text-right font-bold text-gray-700">Acciones</TableHead>
+                      <TableHead className="font-bold text-black">Nombre</TableHead>
+                      <TableHead className="font-bold text-black">Slug (URL)</TableHead>
+                      <TableHead className="font-bold text-black">Tipo</TableHead>
+                      <TableHead className="font-bold text-black">Estado</TableHead>
+                      <TableHead className="font-bold text-black">Registro</TableHead>
+                      <TableHead className="text-right font-bold text-black">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -307,10 +288,10 @@ export default function SuperAdminPage() {
                       </TableRow>
                     ) : tenants?.map((tenant) => (
                       <TableRow key={tenant.id} className="border-b border-gray-200/50 hover:bg-blue-50/60 transition-colors">
-                        <TableCell className="font-semibold text-gray-800">
+                        <TableCell className="font-semibold text-black">
                           {tenant.nombre}
                         </TableCell>
-                        <TableCell className="text-gray-600 font-mono text-sm">{tenant.slug}</TableCell>
+                        <TableCell className="text-black font-mono text-sm">{tenant.slug}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300">{tenant.tipo}</Badge>
                         </TableCell>
