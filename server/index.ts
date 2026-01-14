@@ -132,7 +132,7 @@ app.use((req, res, next) => {
 
 (async () => {
   try {
-    // Inicializar base de datos SQLite
+    // Inicializar base de datos (PostgreSQL/Supabase)
     log("Inicializando storage...");
     await storage.initialize();
     log("✅ Storage inicializado");
