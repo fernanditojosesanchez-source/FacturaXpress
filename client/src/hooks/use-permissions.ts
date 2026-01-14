@@ -3,7 +3,10 @@ import { useAuth } from "./use-auth";
 export type Permission =
   | "create_invoice"
   | "view_invoices"
+  | "transmit_invoice"
+  | "invalidate_invoice"
   | "cancel_invoice"
+  | "manage_clients"
   | "manage_inventory"
   | "manage_products"
   | "manage_branches"
@@ -38,9 +41,8 @@ export type Role = "super_admin" | "tenant_admin" | "manager" | "cashier" | "acc
  * Hook para validar permisos y módulos en componentes React
  */
 export function usePermissions() {
-  const { data: authData } = useAuth();
-  const user = authData?.user;
-  const tenant = authData?.tenant;
+  const { user } = useAuth();
+  const tenant: any = undefined;
 
   /**
    * Verificar si usuario tiene un permiso específico
@@ -79,7 +81,7 @@ export function usePermissions() {
     if (!user) return false;
 
     // tenant_admin y super_admin acceden a todas
-    if (["tenant_admin", "super_admin"].includes(user.role)) {
+    if (user.role && ["tenant_admin", "super_admin"].includes(user.role)) {
       return true;
     }
 
@@ -132,7 +134,7 @@ export function usePermissions() {
    * Verificar si el rol es alguno de los especificados
    */
   const isAnyRole = (roles: Role[]): boolean => {
-    if (!user) return false;
+    if (!user || !user.role) return false;
     return roles.includes(user.role);
   };
 
@@ -163,7 +165,10 @@ export function getPermissionsByRole(role?: Role): Permission[] {
         "view_audit_logs",
         "create_invoice",
         "view_invoices",
+        "transmit_invoice",
+        "invalidate_invoice",
         "cancel_invoice",
+        "manage_clients",
         "manage_inventory",
         "manage_products",
         "manage_branches",
@@ -181,7 +186,10 @@ export function getPermissionsByRole(role?: Role): Permission[] {
       return [
         "create_invoice",
         "view_invoices",
+        "transmit_invoice",
+        "invalidate_invoice",
         "cancel_invoice",
+        "manage_clients",
         "manage_inventory",
         "manage_products",
         "manage_branches",
@@ -200,7 +208,10 @@ export function getPermissionsByRole(role?: Role): Permission[] {
       return [
         "create_invoice",
         "view_invoices",
+        "transmit_invoice",
+        "invalidate_invoice",
         "cancel_invoice",
+        "manage_clients",
         "view_inventory_branch",
         "request_transfers",
         "view_reports_branch",

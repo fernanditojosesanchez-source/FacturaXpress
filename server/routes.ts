@@ -14,6 +14,7 @@ import { registerAdminRoutes } from "./routes/admin";
 import { registerUserRoutes } from "./routes/users";
 import { facturaCreationRateLimiter, transmisionRateLimiter } from "./lib/rate-limiters";
 import { logAudit, AuditActions, getClientIP, getUserAgent } from "./lib/audit";
+import { sql } from "drizzle-orm";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -177,8 +178,8 @@ export async function registerRoutes(
       if (!parsed.success) {
         return res.status(400).json({ error: parsed.error.errors });
       }
-      const receptor = await storage.createReceptor(tenantId, parsed.data);
-      res.status(201).json(receptor);
+      await storage.upsertReceptor(tenantId, parsed.data);
+      res.status(201).json({ success: true, receptor: parsed.data });
     } catch (error: any) {
       if (error.message?.includes("unique")) {
         return res.status(409).json({ error: "Ya existe un cliente con este número de documento" });
@@ -361,7 +362,7 @@ export async function registerRoutes(
       const crypto = await import("crypto");
       const huella = crypto
         .createHash("sha256")
-        .update(parsed.data.archivo)
+        .update(JSON.stringify(parsed.data))
         .digest("hex");
 
       const certificado = await storage.createCertificado(tenantId, {
@@ -434,10 +435,11 @@ export async function registerRoutes(
   app.post("/api/certificados/:id/activar", requireAuth, requireTenantAdmin, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
+      const { db } = await import("./db");
       
       // Desactivar todos los demás certificados
-      await storage.db.execute(
-        `UPDATE certificados SET activo = false WHERE tenant_id = '${tenantId}' AND id != '${req.params.id}'`
+      await db.execute(
+        sql`UPDATE certificados SET activo = false WHERE tenant_id = ${tenantId} AND id != ${req.params.id}`
       );
 
       // Activar el certificado seleccionado
@@ -618,7 +620,8 @@ export async function registerRoutes(
         ...parsed.data,
         numeroControl,
         codigoGeneracion,
-        tenantId
+        tenantId,
+        externalId: parsed.data.externalId || undefined,
       };
 
       // Validación DGII Schema
@@ -1048,6 +1051,63 @@ export async function registerRoutes(
     }
   });
 
+  // Procesar la cola de anulaciones pendientes
+  app.post("/api/anulaciones/procesar", requireAuth, checkPermission("invalidate_invoice"), async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const pendientes = await storage.getAnulacionesPendientes(tenantId);
+
+      const resultados: Array<{ codigoGeneracion: string; estado: string; selloAnulacion?: string; error?: string }> = [];
+
+      for (const item of pendientes) {
+        try {
+          const resultado = await mhService.invalidarDTE(
+            item.codigoGeneracion,
+            item.motivo,
+            tenantId
+          );
+
+          if (resultado.success) {
+            await storage.updateAnulacionStatus(
+              item.codigoGeneracion,
+              "aceptado",
+              resultado.selloAnulacion,
+              { fechaAnulo: resultado.fechaAnulo }
+            );
+
+            // Marcar la factura como anulada
+            await storage.updateFactura(item.facturaId, tenantId, {
+              estado: "anulada",
+            });
+
+            resultados.push({
+              codigoGeneracion: item.codigoGeneracion,
+              estado: "aceptado",
+              selloAnulacion: resultado.selloAnulacion,
+            });
+          } else {
+            // No aceptado por MH
+            const errorMsg = "MH no aceptó la anulación";
+            await storage.updateAnulacionStatus(item.codigoGeneracion, "pendiente", undefined, undefined, errorMsg);
+            resultados.push({ codigoGeneracion: item.codigoGeneracion, estado: "pendiente", error: errorMsg });
+          }
+        } catch (e) {
+          const errorMsg = e instanceof Error ? e.message : "Error al procesar anulación";
+          await storage.updateAnulacionStatus(item.codigoGeneracion, "pendiente", undefined, undefined, errorMsg);
+          resultados.push({ codigoGeneracion: item.codigoGeneracion, estado: "pendiente", error: errorMsg });
+        }
+      }
+
+      res.json({
+        totalProcesados: resultados.length,
+        resultados,
+      });
+    } catch (error) {
+      console.error("Error al procesar anulaciones:", error);
+      res.status(500).json({ error: "Error al procesar anulaciones pendientes" });
+    }
+  });
+
   app.post("/api/anulaciones/procesar", requireAuth, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
@@ -1190,7 +1250,8 @@ export async function registerRoutes(
         
         const facturasCreadas = [];
         for (const factura of facturasPrueba) {
-          const creada = await storage.createFactura(tenantId, factura);
+          const facturaCompleta = { ...factura, externalId: factura.externalId || undefined };
+          const creada = await storage.createFactura(tenantId, facturaCompleta);
           facturasCreadas.push(creada);
         }
 

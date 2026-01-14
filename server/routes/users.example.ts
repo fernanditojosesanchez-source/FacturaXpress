@@ -83,8 +83,6 @@ usersRouter.post(
       const newUser = await storage.createUser({
         tenantId: tenantId as any,
         username,
-        email: email || undefined,
-        nombre: nombre || undefined,
         password,
         role,
       });

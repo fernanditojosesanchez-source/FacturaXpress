@@ -105,7 +105,13 @@ export default function SuperAdminPage() {
 
   // Queries
   const { data: tenants, isLoading } = useQuery<Tenant[]>({
-    queryKey: ["/api/admin/tenants"],
+    queryKey: ["admin", "tenants"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/tenants", { credentials: "include" });
+      if (!res.ok) throw new Error("Error al listar empresas");
+      return res.json();
+    },
+    retry: false,
   });
 
   const { data: metrics, isLoading: isLoadingMetrics } = useAdminMetrics();
@@ -122,7 +128,7 @@ export default function SuperAdminPage() {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/tenants"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "tenants"] });
       queryClient.invalidateQueries({ queryKey: ["admin", "metrics"] });
       setIsCreateOpen(false);
       toast({ title: "Éxito", description: "Empresa creada correctamente" });
@@ -691,7 +697,7 @@ function EditTenantDialog({
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/tenants"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "tenants"] });
       toast({
         title: "Actualizado",
         description: "Información de la empresa actualizada correctamente",

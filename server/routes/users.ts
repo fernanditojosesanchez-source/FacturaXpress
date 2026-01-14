@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { requireAuth, requireTenantAdmin, requireSuperAdmin, checkPermission, checkBranchAccess, isValidRoleChange, getPermissionsByRole } from "../auth";
 import { storage } from "../storage";
 import bcrypt from "bcrypt";
-import { logAudit, AuditActions } from "../lib/audit";
+import { logAudit, AuditActions, getClientIP, getUserAgent } from "../lib/audit";
 import { z } from "zod";
 
 // Schemas de validación
@@ -61,9 +61,12 @@ export function registerUserRoutes(app: Express): void {
           }))
         );
 
-        await logAudit(actor.id, AuditActions.USER_LIST, {
-          tenantId,
-          count: usuarios.length,
+        await logAudit({
+          userId: actor.id,
+          action: AuditActions.USER_LIST,
+          ipAddress: getClientIP(req),
+          userAgent: getUserAgent(req),
+          details: { tenantId, count: usuarios.length },
         });
       } catch (err) {
         console.error("Error listando usuarios:", err);
@@ -162,8 +165,6 @@ export function registerUserRoutes(app: Express): void {
         const newUser = await storage.createUser({
           tenantId: tenantId as any,
           username,
-          email: email || undefined,
-          nombre: nombre || undefined,
           password: passwordHash,
           role,
         });
@@ -182,10 +183,12 @@ export function registerUserRoutes(app: Express): void {
           // Por ahora, documentar que falta
         }
 
-        await logAudit(actor.id, AuditActions.USER_CREATE, {
-          username,
-          role,
-          targetUserId: newUser.id,
+        await logAudit({
+          userId: actor.id,
+          action: AuditActions.USER_CREATE,
+          ipAddress: getClientIP(req),
+          userAgent: getUserAgent(req),
+          details: { username, role, targetUserId: newUser.id },
         });
 
         res.status(201).json({
@@ -255,9 +258,12 @@ export function registerUserRoutes(app: Express): void {
           modulos_habilitados,
         });
 
-        await logAudit(actor.id, AuditActions.USER_UPDATE, {
-          targetUserId: userId,
-          changes: { role, sucursales_asignadas, modulos_habilitados },
+        await logAudit({
+          userId: actor.id,
+          action: AuditActions.USER_UPDATE,
+          ipAddress: getClientIP(req),
+          userAgent: getUserAgent(req),
+          details: { targetUserId: userId, changes: { role, sucursales_asignadas, modulos_habilitados } },
         });
 
         res.json({
@@ -320,9 +326,12 @@ export function registerUserRoutes(app: Express): void {
         // Necesitarías agregar un método updateUserPassword() en storage
         // await storage.updateUserPassword(userId, passwordHash);
 
-        await logAudit(actor.id, AuditActions.PASSWORD_CHANGE, {
-          targetUserId: userId,
-          changedOwn: isChangingOwn,
+        await logAudit({
+          userId: actor.id,
+          action: AuditActions.PASSWORD_CHANGE,
+          ipAddress: getClientIP(req),
+          userAgent: getUserAgent(req),
+          details: { targetUserId: userId, changedOwn: isChangingOwn },
         });
 
         res.json({ message: "Contraseña actualizada" });
@@ -364,8 +373,12 @@ export function registerUserRoutes(app: Express): void {
         // Necesitarías agregar un método updateUserStatus() en storage
         // await storage.updateUserStatus(userId, false);
 
-        await logAudit(actor.id, AuditActions.USER_DEACTIVATE, {
-          targetUserId: userId,
+        await logAudit({
+          userId: actor.id,
+          action: AuditActions.USER_DEACTIVATE,
+          ipAddress: getClientIP(req),
+          userAgent: getUserAgent(req),
+          details: { targetUserId: userId },
         });
 
         res.json({ message: "Usuario desactivado" });
@@ -411,9 +424,12 @@ export function registerUserRoutes(app: Express): void {
 
         await storage.deleteUser(userId);
 
-        await logAudit(actor.id, AuditActions.USER_DELETE, {
-          targetUserId: userId,
-          username: user.username,
+        await logAudit({
+          userId: actor.id,
+          action: AuditActions.USER_DELETE,
+          ipAddress: getClientIP(req),
+          userAgent: getUserAgent(req),
+          details: { targetUserId: userId, username: user.username },
         });
 
         res.json({ message: "Usuario eliminado" });

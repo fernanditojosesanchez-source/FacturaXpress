@@ -372,7 +372,10 @@ export function registerAuthRoutes(app: Express) {
 export type Permission =
   | "create_invoice"
   | "view_invoices"
+  | "transmit_invoice"
+  | "invalidate_invoice"
   | "cancel_invoice"
+  | "manage_clients"
   | "manage_inventory"
   | "manage_products"
   | "manage_branches"
@@ -413,7 +416,10 @@ export function getPermissionsByRole(role: string): Permission[] {
         "view_audit_logs",
         "create_invoice",
         "view_invoices",
+        "transmit_invoice",
+        "invalidate_invoice",
         "cancel_invoice",
+        "manage_clients",
         "manage_inventory",
         "manage_products",
         "manage_branches",
@@ -431,7 +437,10 @@ export function getPermissionsByRole(role: string): Permission[] {
       return [
         "create_invoice",
         "view_invoices",
+        "transmit_invoice",
+        "invalidate_invoice",
         "cancel_invoice",
+        "manage_clients",
         "manage_inventory",
         "manage_products",
         "manage_branches",
@@ -450,7 +459,10 @@ export function getPermissionsByRole(role: string): Permission[] {
       return [
         "create_invoice",
         "view_invoices",
+        "transmit_invoice",
+        "invalidate_invoice",
         "cancel_invoice",
+        "manage_clients",
         "view_inventory_branch",
         "request_transfers",
         "view_reports_branch",
