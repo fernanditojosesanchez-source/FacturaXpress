@@ -306,32 +306,32 @@ export default function SuperAdminPage() {
                         </TableCell>
                       </TableRow>
                     ) : tenants?.map((tenant) => (
-                      <TableRow key={tenant.id} className=\"border-b border-gray-200/50 hover:bg-blue-50/60 transition-colors\">
-                        <TableCell className=\"font-semibold text-gray-800\">
+                      <TableRow key={tenant.id} className="border-b border-gray-200/50 hover:bg-blue-50/60 transition-colors">
+                        <TableCell className="font-semibold text-gray-800">
                           {tenant.nombre}
                         </TableCell>
-                        <TableCell className=\"text-gray-600 font-mono text-sm\">{tenant.slug}</TableCell>
+                        <TableCell className="text-gray-600 font-mono text-sm">{tenant.slug}</TableCell>
                         <TableCell>
-                          <Badge variant=\"outline\" className=\"bg-blue-100 text-blue-700 border-blue-300\">{tenant.tipo}</Badge>
+                          <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300">{tenant.tipo}</Badge>
                         </TableCell>
                         <TableCell>
                           <Badge
                             className={
-                              tenant.estado === \"activo\"
-                                ? \"bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md hover:shadow-lg transition-all\"
-                                : \"bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-md hover:shadow-lg transition-all\"
+                              tenant.estado === "activo"
+                                ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md hover:shadow-lg transition-all"
+                                : "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-md hover:shadow-lg transition-all"
                             }
                           >
                             {tenant.estado}
                           </Badge>
                         </TableCell>
-                        <TableCell className=\"text-gray-600 text-sm\">
-                          {new Date(tenant.createdAt).toLocaleDateString(\"es-ES\")}
+                        <TableCell className="text-gray-600 text-sm">
+                          {new Date(tenant.createdAt).toLocaleDateString("es-ES")}
                         </TableCell>
-                        <TableCell className=\"text-right\">
+                        <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant=\"ghost\" size=\"sm\" className=\"hover:bg-blue-100 hover:text-blue-700 transition-colors\">
+                              <Button variant="ghost" size="sm" className="hover:bg-blue-100 hover:text-blue-700 transition-colors">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
