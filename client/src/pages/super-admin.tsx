@@ -273,25 +273,29 @@ export default function SuperAdminPage() {
 
         <div className="grid gap-6">
             <div className="flex justify-end">
-              <Button onClick={() => setIsCreateOpen(true)}>
+              <Button 
+                onClick={() => setIsCreateOpen(true)}
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all"
+              >
                 <Plus className="mr-2 h-4 w-4" /> Nueva Empresa
               </Button>
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Empresas Registradas</CardTitle>
+            <Card className="relative overflow-hidden border-0 shadow-2xl hover:shadow-3xl transition-all bg-white/95 backdrop-blur-sm">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-indigo-50/50" />
+              <CardHeader className="relative">
+                <CardTitle className="text-2xl font-bold text-gray-800">Empresas Registradas</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="relative overflow-x-auto">
                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nombre</TableHead>
-                      <TableHead>Slug (URL)</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead>Registro</TableHead>
-                      <TableHead className="text-right">Acciones</TableHead>
+                  <TableHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 sticky top-0">
+                    <TableRow className="border-b-2 border-blue-200/50 hover:bg-blue-50/50">
+                      <TableHead className="font-bold text-gray-700">Nombre</TableHead>
+                      <TableHead className="font-bold text-gray-700">Slug (URL)</TableHead>
+                      <TableHead className="font-bold text-gray-700">Tipo</TableHead>
+                      <TableHead className="font-bold text-gray-700">Estado</TableHead>
+                      <TableHead className="font-bold text-gray-700">Registro</TableHead>
+                      <TableHead className="text-right font-bold text-gray-700">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -302,32 +306,32 @@ export default function SuperAdminPage() {
                         </TableCell>
                       </TableRow>
                     ) : tenants?.map((tenant) => (
-                      <TableRow key={tenant.id}>
-                        <TableCell className="font-medium">
+                      <TableRow key={tenant.id} className=\"border-b border-gray-200/50 hover:bg-blue-50/60 transition-colors\">
+                        <TableCell className=\"font-semibold text-gray-800\">
                           {tenant.nombre}
                         </TableCell>
-                        <TableCell>{tenant.slug}</TableCell>
+                        <TableCell className=\"text-gray-600 font-mono text-sm\">{tenant.slug}</TableCell>
                         <TableCell>
-                          <Badge variant="outline">{tenant.tipo}</Badge>
+                          <Badge variant=\"outline\" className=\"bg-blue-100 text-blue-700 border-blue-300\">{tenant.tipo}</Badge>
                         </TableCell>
                         <TableCell>
                           <Badge
                             className={
-                              tenant.estado === "activo"
-                                ? "bg-green-100 text-green-800 hover:bg-green-100"
-                                : "bg-red-100 text-red-800"
+                              tenant.estado === \"activo\"
+                                ? \"bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md hover:shadow-lg transition-all\"
+                                : \"bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-md hover:shadow-lg transition-all\"
                             }
                           >
                             {tenant.estado}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                          {new Date(tenant.createdAt).toLocaleDateString()}
+                        <TableCell className=\"text-gray-600 text-sm\">
+                          {new Date(tenant.createdAt).toLocaleDateString(\"es-ES\")}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className=\"text-right\">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
+                              <Button variant=\"ghost\" size=\"sm\" className=\"hover:bg-blue-100 hover:text-blue-700 transition-colors\">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
