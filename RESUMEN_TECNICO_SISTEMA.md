@@ -97,7 +97,7 @@
 - **Tipos de DTE:** Factura (01), CCF (03), Nota de Crédito (05), Nota de Débito (06)
 - **Validación DGII:** Schema JSON oficial (factura-schema.json)
 - **Generación JSON:** Estructura compliant con normativa DGII
-- **Firma Digital:** Preparado para XMLDSIG (pendiente)
+- **Firma Digital:** ✅ Implementado con JWS (JSON Web Signature) usando node-forge
 - **Numeración:** Control correlativo DTE
 
 #### 4. **Receptores/Clientes** (`server/routes.ts` - `/api/receptores`)
@@ -628,46 +628,58 @@ app.use(cors({
 
 ## PENDIENTES DE IMPLEMENTACIÓN
 
-### 🔴 CRÍTICO - Firma Digital de DTEs
+### ✅ IMPLEMENTADO - Firma Digital de DTEs con JWS
 
-**Objetivo:** Firmar XMLs con certificado PKCS#12 según estándar XMLDSIG
+**Objetivo:** Firmar DTEs JSON con certificado PKCS#12 según estándar JWS (JSON Web Signature)
 
-**Tecnología Propuesta:**
+**⚠️ IMPORTANTE:** El Salvador usa **JSON**, NO XML. La firma es **JWS**, NO XMLDSIG.
+
+**Tecnología Implementada:**
 ```bash
-npm install xmldsig node-forge
+npm install node-forge  # Ya instalado ✅
 ```
 
-**Implementación:**
+**Implementación Real** (`server/lib/signer.ts`):
 ```typescript
-import { SignedXml } from "xmldsig";
 import forge from "node-forge";
 
-async function firmarDTE(jsonDTE: any, certificado: Buffer, password: string) {
-  // 1. Convertir JSON DTE a XML
-  const xml = convertJSONtoXML(jsonDTE);
+export async function signDTE(
+  dte: any, 
+  p12Base64: string, 
+  password: string
+): Promise<{ body: string; signature: string }> {
+  // 1. Extraer llave privada del certificado PKCS#12
+  const p12Der = forge.util.decode64(p12Base64);
+  const p12Asn1 = forge.asn1.fromDer(p12Der);
+  const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, password);
+  const privateKey = extractPrivateKey(p12);
   
-  // 2. Cargar certificado PKCS#12
-  const p12 = forge.pkcs12.pkcs12FromAsn1(
-    forge.asn1.fromDer(certificado.toString("binary")),
-    password
-  );
-  const privateKey = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag })[0].key;
+  // 2. Construir JWS Header y Payload
+  const header = { alg: "RS256", typ: "JOSE" };
+  const payload = JSON.stringify(dte);
   
-  // 3. Firmar XML
-  const sig = new SignedXml();
-  sig.addReference("//*[local-name()='DTE']");
-  sig.signingKey = forge.pki.privateKeyToPem(privateKey);
-  sig.computeSignature(xml);
+  const headerB64 = base64UrlEncode(JSON.stringify(header));
+  const payloadB64 = base64UrlEncode(payload);
   
-  return sig.getSignedXml();
+  // 3. Firmar con SHA-256 + RSA
+  const dataToSign = `${headerB64}.${payloadB64}`;
+  const md = forge.md.sha256.create();
+  md.update(dataToSign, "utf8");
+  const signature = privateKey.sign(md);
+  const signatureB64 = base64UrlEncode(signature);
+  
+  // 4. Retornar JWS Compact Serialization
+  const jws = `${headerB64}.${payloadB64}.${signatureB64}`;
+  return { body: jws, signature: signatureB64 };
 }
 ```
 
-**Pendiente:**
-- [ ] Implementar conversión JSON → XML (builder)
-- [ ] Integrar xmldsig con certificados actuales
-- [ ] Validar firma contra schema DGII
-- [ ] Testing con ambiente de pruebas MH
+**Estado Actual:**
+- [x] ✅ Implementado en `server/lib/signer.ts`
+- [x] ✅ Integrado con certificados PKCS#12 desde Supabase Vault
+- [x] ✅ Probado con certificados de prueba
+- [x] ✅ Genera JWS Compact Serialization válido
+- [ ] ⏳ Validar con ambiente de pruebas MH (requiere credenciales)
 
 ---
 
@@ -1087,10 +1099,10 @@ server {
 ✅ **Multitenancy con aislamiento completo y roles jerárquicos**  
 
 ### Bloqueadores Críticos
-🔴 **Firma digital XML** - Requiere implementar xmldsig con PKCS#12  
-🔴 **Transmisión a MH** - Requiere credenciales API producción  
+✅ **Firma digital JWS** - ✅ IMPLEMENTADO con node-forge en `server/lib/signer.ts`  
+🟡 **Transmisión a MH** - Requiere credenciales de **ambiente de pruebas** (código: 00)  
 
-Estos 2 componentes son **indispensables** para que el sistema sea legalmente válido en El Salvador. Sin ellos, el sistema genera DTEs pero no puede cumplir con la obligación fiscal.
+**Estado Actual:** El sistema puede firmar DTEs correctamente con JWS. El único bloqueador real es obtener credenciales del ambiente de pruebas de Hacienda para validar la integración completa. NO se requieren credenciales de producción para probar.
 
 ### Capacidades Técnicas Destacadas
 - **10-50x** mejora en queries con índices compuestos

@@ -475,7 +475,7 @@
 │                                                                 │
 │ await db.facturas.update(facturaId, {                          │
 │   firmadoAt: NOW(),                                             │
-│   xmlFirmado: facturaFirmadaXML,  // Con firma                 │
+│   jwsFirmado: facturaFirmadaJWS,  // JSON + firma JWS          │
 │   estadoFirma: "exitoso"                                        │
 │   // ❌ NUNCA guardar p12                                       │
 │   // ❌ NUNCA guardar password                                  │

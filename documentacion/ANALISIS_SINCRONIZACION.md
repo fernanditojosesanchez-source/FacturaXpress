@@ -214,10 +214,13 @@ createdAt: z.string().optional()  // ISO timestamp para registro
    - Signature: Hash cifrado
    - Concatenación: `Base64(Header).Base64(Payload).Base64(Signature)`
 
-**Librerías Recomendadas** (no implementadas):
-- `node-jose` (Node.js oficial)
-- `node-forge` (alternativa)
-- `xmldsig` + `xml-crypto` (si se requiere XML en futuro)
+**Librerías Implementadas** (✅ Ya en uso):
+- ✅ `node-forge` - Usado en `server/lib/signer.ts` para JWS
+- ℹ️ `node-jose` - Alternativa no necesaria (forge es suficiente)
+
+**❌ NO USAR:**
+- ❌ `xmldsig` - El Salvador NO usa XML para DTEs
+- ❌ `xml-crypto` - Innecesario, el formato es JSON puro
 
 **Bloqueador**: Requiere certificado digital del MH
 

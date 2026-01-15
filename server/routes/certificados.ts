@@ -326,8 +326,8 @@ router.post(
         ipAddress
       );
 
-      // ✅ Firmar documento (interno, nunca sale la firma al cliente directamente)
-      // const firmaXML = signXML(documentoXML, p12Base64, contraseña);
+      // ✅ Firmar documento usando JWS (ver server/lib/signer.ts)
+      // Ejemplo: const { body: jws } = await signDTE(documento, p12Base64, contraseña);
 
       // ✅ El secreto NUNCA se devuelve al cliente
       res.json({

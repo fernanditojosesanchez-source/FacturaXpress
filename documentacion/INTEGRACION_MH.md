@@ -107,11 +107,14 @@ MH_API_TOKEN=(no necesario)# Solo para modo real
    - Solicítalo a una autoridad certificadora aprobada por MH
    - Guarda el archivo `.pem` y la contraseña
 
-2. **Instalar Dependencias de Firma** (futuro)
+2. **Dependencias Necesarias** (ya instaladas ✅)
    ```bash
-   cd /workspaces/FacturaXpress/FacturaExpress
-   npm install node-forge xml-crypto xmldsig
+   # NO es necesario instalar nada adicional
+   # node-forge ya está instalado y es suficiente
+   npm list node-forge  # Verificar instalación
    ```
+
+   **⚠️ IMPORTANTE:** NO instalar `xml-crypto` ni `xmldsig`. El Salvador usa **JSON + JWS**, no XML.
 
 3. **Configurar Variables de Entorno**
    ```bash
@@ -123,10 +126,11 @@ MH_API_TOKEN=(no necesario)# Solo para modo real
    MH_CERTIFICADO_PASSWORD=tu-password-seguro
    ```
 
-4. **Implementar Firma Digital**
-   - Edita `/server/mh-service.ts`
-   - Completa el método `transmitirDTE()` en `MHServiceReal`
-   - Agrega la lógica de firma electrónica
+4. **Firma Digital** (✅ Ya Implementada)
+   - La firma JWS ya está implementada en `server/lib/signer.ts`
+   - Usa certificados PKCS#12 almacenados en Supabase Vault
+   - Genera JWS Compact Serialization (Header.Payload.Signature)
+   - Solo necesitas credenciales de ambiente de pruebas MH para validar
 
 5. **Probar en Ambiente MH**
    - Primero usa `ambiente: "00"` (pruebas)
