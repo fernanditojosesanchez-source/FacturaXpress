@@ -335,42 +335,62 @@ ls -la VAULT_*.md
 
 ---
 
-## 🎯 PRÓXIMOS PASOS (No Bloqueantes)
+## 🎯 ESTADO DE IMPLEMENTACIÓN
 
-### 1. Integrar endpoints en producción
-
+### ✅ 1. Endpoints de certificados - COMPLETADO
+Los endpoints ya están integrados en `server/index.ts`:
 ```typescript
-// En server/index.ts
 import certificadosRouter from "./routes/certificados";
-app.use("/api", certificadosRouter);
 ```
 
-### 2. Migrar datos existentes
+### 📋 2. Tareas Pendientes (Opcionales)
 
-Crear script: `scripts/migrate-to-vault.ts`
-- Leer de `tenantCredentials` (viejo)
-- Guardar en Vault (nuevo)
-- Verificar integridad
-- Eliminar viejos
+#### 2.1 Migrar datos existentes (si aplica)
+Si ya tienes certificados en la tabla vieja `tenantCredentials`, crear:
 
-### 3. Crear tests Jest
+**Script:** `scripts/migrate-to-vault.ts`
+```typescript
+// Leer de tenantCredentials (viejo)
+// Guardar en Vault (nuevo) usando storage.saveCertificateToVault()
+// Verificar integridad
+// Eliminar registros viejos
+```
+
+**Estado:** 🟡 Pendiente (solo si hay datos legacy)
+
+#### 2.2 Tests Jest unitarios
+Actualmente existe `scripts/test-vault-simple.ts` que funciona perfectamente.
+Para tests Jest formales:
 
 ```bash
+npm install --save-dev jest @types/jest ts-jest
 npm test -- __tests__/vault.test.ts
 ```
 
-### 4. Monitorear en producción
+**Estado:** 🟡 Opcional (ya hay tests funcionales en scripts/)
+
+#### 2.3 Monitoreo en producción
+El logging ya está implementado en `vault_access_log`. Para ver accesos:
 
 ```sql
 -- Ver accesos últimas 24h
 SELECT * FROM vault_access_log 
 WHERE created_at > NOW() - INTERVAL '1 day'
 ORDER BY created_at DESC;
+
+-- Ver errores recientes
+SELECT * FROM vault_access_log 
+WHERE success = false
+ORDER BY created_at DESC
+LIMIT 50;
 ```
 
-### 5. Dashboard de auditoría (futuro)
+**Estado:** ✅ Funcional (ejecutar queries en Supabase)
 
-Crear UI para revisar `vault_access_log`
+#### 2.4 Dashboard de auditoría UI
+Crear página en el frontend para visualizar `vault_access_log` con filtros.
+
+**Estado:** 🔵 Futuro (no crítico)
 
 ---
 
