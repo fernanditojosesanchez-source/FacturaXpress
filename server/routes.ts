@@ -40,6 +40,90 @@ export async function registerRoutes(
   };
 
   // ============================================
+  // HEALTH CHECK & MONITOREO
+  // ============================================
+
+  /**
+   * Health check general del sistema
+   * GET /api/health
+   * 
+   * Retorna:
+   * - status: "ok" | "degraded" | "error"
+   * - mhStatus: Estado del Circuit Breaker de MH
+   * - timestamp: ISO 8601
+   */
+  app.get("/api/health", async (req: Request, res: Response) => {
+    try {
+      // Obtener estado del Circuit Breaker de MH
+      const mhServiceWithBreaker = mhService as any;
+      const mhCircuitState = mhServiceWithBreaker.getCircuitState?.();
+
+      const healthStatus = {
+        status: mhCircuitState?.state === "OPEN" ? "degraded" : "ok",
+        timestamp: new Date().toISOString(),
+        services: {
+          mh: {
+            circuitState: mhCircuitState?.state || "unknown",
+            failureCount: mhCircuitState?.failureCount || 0,
+            nextRetryIn: mhCircuitState?.nextRetryIn || null,
+            backoffMultiplier: mhCircuitState?.backoffMultiplier || 1
+          }
+        }
+      };
+
+      const statusCode = healthStatus.status === "ok" ? 200 : 503;
+      res.status(statusCode).json(healthStatus);
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        message: "Error al obtener estado del sistema",
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  /**
+   * Health check detallado (requiere autenticación admin)
+   * GET /api/health/detailed
+   * 
+   * Retorna información completa del sistema para monitoreo
+   */
+  app.get("/api/health/detailed", requireTenantAdmin, async (req: Request, res: Response) => {
+    try {
+      const mhServiceWithBreaker = mhService as any;
+      const mhCircuitState = mhServiceWithBreaker.getCircuitState?.();
+
+      const detailedStatus = {
+        status: mhCircuitState?.state === "OPEN" ? "degraded" : "ok",
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV,
+        services: {
+          mh: {
+            circuitState: mhCircuitState?.state || "unknown",
+            failureCount: mhCircuitState?.failureCount || 0,
+            successCount: mhCircuitState?.successCount || 0,
+            nextRetryIn: mhCircuitState?.nextRetryIn || null,
+            backoffMultiplier: mhCircuitState?.backoffMultiplier || 1,
+            description: mhCircuitState?.state === "OPEN" 
+              ? "MH está caído. Facturas se encolan en contingencia"
+              : mhCircuitState?.state === "HALF_OPEN"
+              ? "Probando recuperación de MH"
+              : "MH funciona normalmente"
+          }
+        }
+      };
+
+      res.json(detailedStatus);
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        message: "Error al obtener estado detallado",
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  // ============================================
   // ENDPOINTS DE CATÁLOGOS DGII (Públicos/Globales)
   // ============================================
 

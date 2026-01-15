@@ -1,6 +1,7 @@
 import type { Factura } from "@shared/schema";
 import { storage } from "./storage";
 import { signDTE } from "./lib/signer";
+import { getMHCircuitBreaker, CircuitState } from "./lib/circuit-breaker";
 
 export interface SelloMH {
   codigoGeneracion: string;
@@ -38,6 +39,7 @@ export interface MHService {
   verificarConexion(tenantId: string): Promise<boolean>;
   verificarDisponibilidad(): Promise<boolean>;
   procesarColaContingencia(tenantId: string): Promise<void>;
+  getCircuitState?: () => any;
 }
 
 export class MHServiceMock implements MHService {
@@ -351,6 +353,236 @@ export class MHServiceReal implements MHService {
   }
 }
 
+/**
+ * MHServiceWithBreaker: Envuelve el servicio real con Circuit Breaker
+ * Protege contra cascadas de fallos cuando MH está caído
+ * 
+ * Estados del Circuit:
+ * - CLOSED (Normal): Requests van directo a MH
+ * - OPEN (Caído): Requests fallan rápido, se encolan en contingencia
+ * - HALF_OPEN (Probando): 1 request de prueba, si pasa → CLOSED
+ * 
+ * Cuando el circuit está OPEN:
+ * - transmitirDTE: Encola en contingencia automáticamente
+ * - anularDTE/invalidarDTE: Encola también
+ * - consultarEstado: Intenta desde cache o retorna "NO_ENCONTRADO"
+ */
+export class MHServiceWithBreaker implements MHService {
+  private innerService: MHService;
+  private breaker = getMHCircuitBreaker();
+
+  constructor(innerService: MHService) {
+    this.innerService = innerService;
+  }
+
+  async transmitirDTE(factura: Factura, tenantId: string): Promise<SelloMH> {
+    // Si circuit está abierto, encolar en contingencia automáticamente
+    if (this.breaker.isOpen()) {
+      console.warn(
+        `🔴 Circuit OPEN: Encolando DTE ${factura.codigoGeneracion} en contingencia`
+      );
+      
+      // Encolar en contingencia para reintento posterior
+      await storage.enqueueContinencia({
+        codigoGeneracion: factura.codigoGeneracion || "",
+        facturaId: factura.id || "",
+        tenantId,
+        estado: "pendiente"
+      });
+
+      // Retornar respuesta de "aceptado temporalmente"
+      return {
+        codigoGeneracion: factura.codigoGeneracion || "",
+        selloRecibido: `TEMP-${Date.now()}`, // Sello temporal
+        fechaSello: new Date().toISOString(),
+        estado: "PENDIENTE",
+        observaciones: "Encolado en contingencia por MH no disponible"
+      };
+    }
+
+    try {
+      return await this.breaker.execute(() =>
+        this.innerService.transmitirDTE(factura, tenantId)
+      );
+    } catch (error) {
+      // Si circuit abre por fallos, encolar también
+      if (this.breaker.isOpen()) {
+        await storage.enqueueContinencia({
+          codigoGeneracion: factura.codigoGeneracion || "",
+          facturaId: factura.id || "",
+          tenantId,
+          estado: "pendiente"
+        });
+      }
+      throw error;
+    }
+  }
+
+  async consultarEstado(codigoGeneracion: string, tenantId: string): Promise<EstadoDTE> {
+    // No bloquear consultas por circuit abierto
+    // Intentar en todos los casos
+    try {
+      return await this.breaker.execute(() =>
+        this.innerService.consultarEstado(codigoGeneracion, tenantId)
+      );
+    } catch (error) {
+      // Si falla por circuit, retornar "NO_ENCONTRADO" con aviso
+      if (this.breaker.isOpen()) {
+        return {
+          estado: "NO_ENCONTRADO",
+          mensaje: "MH no disponible temporalmente. Intente más tarde.",
+          fechaConsulta: new Date().toISOString()
+        };
+      }
+      throw error;
+    }
+  }
+
+  async anularDTE(
+    codigoGeneracion: string,
+    motivo: string,
+    tenantId: string
+  ): Promise<ResultadoAnulacion> {
+    if (this.breaker.isOpen()) {
+      console.warn(`🔴 Circuit OPEN: Encolando anulación ${codigoGeneracion} en contingencia`);
+      
+      // Encolar anulación para procesamiento posterior
+      await storage.enqueueAnulacion({
+        codigoGeneracion,
+        motivo,
+        tenantId,
+        estado: "pendiente"
+      });
+
+      return {
+        success: true,
+        mensaje: "Anulación encolada en contingencia",
+        fechaAnulacion: new Date().toISOString()
+      };
+    }
+
+    try {
+      return await this.breaker.execute(() =>
+        this.innerService.anularDTE(codigoGeneracion, motivo, tenantId)
+      );
+    } catch (error) {
+      // Si circuit abre por fallos, encolar también
+      if (this.breaker.isOpen()) {
+        await storage.enqueueAnulacion({
+          codigoGeneracion,
+          motivo,
+          tenantId,
+          estado: "pendiente"
+        });
+      }
+      throw error;
+    }
+  }
+
+  async invalidarDTE(
+    codigoGeneracion: string,
+    motivo: string,
+    tenantId: string
+  ): Promise<ResultadoInvalidacion> {
+    if (this.breaker.isOpen()) {
+      console.warn(
+        `🔴 Circuit OPEN: Encolando invalidación ${codigoGeneracion} en contingencia`
+      );
+
+      await storage.enqueueAnulacion({
+        codigoGeneracion,
+        motivo,
+        tenantId,
+        estado: "pendiente"
+      });
+
+      return {
+        success: true,
+        mensaje: "Invalidación encolada en contingencia",
+        selloAnulacion: `TEMP-${Date.now()}`,
+        fechaAnulo: new Date().toISOString()
+      };
+    }
+
+    try {
+      return await this.breaker.execute(() =>
+        this.innerService.invalidarDTE(codigoGeneracion, motivo, tenantId)
+      );
+    } catch (error) {
+      if (this.breaker.isOpen()) {
+        await storage.enqueueAnulacion({
+          codigoGeneracion,
+          motivo,
+          tenantId,
+          estado: "pendiente"
+        });
+      }
+      throw error;
+    }
+  }
+
+  async procesarAnulacionesPendientes(tenantId: string): Promise<void> {
+    // Procesar solo si circuit está disponible
+    if (!this.breaker.isOpen()) {
+      try {
+        return await this.breaker.execute(() =>
+          this.innerService.procesarAnulacionesPendientes(tenantId)
+        );
+      } catch (error) {
+        console.error("[Circuit Breaker] Error procesando anulaciones:", error);
+        // No relanzar; permitir reintentos posteriores
+      }
+    }
+  }
+
+  async verificarConexion(tenantId: string): Promise<boolean> {
+    try {
+      return await this.breaker.execute(() =>
+        this.innerService.verificarConexion(tenantId)
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  async verificarDisponibilidad(): Promise<boolean> {
+    try {
+      return await this.breaker.execute(() =>
+        this.innerService.verificarDisponibilidad()
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  async procesarColaContingencia(tenantId: string): Promise<void> {
+    // Procesar cola de contingencia (puede hacerse aunque circuit esté abierto)
+    try {
+      await this.innerService.procesarColaContingencia(tenantId);
+      // Si tiene éxito, registrar el éxito en el breaker
+      this.breaker.recordSuccess();
+    } catch (error) {
+      // No registrar como fallo del breaker; la cola de contingencia es fallback
+      console.error("[Contingencia] Error procesando cola:", error);
+    }
+  }
+
+  /**
+   * Obtener estado actual del Circuit Breaker para monitoreo
+   */
+  getCircuitState() {
+    return this.breaker.getStatus();
+  }
+
+  /**
+   * Reset manual del circuit (usar con cuidado)
+   */
+  resetCircuit() {
+    this.breaker.reset();
+    console.log("🔧 Circuit Breaker reset manual");
+  }
+}
+
 export function createMHService(): MHService {
   // Por defecto: Usar MOCK (Simulación) en desarrollo si no se especifica lo contrario
   // En producción: Usar REAL por defecto
@@ -358,14 +590,19 @@ export function createMHService(): MHService {
   const forceReal = process.env.MH_MOCK_MODE === "false";
   const forceMock = process.env.MH_MOCK_MODE === "true";
 
+  let innerService: MHService;
+
   // Si se fuerza Mock, o si estamos en Dev y no se fuerza Real -> Usar Mock
   if (forceMock || (isDev && !forceReal)) {
     console.log("🛠️  Modo Hacienda: MOCK (Simulación activada)");
-    return new MHServiceMock();
+    innerService = new MHServiceMock();
+  } else {
+    console.log("🔌 Modo Hacienda: REAL (Conectando con API MH)");
+    innerService = new MHServiceReal();
   }
 
-  console.log("🔌 Modo Hacienda: REAL (Conectando con API MH)");
-  return new MHServiceReal();
+  // Envolver con Circuit Breaker
+  return new MHServiceWithBreaker(innerService);
 }
 
 export const mhService = createMHService();
