@@ -21,17 +21,33 @@ export async function signDTE(
     const p12Asn1 = forge.asn1.fromDer(p12Der);
     const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, password);
 
-    let privateKey: any;
+    if (!p12) {
+      throw new Error("No se pudo decodificar el certificado P12.");
+    }
+
+    let privateKey: any = null;
 
     // Buscar llave en los SafeBags (estrategia robusta multi-formato)
-    const bags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag });
-    if (bags[forge.pki.oids.pkcs8ShroudedKeyBag] && bags[forge.pki.oids.pkcs8ShroudedKeyBag].length > 0) {
-        privateKey = bags[forge.pki.oids.pkcs8ShroudedKeyBag][0].key;
-    } else {
+    try {
+        const pkcs8Bags = p12!.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag })!;
+        const pkcs8Array = (pkcs8Bags![forge.pki.oids.pkcs8ShroudedKeyBag] || []) as any;
+        if (pkcs8Array!.length > 0 && pkcs8Array![0]!.key) {
+            privateKey = pkcs8Array![0]!.key;
+        }
+    } catch (e) {
+        // Ignorar error y probar con keyBag
+    }
+    
+    if (!privateKey) {
         // Fallback para certificados viejos o keyBags simples
-        const keyBags = p12.getBags({ bagType: forge.pki.oids.keyBag });
-        if (keyBags[forge.pki.oids.keyBag] && keyBags[forge.pki.oids.keyBag].length > 0) {
-            privateKey = keyBags[forge.pki.oids.keyBag][0].key;
+        try {
+            const simpleBags = p12!.getBags({ bagType: forge.pki.oids.keyBag })!;
+            const simpleArray = (simpleBags![forge.pki.oids.keyBag] || []) as any;
+            if (simpleArray!.length > 0 && simpleArray![0]!.key) {
+                privateKey = simpleArray![0]!.key;
+            }
+        } catch (e) {
+            // Ignorar error
         }
     }
 
