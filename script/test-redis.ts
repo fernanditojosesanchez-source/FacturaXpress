@@ -1,4 +1,10 @@
+import * as dotenv from "dotenv";
+dotenv.config(); // Cargar .env
+
 import { getRedis, redisHealth } from "../server/lib/redis";
+
+console.log("Debug: REDIS_URL =", process.env.REDIS_URL ? "***[definido]***" : "undefined");
+console.log("Debug: REDIS_NAMESPACE =", process.env.REDIS_NAMESPACE);
 
 (async () => {
   try {
