@@ -184,30 +184,33 @@ export default function Configuracion() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="animate-fade-in-up [animation-delay:0s]">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground" data-testid="text-page-title">
+    <div className="flex-1 p-8 pt-6 space-y-6">
+      <div className="animate-fade-in-up [animation-delay:0s] mb-8">
+        <h1 className="text-5xl font-black bg-gradient-to-r from-blue-200 via-purple-200 to-emerald-200 bg-clip-text text-transparent drop-shadow-lg" data-testid="text-page-title">
           Configuración
         </h1>
-        <p className="text-muted-foreground text-sm mt-1">
+        <p className="text-white/70 text-sm mt-2">
           Información del sistema y configuraciones
         </p>
       </div>
 
-      <Card className="backdrop-blur-sm animate-fade-in-up" style={{ animationDelay: '0s' }}>
-          <CardHeader>
+      <Card className="backdrop-blur-3xl rounded-3xl border border-white/20 shadow-[0_35px_60px_-15px_rgba(59,130,246,0.3)] hover:shadow-[0_50px_80px_-20px_rgba(59,130,246,0.4)] transition-all duration-300 animate-fade-in-up" style={{ animationDelay: '0s' }}>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-blue-600/5 pointer-events-none rounded-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/15 to-transparent opacity-40 pointer-events-none rounded-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-40 pointer-events-none rounded-3xl" />
+          <CardHeader className="relative border-b border-white/10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {loadingMH ? (
-                  <Skeleton className="h-5 w-5 rounded-full" />
+                  <Skeleton className="h-5 w-5 rounded-full bg-white/20" />
                 ) : mhStatus?.conectado ? (
-                  <Wifi className="h-5 w-5 text-green-600" />
+                  <Wifi className="h-6 w-6 text-emerald-400" />
                 ) : (
-                  <WifiOff className="h-5 w-5 text-red-600" />
+                  <WifiOff className="h-6 w-6 text-red-400" />
                 )}
                 <div>
-                  <CardTitle className="text-lg">Ministerio de Hacienda</CardTitle>
-                  <CardDescription>Estado de conexión e integración</CardDescription>
+                  <CardTitle className="text-lg text-white font-bold">Ministerio de Hacienda</CardTitle>
+                  <CardDescription className="text-white/70">Estado de conexión e integración</CardDescription>
                 </div>
               </div>
               <Button
@@ -215,17 +218,17 @@ export default function Configuracion() {
                 size="sm"
                 onClick={() => refetchMH()}
                 disabled={loadingMH}
-                className="hover:bg-white/70 transition-all duration-200"
+                className="hover:bg-white/10 hover:text-white text-white/70 border-white/20 transition-all duration-200"
               >
                 Verificar
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="relative space-y-4 pt-6">
             {loadingMH ? (
               <div className="space-y-2">
-                <Skeleton className="h-6 w-full" />
-                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-6 w-full bg-white/20" />
+                <Skeleton className="h-4 w-3/4 bg-white/20" />
               </div>
             ) : (
               <>
