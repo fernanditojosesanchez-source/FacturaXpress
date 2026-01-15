@@ -1,5 +1,31 @@
 import type { Request } from "express";
 import rateLimit, { type RateLimitRequestHandler } from "express-rate-limit";
+import type { Store as RateLimitStore } from "express-rate-limit";
+import { getRedis } from "./redis";
+// rate-limit-redis no trae tipos oficiales; forzamos any al crear el store
+let RedisStoreCtor: any = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  RedisStoreCtor = require("rate-limit-redis").RedisStore || require("rate-limit-redis");
+} catch {
+  RedisStoreCtor = null;
+}
+
+function buildRedisStore(): RateLimitStore | undefined {
+  if (!RedisStoreCtor) return undefined;
+  try {
+    const redis = getRedis();
+    const prefix = (process.env.REDIS_NAMESPACE || "fx") + ":ratelimit:";
+    const store = new RedisStoreCtor({
+      // ioredis: usar call para comandos genéricos
+      sendCommand: (...args: string[]) => (redis as any).call(...args),
+      prefix,
+    });
+    return store as RateLimitStore;
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * Rate limiter mejorado que usa tenantId en lugar de solo IP
@@ -10,12 +36,15 @@ export function createTenantRateLimiter(options: {
   max: number;
   message: string;
 }): RateLimitRequestHandler {
+  const store = buildRedisStore();
   return rateLimit({
     windowMs: options.windowMs,
     max: options.max,
     message: { message: options.message },
     standardHeaders: true,
     legacyHeaders: false,
+    // Si Redis está disponible, usamos store distribuido; si no, fallback a memoria
+    store: store as any,
     keyGenerator: (req: Request) => {
       // Priorizar tenantId si está autenticado
       const tenantId = (req as any).user?.tenantId;

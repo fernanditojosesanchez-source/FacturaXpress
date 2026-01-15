@@ -58,6 +58,17 @@ DATABASE_URL="postgresql://postgres:<your_db_password>@db.<project_ref>.supabase
 PORT=5000
 ENCRYPTION_KEY="<una_clave_segura_de_32_caracteres>" # Para encriptación legacy
 ADMIN_PASSWORD="<contraseña_para_el_super_admin>"
+
+# Redis (Rate limiting distribuido y colas BullMQ)
+# Usa REDIS_URL o parámetros separados. Ejemplos:
+# REDIS_URL="rediss://default:<PASSWORD>@<HOST>:6380/0"
+# REDIS_HOST="<HOST>"
+# REDIS_PORT=6380
+# REDIS_USERNAME="default"
+# REDIS_PASSWORD="<PASSWORD>"
+# REDIS_TLS=true
+# Prefijo de claves para aislar entornos/tenants
+REDIS_NAMESPACE=fx
 ```
 
 ### 4. **Ejecutar la Aplicación (Modo Desarrollo)**
@@ -80,6 +91,18 @@ npx ts-node scripts/test-vault.ts
 **Salida esperada:**
 ```
 ✅ TODOS LOS TESTS PASARON (9/9 - 100%)
+```
+
+### 6. **Verificar Conectividad Redis (opcional)**
+
+```bash
+# Requiere definir variables REDIS_*
+npm run check:redis
+```
+
+Salida esperada:
+```
+✅ PING/PONG y SET/GET OK: ok
 ```
 
 ---
