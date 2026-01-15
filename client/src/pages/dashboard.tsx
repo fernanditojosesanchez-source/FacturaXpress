@@ -31,35 +31,39 @@ import type { Factura } from "@shared/schema";
 const cardColorConfigs = [
   { // Azul vibrante
     name: "Facturas",
-    bg: "from-blue-500/10 to-blue-600/5",
-    border: "border-blue-400/20",
-    shadow: "shadow-[0_20px_40px_-12px_rgba(59,130,246,0.35)]",
-    icon: "text-blue-500",
-    glow: "group-hover:shadow-[0_25px_50px_-12px_rgba(59,130,246,0.45)]",
+    bg: "from-blue-500/15 to-blue-600/5",
+    border: "border-blue-400/30",
+    shadow: "shadow-[0_35px_60px_-15px_rgba(59,130,246,0.4)]",
+    icon: "text-blue-400",
+    glow: "group-hover:shadow-[0_50px_80px_-20px_rgba(59,130,246,0.5)]",
+    gradientOverlay: "from-blue-500/20",
   },
   { // Esmeralda
     name: "Ventas",
-    bg: "from-emerald-500/10 to-emerald-600/5",
-    border: "border-emerald-400/20",
-    shadow: "shadow-[0_20px_40px_-12px_rgba(16,185,129,0.35)]",
-    icon: "text-emerald-500",
-    glow: "group-hover:shadow-[0_25px_50px_-12px_rgba(16,185,129,0.45)]",
+    bg: "from-emerald-500/15 to-emerald-600/5",
+    border: "border-emerald-400/30",
+    shadow: "shadow-[0_35px_60px_-15px_rgba(16,185,129,0.4)]",
+    icon: "text-emerald-400",
+    glow: "group-hover:shadow-[0_50px_80px_-20px_rgba(16,185,129,0.5)]",
+    gradientOverlay: "from-emerald-500/20",
   },
   { // Púrpura
     name: "Pendientes",
-    bg: "from-purple-500/10 to-purple-600/5",
-    border: "border-purple-400/20",
-    shadow: "shadow-[0_20px_40px_-12px_rgba(168,85,247,0.35)]",
-    icon: "text-purple-500",
-    glow: "group-hover:shadow-[0_25px_50px_-12px_rgba(168,85,247,0.45)]",
+    bg: "from-purple-500/15 to-purple-600/5",
+    border: "border-purple-400/30",
+    shadow: "shadow-[0_35px_60px_-15px_rgba(168,85,247,0.4)]",
+    icon: "text-purple-400",
+    glow: "group-hover:shadow-[0_50px_80px_-20px_rgba(168,85,247,0.5)]",
+    gradientOverlay: "from-purple-500/20",
   },
   { // Ámbar
     name: "Total",
-    bg: "from-amber-500/10 to-amber-600/5",
-    border: "border-amber-400/20",
-    shadow: "shadow-[0_20px_40px_-12px_rgba(217,119,6,0.35)]",
-    icon: "text-amber-500",
-    glow: "group-hover:shadow-[0_25px_50px_-12px_rgba(217,119,6,0.45)]",
+    bg: "from-amber-500/15 to-amber-600/5",
+    border: "border-amber-400/30",
+    shadow: "shadow-[0_35px_60px_-15px_rgba(217,119,6,0.4)]",
+    icon: "text-amber-400",
+    glow: "group-hover:shadow-[0_50px_80px_-20px_rgba(217,119,6,0.5)]",
+    gradientOverlay: "from-amber-500/20",
   },
 ];
 
@@ -82,39 +86,45 @@ function StatCard({
 
   return (
     <div
-      className={`group relative animate-fade-in-up backdrop-blur-xl rounded-3xl border ${colorConfig.border} ${colorConfig.shadow} ${colorConfig.glow} transition-all duration-500 overflow-hidden`}
+      className={`group relative animate-fade-in-up backdrop-blur-2xl rounded-3xl border ${colorConfig.border} ${colorConfig.shadow} ${colorConfig.glow} transition-all duration-500 overflow-hidden`}
       style={{ animationDelay: `${index * 0.1}s` }}
     >
-      {/* Fondo gradiente con glassmorphism */}
+      {/* Fondo gradiente premium */}
       <div className={`absolute inset-0 bg-gradient-to-br ${colorConfig.bg} pointer-events-none`} />
       
-      {/* Inner glow sofisticado */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-40 pointer-events-none" />
+      {/* Overlay gradiente del color específico */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${colorConfig.gradientOverlay} to-transparent opacity-60 pointer-events-none`} />
+      
+      {/* Inner glow premium */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent opacity-50 pointer-events-none" />
+      
+      {/* Border glow */}
+      <div className={`absolute inset-0 rounded-3xl border border-white/40 pointer-events-none`} />
       
       {/* Contenido */}
-      <div className="relative p-6 space-y-4">
+      <div className="relative p-8 space-y-6">
         {/* Header con icono en contenedor de vidrio */}
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-foreground/80 tracking-wide uppercase">
+          <h3 className="text-xs font-bold text-white/90 tracking-widest uppercase opacity-90">
             {title}
           </h3>
-          <div className={`p-3 rounded-2xl backdrop-blur-md bg-white/10 border border-white/20`}>
-            <Icon className={`h-5 w-5 ${colorConfig.icon}`} />
+          <div className={`p-4 rounded-2xl backdrop-blur-lg ${colorConfig.bg} border border-white/40 shadow-2xl`}>
+            <Icon className={`h-6 w-6 ${colorConfig.icon}`} />
           </div>
         </div>
 
         {/* Valor principal */}
         <div>
           <div 
-            className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground" 
+            className="text-5xl sm:text-6xl font-black tracking-tight text-white drop-shadow-lg" 
             data-testid={`stat-${title.toLowerCase().replace(/\s/g, "-")}`}
           >
             {value}
           </div>
-          <p className="text-xs sm:text-sm text-foreground/60 mt-3 leading-relaxed">
+          <p className="text-sm text-white/80 mt-4 font-medium">
             {description}
             {trend && (
-              <span className={`ml-2 font-semibold ${trend.positive ? "text-emerald-500" : "text-red-500"}`}>
+              <span className={`ml-2 font-bold ${trend.positive ? "text-emerald-300" : "text-red-300"}`}>
                 {trend.positive ? "↑" : "↓"} {Math.abs(trend.value)}%
               </span>
             )}
@@ -226,33 +236,37 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50/40 via-white to-blue-50/30">
-      {/* Formas fluidas de fondo */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 overflow-hidden">
+      {/* Formas fluidas de fondo - MUCHO MÁS DRAMÁTICAS */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-300/10 rounded-full blur-3xl" />
-        <div className="absolute top-40 right-20 w-96 h-96 bg-purple-300/8 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-emerald-300/8 rounded-full blur-3xl" />
-        <div className="absolute -bottom-10 right-1/4 w-96 h-96 bg-amber-300/8 rounded-full blur-3xl" />
+        {/* Orb azul principal - GRANDE */}
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
+        {/* Orb púrpura - DERECHA */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+        {/* Orb esmeralda - CENTRO */}
+        <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-emerald-500/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        {/* Orb ámbar - ABAJO */}
+        <div className="absolute -bottom-40 right-1/4 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }} />
       </div>
 
       <div className="relative p-6 sm:p-8 lg:p-12 space-y-8 max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 animate-fade-in-up">
           <div>
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground" data-testid="text-page-title">
+            <h1 className="text-5xl sm:text-6xl font-black tracking-tight bg-gradient-to-r from-blue-200 via-purple-200 to-emerald-200 bg-clip-text text-transparent" data-testid="text-page-title">
               Panel de Control
             </h1>
-            <p className="text-base text-foreground/60 mt-2">
+            <p className="text-lg text-blue-200/70 mt-3">
               Resumen ejecutivo de tu facturación electrónica
             </p>
           </div>
           <Link href="/factura/nueva">
             <Button 
               size="lg"
-              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300"
+              className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 font-bold text-lg"
               data-testid="button-new-invoice"
             >
-              <Plus className="h-5 w-5 mr-2" />
+              <Plus className="h-6 w-6 mr-2" />
               Nueva Factura
             </Button>
           </Link>
