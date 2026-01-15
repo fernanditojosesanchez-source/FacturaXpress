@@ -130,6 +130,8 @@ function SkeletonCard() {
     <div className="h-48 rounded-3xl bg-white/40 backdrop-blur-xl border border-white/20 animate-pulse" />
   );
 }
+
+function RecentInvoiceRow({ factura }: { factura: Factura }) {
   const statusConfig = {
     borrador: { label: "Borrador", variant: "secondary" as const },
     generada: { label: "Generada", variant: "outline" as const },
@@ -188,20 +190,6 @@ function AlertBanner({ pendientes }: { pendientes: number }) {
         Sincronizar
       </Button>
     </div>
-  );
-}
-
-function SkeletonCard() {
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <Skeleton className="h-5 w-24" />
-      </CardHeader>
-      <CardContent>
-        <Skeleton className="h-10 w-16 mb-2 animate-pulse-subtle" />
-        <Skeleton className="h-4 w-32 animate-pulse-subtle" />
-      </CardContent>
-    </Card>
   );
 }
 
