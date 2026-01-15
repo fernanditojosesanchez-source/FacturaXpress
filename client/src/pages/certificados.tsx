@@ -235,25 +235,25 @@ export default function CertificadosPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="flex-1 space-y-6 p-8 pt-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Certificados Digitales</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-5xl font-black bg-gradient-to-r from-blue-200 via-purple-200 to-emerald-200 bg-clip-text text-transparent drop-shadow-lg">Certificados Digitales</h1>
+          <p className="text-white/70 mt-2">
             Gestiona tus certificados de firma digital para Hacienda
           </p>
         </div>
         <div className="flex items-center gap-2">
           {!isAdmin && (
-            <Badge variant="secondary" className="h-8 gap-1 px-3">
+            <Badge variant="secondary" className="h-8 gap-1 px-3 bg-yellow-500/20 text-yellow-200 border border-yellow-400/50">
               <ShieldAlert className="h-3 w-3" />
               Solo Lectura
             </Badge>
           )}
           {isAdmin && (
-            <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
-              <Plus className="h-4 w-4" />
+            <Button onClick={() => setIsDialogOpen(true)} className="gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-[0_25px_50px_-12px_rgba(59,130,246,0.4)] text-white font-bold py-3 px-6 rounded-xl transition-all duration-300">
+              <Plus className="h-5 w-5" />
               Cargar Certificado
             </Button>
           )}
@@ -262,47 +262,71 @@ export default function CertificadosPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
-            <Lock className="h-4 w-4 text-muted-foreground" />
+        {/* Total Card */}
+        <Card className="relative overflow-hidden backdrop-blur-2xl rounded-3xl border border-[#3B82F6]-400/30 shadow-[0_35px_60px_-15px_rgba(59,130,246,0.4)] hover:shadow-[0_50px_80px_-20px_rgba(59,130,246,0.5)]">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/15 to-blue-600/5 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-transparent opacity-60 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent opacity-50 pointer-events-none" />
+          <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-0 pt-6 px-6">
+            <CardTitle className="text-xs font-bold text-white/90 tracking-widest uppercase opacity-90">Total</CardTitle>
+            <div className="p-3 rounded-2xl backdrop-blur-lg bg-blue-500/15 border border-white/40 shadow-2xl">
+              <Lock className="h-5 w-5 text-blue-400" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{certStats.total}</div>
-            <p className="text-xs text-muted-foreground">Certificados cargados</p>
+          <CardContent className="relative pt-4 px-6 pb-6">
+            <div className="text-5xl font-black tracking-tight text-white drop-shadow-lg">{certStats.total}</div>
+            <p className="text-sm text-white/80 font-medium mt-2">Certificados cargados</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Activos</CardTitle>
-            <Shield className="h-4 w-4 text-green-600" />
+        {/* Activos Card */}
+        <Card className="relative overflow-hidden backdrop-blur-2xl rounded-3xl border border-emerald-400/30 shadow-[0_35px_60px_-15px_rgba(16,185,129,0.4)] hover:shadow-[0_50px_80px_-20px_rgba(16,185,129,0.5)]">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/15 to-emerald-600/5 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-transparent opacity-60 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent opacity-50 pointer-events-none" />
+          <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-0 pt-6 px-6">
+            <CardTitle className="text-xs font-bold text-white/90 tracking-widest uppercase opacity-90">Activos</CardTitle>
+            <div className="p-3 rounded-2xl backdrop-blur-lg bg-emerald-500/15 border border-white/40 shadow-2xl">
+              <Shield className="h-5 w-5 text-emerald-400" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{certStats.activos}</div>
-            <p className="text-xs text-muted-foreground">Listos para usar</p>
+          <CardContent className="relative pt-4 px-6 pb-6">
+            <div className="text-5xl font-black tracking-tight text-white drop-shadow-lg">{certStats.activos}</div>
+            <p className="text-sm text-white/80 font-medium mt-2">Listos para usar</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Próximos a Expirar</CardTitle>
-            <Clock className="h-4 w-4 text-amber-600" />
+        {/* Próximos a Expirar Card */}
+        <Card className="relative overflow-hidden backdrop-blur-2xl rounded-3xl border border-amber-400/30 shadow-[0_35px_60px_-15px_rgba(217,119,6,0.4)] hover:shadow-[0_50px_80px_-20px_rgba(217,119,6,0.5)]">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/15 to-amber-600/5 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-transparent opacity-60 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent opacity-50 pointer-events-none" />
+          <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-0 pt-6 px-6">
+            <CardTitle className="text-xs font-bold text-white/90 tracking-widest uppercase opacity-90">Próximos a Expirar</CardTitle>
+            <div className="p-3 rounded-2xl backdrop-blur-lg bg-amber-500/15 border border-white/40 shadow-2xl">
+              <Clock className="h-5 w-5 text-amber-400" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-600">{certStats.proximos_expirar}</div>
-            <p className="text-xs text-muted-foreground">En 30 días o menos</p>
+          <CardContent className="relative pt-4 px-6 pb-6">
+            <div className="text-5xl font-black tracking-tight text-white drop-shadow-lg">{certStats.proximos_expirar}</div>
+            <p className="text-sm text-white/80 font-medium mt-2">En 30 días o menos</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expirados</CardTitle>
-            <XCircle className="h-4 w-4 text-red-600" />
+        {/* Expirados Card */}
+        <Card className="relative overflow-hidden backdrop-blur-2xl rounded-3xl border border-red-400/30 shadow-[0_35px_60px_-15px_rgba(239,68,68,0.4)] hover:shadow-[0_50px_80px_-20px_rgba(239,68,68,0.5)]">
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/15 to-red-600/5 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/20 to-transparent opacity-60 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent opacity-50 pointer-events-none" />
+          <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-0 pt-6 px-6">
+            <CardTitle className="text-xs font-bold text-white/90 tracking-widest uppercase opacity-90">Expirados</CardTitle>
+            <div className="p-3 rounded-2xl backdrop-blur-lg bg-red-500/15 border border-white/40 shadow-2xl">
+              <XCircle className="h-5 w-5 text-red-400" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{certStats.expirados}</div>
-            <p className="text-xs text-muted-foreground">Requieren actualización</p>
+          <CardContent className="relative pt-4 px-6 pb-6">
+            <div className="text-5xl font-black tracking-tight text-white drop-shadow-lg">{certStats.expirados}</div>
+            <p className="text-sm text-white/80 font-medium mt-2">Requieren actualización</p>
           </CardContent>
         </Card>
       </div>
