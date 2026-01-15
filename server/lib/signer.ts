@@ -1,4 +1,5 @@
 import forge from "node-forge";
+import stringify from "fast-json-stable-stringify";
 
 export interface SignResult {
   body: string; 
@@ -7,6 +8,7 @@ export interface SignResult {
 
 /**
  * Firma un DTE usando el estándar JWS requerido por el MH.
+ * CORREGIDO: Usa canonicalización JSON para garantizar orden consistente del Hash.
  */
 export async function signDTE(
   dte: any, 
@@ -14,52 +16,48 @@ export async function signDTE(
   password: string
 ): Promise<SignResult> {
   try {
+    // 1. Decodificar el P12
     const p12Der = forge.util.decode64(p12Base64);
     const p12Asn1 = forge.asn1.fromDer(p12Der);
     const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, password);
 
     let privateKey: any;
-    let certificate: any;
 
-    // Buscar llave y certificado en los SafeBags
-    for (const safeContents of p12.safeContents as any[]) {
-      for (const safeEntry of safeContents.safeEntries || []) {
-        if (safeEntry.key) {
-          privateKey = safeEntry.key;
+    // Buscar llave en los SafeBags (estrategia robusta multi-formato)
+    const bags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag });
+    if (bags[forge.pki.oids.pkcs8ShroudedKeyBag] && bags[forge.pki.oids.pkcs8ShroudedKeyBag].length > 0) {
+        privateKey = bags[forge.pki.oids.pkcs8ShroudedKeyBag][0].key;
+    } else {
+        // Fallback para certificados viejos o keyBags simples
+        const keyBags = p12.getBags({ bagType: forge.pki.oids.keyBag });
+        if (keyBags[forge.pki.oids.keyBag] && keyBags[forge.pki.oids.keyBag].length > 0) {
+            privateKey = keyBags[forge.pki.oids.keyBag][0].key;
         }
-        if (safeEntry.cert) {
-          certificate = safeEntry.cert;
-        }
-      }
-    }
-
-    // Intento alternativo si no se encontró en safeEntries
-    if (!privateKey) {
-      for (const safeContents of p12.safeContents as any[]) {
-        const bags = safeContents.safeBags || [];
-        for (const bag of bags) {
-          if (bag.key) privateKey = bag.key;
-          if (bag.cert) certificate = bag.cert;
-        }
-      }
     }
 
     if (!privateKey) {
-      throw new Error("No se pudo extraer la llave privada del P12");
+      throw new Error("No se pudo extraer la llave privada del P12. Verifique el formato.");
     }
 
-    // Construcción del JWS (Payload -> Base64URL)
-    const payload = JSON.stringify(dte);
-    const payloadB64 = Buffer.from(payload).toString("base64")
+    // 2. Construcción del JWS (CORREGIDO - Con canonicalización)
+    
+    // A. Payload Canonicalizado (Orden alfabético GARANTIZADO)
+    const payloadString = stringify(dte); 
+    const payloadB64 = Buffer.from(payloadString).toString("base64")
       .replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 
+    // B. Header (Hacienda exige JWS Compact)
     const header = {
       alg: "RS256",
       typ: "JOSE"
     };
-    const headerB64 = Buffer.from(JSON.stringify(header)).toString("base64")
+    
+    // Canonicalizamos también el header por seguridad
+    const headerString = stringify(header);
+    const headerB64 = Buffer.from(headerString).toString("base64")
       .replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 
+    // C. Firmar con SHA-256
     const dataToSign = `${headerB64}.${payloadB64}`;
     const md = forge.md.sha256.create();
     md.update(dataToSign, "utf8");
@@ -70,7 +68,7 @@ export async function signDTE(
     const jws = `${headerB64}.${payloadB64}.${signatureB64}`;
 
     return {
-      body: jws,
+      body: jws, // Este es el string que va al campo "documento" de la API MH
       signature: signatureB64
     };
   } catch (error) {
