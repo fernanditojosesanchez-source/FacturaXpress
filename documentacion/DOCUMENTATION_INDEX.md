@@ -7,6 +7,12 @@
 2. **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Tarjeta de referencia rápida (3 min)
 3. **[STATUS.md](STATUS.md)** - Estado actual del proyecto (5 min)
 
+### 🔐 NUEVO: Seguridad con Vault (Lectura Obligatoria)
+1. **[VAULT_QUICK_START.md](../VAULT_QUICK_START.md)** - Guía rápida para desarrolladores (5 min) ⭐
+2. **[VAULT_SECURITY_POLICY.md](../VAULT_SECURITY_POLICY.md)** - Política de seguridad (10 min) 📋
+3. **[VAULT_COMPLETION_SUMMARY.md](../VAULT_COMPLETION_SUMMARY.md)** - Resumen técnico (15 min) 📊
+4. **[VAULT_IMPLEMENTATION_STATUS.md](../VAULT_IMPLEMENTATION_STATUS.md)** - Estado técnico detallado (20 min) 🔧
+
 ### Para Integración UI (Próxima Fase)
 1. **[INTEGRATION_PLAN.md](INTEGRATION_PLAN.md)** - Plan detallado de integración
 2. **[DGII_VALIDATION.md](DGII_VALIDATION.md)** - Documentación técnica de validación
@@ -15,9 +21,20 @@
 
 ## 📖 Documentación por Tema
 
+### 🔐 Seguridad con Supabase Vault
+- **Política de Seguridad**: [VAULT_SECURITY_POLICY.md](../VAULT_SECURITY_POLICY.md)
+- **Quick Start (EMPEZAR AQUÍ)**: [VAULT_QUICK_START.md](../VAULT_QUICK_START.md) ⭐
+- **Implementación Técnica**: [VAULT_IMPLEMENTATION_STATUS.md](../VAULT_IMPLEMENTATION_STATUS.md)
+- **Resumen de Completación**: [VAULT_COMPLETION_SUMMARY.md](../VAULT_COMPLETION_SUMMARY.md)
+- **Servicio**: [server/lib/vault.ts](../server/lib/vault.ts)
+- **Métodos en Storage**: [server/storage.ts](../server/storage.ts) (nuevos métodos)
+- **Endpoints Demo**: [server/routes/certificados.ts](../server/routes/certificados.ts)
+- **Testing**: `npx ts-node scripts/test-vault.ts`
+- **Datos en Vault**: Certificados P12, contraseñas, credenciales MH, API Keys
+
 ### 🔐 Autenticación
-- **Archivo**: [server/auth.ts](server/auth.ts)
-- **Hook**: [client/src/hooks/use-auth.ts](client/src/hooks/use-auth.ts)
+- **Archivo**: [server/auth.ts](../server/auth.ts)
+- **Hook**: [client/src/hooks/use-auth.ts](../client/src/hooks/use-auth.ts)
 - **Referencia**: QUICK_REFERENCE.md → Sección "Autenticación"
 
 ### 📚 Catálogos DGII

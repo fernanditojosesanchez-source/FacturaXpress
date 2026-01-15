@@ -1,19 +1,19 @@
 import type { Express, Request, Response } from "express";
 import { type Server } from "http";
 import { randomUUID } from "crypto";
-import { storage } from "./storage";
-import { emisorSchema, insertFacturaSchema, insertProductoSchema, receptorSchema, insertCertificadoSchema } from "@shared/schema";
+import { storage } from "./storage.js";
+import { emisorSchema, insertFacturaSchema, insertProductoSchema, receptorSchema, insertCertificadoSchema } from "../shared/schema.js";
 import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
-import { mhService } from "./mh-service";
-import { generarFacturasPrueba, EMISOR_PRUEBA } from "./seed-data";
-import { requireAuth, requireTenantAdmin, requireManager, requireApiKey, registerAuthRoutes, checkPermission } from "./auth";
-import * as catalogs from "./catalogs";
-import { validateDTESchema } from "./dgii-validator";
-import { registerAdminRoutes } from "./routes/admin";
-import { registerUserRoutes } from "./routes/users";
-import { facturaCreationRateLimiter, transmisionRateLimiter } from "./lib/rate-limiters";
-import { logAudit, AuditActions, getClientIP, getUserAgent } from "./lib/audit";
+import { mhService } from "./mh-service.js";
+import { generarFacturasPrueba, EMISOR_PRUEBA } from "./seed-data.js";
+import { requireAuth, requireTenantAdmin, requireManager, requireApiKey, registerAuthRoutes, checkPermission } from "./auth.js";
+import * as catalogs from "./catalogs.js";
+import { validateDTESchema } from "./dgii-validator.js";
+import { registerAdminRoutes } from "./routes/admin.js";
+import { registerUserRoutes } from "./routes/users.js";
+import { facturaCreationRateLimiter, transmisionRateLimiter } from "./lib/rate-limiters.js";
+import { logAudit, AuditActions, getClientIP, getUserAgent } from "./lib/audit.js";
 import { sql } from "drizzle-orm";
 
 export async function registerRoutes(
@@ -106,16 +106,16 @@ export async function registerRoutes(
       
       const stats = {
         totalInvoices: facturas.length,
-        hoy: facturas.filter(f => f.fecEmi === today).length,
-        pendientes: facturas.filter(f => f.estado === "generada").length,
-        selladas: facturas.filter(f => f.estado === "sellada").length,
-        totalVentas: facturas.reduce((sum, f) => sum + f.resumen.totalPagar, 0),
+        hoy: facturas.filter((f: any) => f.fecEmi === today).length,
+        pendientes: facturas.filter((f: any) => f.estado === "generada").length,
+        selladas: facturas.filter((f: any) => f.estado === "sellada").length,
+        totalVentas: facturas.reduce((sum: number, f: any) => sum + f.resumen.totalPagar, 0),
         outstanding: facturas
-          .filter(f => f.estado === "generada")
-          .reduce((sum, f) => sum + f.resumen.totalPagar, 0),
+          .filter((f: any) => f.estado === "generada")
+          .reduce((sum: number, f: any) => sum + f.resumen.totalPagar, 0),
         ventasEsteMes: facturas
-          .filter(f => f.fecEmi.startsWith(mesActual))
-          .reduce((sum, f) => sum + f.resumen.totalPagar, 0),
+          .filter((f: any) => f.fecEmi.startsWith(mesActual))
+          .reduce((sum: number, f: any) => sum + f.resumen.totalPagar, 0),
         recentInvoices: facturas.slice(0, 5)
       };
       
@@ -435,7 +435,7 @@ export async function registerRoutes(
   app.post("/api/certificados/:id/activar", requireAuth, requireTenantAdmin, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
-      const { db } = await import("./db");
+      const { db } = await import("./db.js");
       
       // Desactivar todos los demás certificados
       await db.execute(
@@ -738,7 +738,7 @@ export async function registerRoutes(
       
       doc.setFont("helvetica", "normal");
       let yPos = 125;
-      factura.cuerpoDocumento.forEach((item) => {
+      factura.cuerpoDocumento.forEach((item: any) => {
         doc.text(item.cantidad.toString(), 17, yPos);
         doc.text(item.descripcion.substring(0, 50), 35, yPos);
         doc.text(`$${item.precioUni.toFixed(2)}`, 130, yPos);

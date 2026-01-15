@@ -1,4 +1,4 @@
-import { useAuth } from "./use-auth";
+import { useAuth } from "./use-auth.js";
 
 export type Permission =
   | "create_invoice"

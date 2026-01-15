@@ -1,11 +1,11 @@
 import type { Express, Request, Response } from "express";
-import { requireAuth, requireTenantAdmin, requireSuperAdmin, checkPermission, checkBranchAccess, isValidRoleChange, getPermissionsByRole } from "../auth";
-import { storage } from "../storage";
-import { db } from "../db";
-import { users } from "@shared/schema";
+import { requireAuth, requireTenantAdmin, requireSuperAdmin, checkPermission, checkBranchAccess, isValidRoleChange, getPermissionsByRole } from "../auth.js";
+import { storage } from "../storage.js";
+import { db } from "../db.js";
+import { users } from "../../shared/schema.js";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
-import { logAudit, AuditActions, getClientIP, getUserAgent } from "../lib/audit";
+import { logAudit, AuditActions, getClientIP, getUserAgent } from "../lib/audit.js";
 import { z } from "zod";
 
 // Schemas de validación

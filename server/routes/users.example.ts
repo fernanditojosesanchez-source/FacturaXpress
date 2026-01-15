@@ -5,9 +5,9 @@
 // En server/routes/users.ts o donde gestiones usuarios:
 
 import { Router, Request, Response } from "express";
-import { requireAuth, requireTenantAdmin, requireSuperAdmin } from "../auth";
-import { checkPermission, checkBranchAccess, isValidRoleChange } from "../auth";
-import { storage } from "../storage";
+import { requireAuth, requireTenantAdmin, requireSuperAdmin } from "../auth.js";
+import { checkPermission, checkBranchAccess, isValidRoleChange } from "../auth.js";
+import { storage } from "../storage.js";
 
 export const usersRouter = Router();
 

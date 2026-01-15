@@ -11,6 +11,7 @@ import { fileURLToPath } from "url";
 import { db } from "./db";
 import { eq, desc, sql, and } from "drizzle-orm";
 import { encrypt, decrypt } from "./lib/crypto";
+import { saveSecretToVault, getSecretFromVault, deleteSecretFromVault, secretExists } from "./lib/vault";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -104,6 +105,17 @@ export interface IStorage {
   getAnulacionesPendientes(tenantId: string): Promise<any[]>;
   updateAnulacionStatus(codigoGeneracion: string, estado: string, selloAnulacion?: string, respuestaMH?: any, error?: string): Promise<void>;
   getHistoricoAnulaciones(tenantId: string, limit?: number): Promise<any[]>;
+
+  // ============================================
+  // VAULT - MANEJO DE SECRETOS ESTRICTO
+  // ============================================
+  saveCertificateToVault(tenantId: string, p12Content: string, userId: string, ipAddress?: string): Promise<void>;
+  getCertificateFromVault(tenantId: string, userId: string, ipAddress?: string): Promise<string>;
+  saveCertificatePasswordToVault(tenantId: string, password: string, userId: string, ipAddress?: string): Promise<void>;
+  getCertificatePasswordFromVault(tenantId: string, userId: string, ipAddress?: string): Promise<string>;
+  saveMHCredentialsToVault(tenantId: string, usuario: string, password: string, userId: string, ipAddress?: string): Promise<void>;
+  getMHCredentialsFromVault(tenantId: string, userId: string, ipAddress?: string): Promise<{ usuario: string; password: string }>;
+  deleteCertificateSecretsFromVault(tenantId: string, userId: string, ipAddress?: string): Promise<void>;
 
   initialize(): Promise<void>;
 }
@@ -743,6 +755,82 @@ export class DatabaseStorage implements IStorage {
     if (limit) query = query.limit(limit);
     
     return await query;
+  }
+
+  // ============================================
+  // VAULT - MÉTODOS DE SECRETOS ESTRICTOS
+  // ============================================
+
+  async saveCertificateToVault(tenantId: string, p12Content: string, userId: string, ipAddress?: string): Promise<void> {
+    await saveSecretToVault({
+      tenantId,
+      secretType: "cert_p12",
+      referenceName: "p12",
+      secretContent: p12Content,
+      userId,
+      ipAddress,
+    });
+  }
+
+  async getCertificateFromVault(tenantId: string, userId: string, ipAddress?: string): Promise<string> {
+    return await getSecretFromVault(tenantId, "cert_p12", "p12", userId, ipAddress);
+  }
+
+  async saveCertificatePasswordToVault(tenantId: string, password: string, userId: string, ipAddress?: string): Promise<void> {
+    await saveSecretToVault({
+      tenantId,
+      secretType: "cert_password",
+      referenceName: "password",
+      secretContent: password,
+      userId,
+      ipAddress,
+    });
+  }
+
+  async getCertificatePasswordFromVault(tenantId: string, userId: string, ipAddress?: string): Promise<string> {
+    return await getSecretFromVault(tenantId, "cert_password", "password", userId, ipAddress);
+  }
+
+  async saveMHCredentialsToVault(tenantId: string, usuario: string, password: string, userId: string, ipAddress?: string): Promise<void> {
+    // Guardar usuario y contraseña como un JSON encriptado
+    const credentials = JSON.stringify({ usuario, password });
+    
+    await saveSecretToVault({
+      tenantId,
+      secretType: "mh_password",
+      referenceName: "credentials",
+      secretContent: credentials,
+      userId,
+      ipAddress,
+    });
+  }
+
+  async getMHCredentialsFromVault(tenantId: string, userId: string, ipAddress?: string): Promise<{ usuario: string; password: string }> {
+    const credentialsJson = await getSecretFromVault(tenantId, "mh_password", "credentials", userId, ipAddress);
+    return JSON.parse(credentialsJson) as { usuario: string; password: string };
+  }
+
+  async deleteCertificateSecretsFromVault(tenantId: string, userId: string, ipAddress?: string): Promise<void> {
+    // Eliminar todos los secretos del certificado
+    const secretTypes: Array<"cert_p12" | "cert_password" | "mh_password"> = [
+      "cert_p12",
+      "cert_password",
+      "mh_password",
+    ];
+
+    for (const secretType of secretTypes) {
+      const exists = await secretExists(tenantId, secretType, secretType === "mh_password" ? "credentials" : secretType === "cert_password" ? "password" : "p12");
+      
+      if (exists) {
+        await deleteSecretFromVault(
+          tenantId,
+          secretType,
+          secretType === "mh_password" ? "credentials" : secretType === "cert_password" ? "password" : "p12",
+          userId,
+          ipAddress
+        );
+      }
+    }
   }
 }
 

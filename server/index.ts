@@ -9,6 +9,7 @@ import { serveStatic } from "./static";
 import { createServer } from "http";
 import { storage } from "./storage";
 import { apiGeneralRateLimiter, loginRateLimiter } from "./lib/rate-limiters";
+import certificadosRouter from "./routes/certificados";
 
 // Manejadores globales de errores
 process.on("uncaughtException", (error) => {
@@ -164,6 +165,7 @@ app.use((req, res, next) => {
 
     log("Registrando rutas...");
     await registerRoutes(httpServer, app);
+    app.use("/api", certificadosRouter); // <-- AÑADIR ESTA LÍNEA
     log("✅ Rutas registradas");
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

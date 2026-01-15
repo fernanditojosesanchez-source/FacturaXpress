@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Trash2, Edit2, AlertCircle, Loader2, Eye, EyeOff } from "lucide-react";
+import { Plus, Trash2, AlertCircle, Loader2, Eye, EyeOff } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,22 +31,6 @@ const ROLES = [
   { value: "accountant", label: "Contador" },
   { value: "sigma_readonly", label: "Solo Lectura Sigma" },
 ];
-
-const getRoleColor = (role: string) => {
-  const colors: Record<string, string> = {
-    super_admin: "bg-red-100 text-red-800",
-    tenant_admin: "bg-blue-100 text-blue-800",
-    manager: "bg-purple-100 text-purple-800",
-    cashier: "bg-green-100 text-green-800",
-    accountant: "bg-orange-100 text-orange-800",
-    sigma_readonly: "bg-gray-100 text-gray-800",
-  };
-  return colors[role] || "bg-gray-100 text-gray-800";
-};
-
-const getRoleLabel = (role: string) => {
-  return ROLES.find(r => r.value === role)?.label || role;
-};
 
 export function UsuariosPage() {
   const [open, setOpen] = useState(false);
@@ -186,12 +170,6 @@ export function UsuariosPage() {
     }
   };
 
-  const handleClose = () => {
-    setOpen(false);
-    setEditingId(null);
-    setFormData({ nombre: "", email: "", contraseña: "", role: "cashier" });
-  };
-
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between">
@@ -222,7 +200,7 @@ export function UsuariosPage() {
                   id="nombre"
                   placeholder="Juan Pérez"
                   value={formData.nombre}
-                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, nombre: e.target.value })}
                   required
                 />
               </div>
@@ -233,7 +211,7 @@ export function UsuariosPage() {
                   type="email"
                   placeholder="juan@example.com"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, email: e.target.value })}
                   required
                 />
               </div>
@@ -245,7 +223,7 @@ export function UsuariosPage() {
                     type={showPassword ? "text" : "password"}
                     placeholder="Contraseña segura"
                     value={formData.contraseña}
-                    onChange={(e) => setFormData({ ...formData, contraseña: e.target.value })}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, contraseña: e.target.value })}
                     required
                   />
                   <button
@@ -263,7 +241,7 @@ export function UsuariosPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="role">Rol</Label>
-                <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+                <Select value={formData.role} onValueChange={(value: string) => setFormData({ ...formData, role: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -341,7 +319,7 @@ export function UsuariosPage() {
                       <TableCell>
                         <Select
                           value={user.role}
-                          onValueChange={(value) =>
+                          onValueChange={(value: string) =>
                             updateRoleMutation.mutate({ userId: user.id, role: value })
                           }
                           disabled={user.id === currentUser?.id || updateRoleMutation.isPending}
