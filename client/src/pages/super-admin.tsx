@@ -158,125 +158,176 @@ export default function SuperAdminPage() {
   };
 
   return (
-    <div className="flex-1 overflow-auto bg-gradient-to-br from-gray-50 via-blue-50/30 to-white">
-      <div className="p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 overflow-hidden">
+      {/* Formas fluidas de fondo - Orbes animadas */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+        <div className="absolute top-1/2 left-1/3 w-80 h-80 bg-emerald-500/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute -bottom-40 right-1/4 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }} />
+      </div>
 
-        {/* Métricas Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          <Card className="relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700 border-0 shadow-2xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-300 transform hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-semibold text-white/90 uppercase tracking-wide">
+      <div className="relative p-6 sm:p-8 lg:p-12 space-y-8 max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 animate-fade-in-up">
+          <div>
+            <h1 className="text-5xl sm:text-6xl font-black tracking-tight bg-gradient-to-r from-blue-200 via-purple-200 to-emerald-200 bg-clip-text text-transparent">
+              Panel SaaS
+            </h1>
+            <p className="text-lg text-blue-200/70 mt-3">
+              Gestión completa de empresas y usuarios
+            </p>
+          </div>
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                size="lg"
+                className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 font-bold text-lg"
+              >
+                <Plus className="h-6 w-6 mr-2" />
+                Nueva Empresa
+              </Button>
+            </DialogTrigger>
+            {/* Dialog content continues below */}
+          </Dialog>
+        </div>
+
+        {/* Métricas Dashboard - ULTRA PREMIUM */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <Card className="relative overflow-hidden backdrop-blur-2xl rounded-3xl border border-blue-400/30 shadow-[0_35px_60px_-15px_rgba(59,130,246,0.4)] hover:shadow-[0_50px_80px_-20px_rgba(59,130,246,0.5)] transition-all duration-500 group">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/15 to-blue-600/5 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-transparent opacity-60 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent opacity-50 pointer-events-none" />
+            <div className="absolute inset-0 rounded-3xl border border-white/40 pointer-events-none" />
+            
+            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-0 pt-8 px-8">
+              <CardTitle className="text-xs font-bold text-white/90 tracking-widest uppercase opacity-90">
                 Total Empresas
               </CardTitle>
-              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
-                <Building2 className="h-5 w-5 text-white" />
+              <div className="p-4 rounded-2xl backdrop-blur-lg bg-blue-500/15 border border-white/40 shadow-2xl">
+                <Building2 className="h-6 w-6 text-blue-400" />
               </div>
             </CardHeader>
-            <CardContent className="relative">
-              <div className="text-4xl font-bold text-white mb-1">
+            <CardContent className="relative pt-6 px-8 pb-8">
+              <div className="text-6xl font-black tracking-tight text-white drop-shadow-lg mb-3">
                 {isLoadingMetrics ? (
                   <Loader2 className="h-8 w-8 animate-spin" />
                 ) : (
                   metrics?.totalEmpresas || 0
                 )}
               </div>
-              <p className="text-sm text-white/70">Clientes registrados</p>
+              <p className="text-sm text-white/80 font-medium">Clientes registrados</p>
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-700 border-0 shadow-2xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-300 transform hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-semibold text-white/90 uppercase tracking-wide">
+          <Card className="relative overflow-hidden backdrop-blur-2xl rounded-3xl border border-emerald-400/30 shadow-[0_35px_60px_-15px_rgba(16,185,129,0.4)] hover:shadow-[0_50px_80px_-20px_rgba(16,185,129,0.5)] transition-all duration-500 group">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/15 to-emerald-600/5 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-transparent opacity-60 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent opacity-50 pointer-events-none" />
+            <div className="absolute inset-0 rounded-3xl border border-white/40 pointer-events-none" />
+            
+            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-0 pt-8 px-8">
+              <CardTitle className="text-xs font-bold text-white/90 tracking-widest uppercase opacity-90">
                 Empresas Activas
               </CardTitle>
-              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
-                <TrendingUp className="h-5 w-5 text-white" />
+              <div className="p-4 rounded-2xl backdrop-blur-lg bg-emerald-500/15 border border-white/40 shadow-2xl">
+                <TrendingUp className="h-6 w-6 text-emerald-400" />
               </div>
             </CardHeader>
-            <CardContent className="relative">
-              <div className="text-4xl font-bold text-white mb-1">
+            <CardContent className="relative pt-6 px-8 pb-8">
+              <div className="text-6xl font-black tracking-tight text-white drop-shadow-lg mb-3">
                 {isLoadingMetrics ? (
                   <Loader2 className="h-8 w-8 animate-spin" />
                 ) : (
                   metrics?.empresasActivas || 0
                 )}
               </div>
-              <p className="text-sm text-white/70">En operación actual</p>
+              <p className="text-sm text-white/80 font-medium">En operación actual</p>
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden bg-gradient-to-br from-purple-600 to-pink-700 border-0 shadow-2xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-300 transform hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-semibold text-white/90 uppercase tracking-wide">
+          <Card className="relative overflow-hidden backdrop-blur-2xl rounded-3xl border border-purple-400/30 shadow-[0_35px_60px_-15px_rgba(168,85,247,0.4)] hover:shadow-[0_50px_80px_-20px_rgba(168,85,247,0.5)] transition-all duration-500 group">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/15 to-purple-600/5 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-transparent opacity-60 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent opacity-50 pointer-events-none" />
+            <div className="absolute inset-0 rounded-3xl border border-white/40 pointer-events-none" />
+            
+            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-0 pt-8 px-8">
+              <CardTitle className="text-xs font-bold text-white/90 tracking-widest uppercase opacity-90">
                 Total Usuarios
               </CardTitle>
-              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
-                <Users className="h-5 w-5 text-white" />
+              <div className="p-4 rounded-2xl backdrop-blur-lg bg-purple-500/15 border border-white/40 shadow-2xl">
+                <Users className="h-6 w-6 text-purple-400" />
               </div>
             </CardHeader>
-            <CardContent className="relative">
-              <div className="text-4xl font-bold text-white mb-1">
+            <CardContent className="relative pt-6 px-8 pb-8">
+              <div className="text-6xl font-black tracking-tight text-white drop-shadow-lg mb-3">
                 {isLoadingMetrics ? (
                   <Loader2 className="h-8 w-8 animate-spin" />
                 ) : (
                   metrics?.totalUsuarios || 0
                 )}
               </div>
-              <p className="text-sm text-white/70">Usuarios del sistema</p>
+              <p className="text-sm text-white/80 font-medium">Usuarios del sistema</p>
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden bg-gradient-to-br from-orange-600 to-red-700 border-0 shadow-2xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-300 transform hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-3">
-              <CardTitle className="text-sm font-semibold text-white/90 uppercase tracking-wide">
+          <Card className="relative overflow-hidden backdrop-blur-2xl rounded-3xl border border-amber-400/30 shadow-[0_35px_60px_-15px_rgba(217,119,6,0.4)] hover:shadow-[0_50px_80px_-20px_rgba(217,119,6,0.5)] transition-all duration-500 group">
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/15 to-amber-600/5 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-transparent opacity-60 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent opacity-50 pointer-events-none" />
+            <div className="absolute inset-0 rounded-3xl border border-white/40 pointer-events-none" />
+            
+            <CardHeader className="relative flex flex-row items-center justify-between space-y-0 pb-0 pt-8 px-8">
+              <CardTitle className="text-xs font-bold text-white/90 tracking-widest uppercase opacity-90">
                 Total Facturas
               </CardTitle>
-              <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
-                <FileText className="h-5 w-5 text-white" />
+              <div className="p-4 rounded-2xl backdrop-blur-lg bg-amber-500/15 border border-white/40 shadow-2xl">
+                <FileText className="h-6 w-6 text-amber-400" />
               </div>
             </CardHeader>
-            <CardContent className="relative">
-              <div className="text-4xl font-bold text-white mb-1">
+            <CardContent className="relative pt-6 px-8 pb-8">
+              <div className="text-6xl font-black tracking-tight text-white drop-shadow-lg mb-3">
                 {isLoadingMetrics ? (
                   <Loader2 className="h-8 w-8 animate-spin" />
                 ) : (
                   metrics?.totalFacturas || 0
                 )}
               </div>
-              <p className="text-sm text-white/70">Documentos emitidos</p>
+              <p className="text-sm text-white/80 font-medium">Documentos emitidos</p>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid gap-6 relative z-10">
             <div className="flex justify-end">
               <Button 
                 onClick={() => setIsCreateOpen(true)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-[0_25px_50px_-12px_rgba(59,130,246,0.4)] text-white font-bold py-3 px-6 rounded-xl transition-all duration-300"
               >
-                <Plus className="mr-2 h-4 w-4" /> Nueva Empresa
+                <Plus className="mr-2 h-5 w-5" /> Nueva Empresa
               </Button>
             </div>
 
-            <Card className="relative overflow-hidden border-0 shadow-2xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] transition-all duration-300 bg-white/98 backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-indigo-50/50" />
-              <CardHeader className="relative">
-                <CardTitle className="text-2xl font-bold text-black">Empresas Registradas</CardTitle>
+            <Card className="relative overflow-hidden backdrop-blur-3xl rounded-3xl border border-white/20 shadow-[0_35px_60px_-15px_rgba(59,130,246,0.3)] hover:shadow-[0_50px_80px_-20px_rgba(59,130,246,0.4)] transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-600/5 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/15 to-transparent opacity-40 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-40 pointer-events-none" />
+              <div className="absolute inset-0 rounded-3xl border border-white/30 pointer-events-none" />
+              
+              <CardHeader className="relative border-b border-white/10">
+                <CardTitle className="text-2xl font-black text-white drop-shadow-lg">Empresas Registradas</CardTitle>
               </CardHeader>
-              <CardContent className="relative overflow-x-auto">
+              <CardContent className="relative overflow-x-auto pt-6">
                 <Table>
-                  <TableHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 sticky top-0">
-                    <TableRow className="border-b-2 border-blue-200/50 hover:bg-blue-50/50">
-                      <TableHead className="font-bold text-black">Nombre</TableHead>
-                      <TableHead className="font-bold text-black">Slug (URL)</TableHead>
-                      <TableHead className="font-bold text-black">Tipo</TableHead>
-                      <TableHead className="font-bold text-black">Estado</TableHead>
-                      <TableHead className="font-bold text-black">Registro</TableHead>
-                      <TableHead className="text-right font-bold text-black">Acciones</TableHead>
+                  <TableHeader className="sticky top-0 z-20">
+                    <TableRow className="border-b border-white/15 hover:bg-white/5">
+                      <TableHead className="font-bold text-white drop-shadow-md">Nombre</TableHead>
+                      <TableHead className="font-bold text-white drop-shadow-md">Slug (URL)</TableHead>
+                      <TableHead className="font-bold text-white drop-shadow-md">Tipo</TableHead>
+                      <TableHead className="font-bold text-white drop-shadow-md">Estado</TableHead>
+                      <TableHead className="font-bold text-white drop-shadow-md">Registro</TableHead>
+                      <TableHead className="text-right font-bold text-white drop-shadow-md">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -287,45 +338,45 @@ export default function SuperAdminPage() {
                         </TableCell>
                       </TableRow>
                     ) : tenants?.map((tenant) => (
-                      <TableRow key={tenant.id} className="border-b border-gray-200/50 hover:bg-blue-50/60 transition-colors">
-                        <TableCell className="font-semibold text-black">
+                      <TableRow key={tenant.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
+                        <TableCell className="font-semibold text-white drop-shadow-sm">
                           {tenant.nombre}
                         </TableCell>
-                        <TableCell className="text-black font-mono text-sm">{tenant.slug}</TableCell>
+                        <TableCell className="text-white/80 font-mono text-sm drop-shadow-sm">{tenant.slug}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300">{tenant.tipo}</Badge>
+                          <Badge variant="outline" className="bg-blue-500/20 text-blue-200 border-blue-400/50">{tenant.tipo}</Badge>
                         </TableCell>
                         <TableCell>
                           <Badge
                             className={
                               tenant.estado === "activo"
-                                ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-md hover:shadow-lg transition-all"
-                                : "bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-md hover:shadow-lg transition-all"
+                                ? "bg-gradient-to-r from-emerald-500/30 to-emerald-600/30 text-emerald-200 border border-emerald-400/50 shadow-md shadow-emerald-500/20"
+                                : "bg-gradient-to-r from-red-500/30 to-red-600/30 text-red-200 border border-red-400/50 shadow-md shadow-red-500/20"
                             }
                           >
                             {tenant.estado}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-gray-600 text-sm">
+                        <TableCell className="text-white/70 text-sm drop-shadow-sm">
                           {new Date(tenant.createdAt).toLocaleDateString("es-ES")}
                         </TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="hover:bg-blue-100 hover:text-blue-700 transition-colors">
+                              <Button variant="ghost" size="sm" className="hover:bg-white/10 hover:text-white text-white/70 transition-colors">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setViewDetailsTenant(tenant)}>
+                            <DropdownMenuContent align="end" className="bg-slate-800/95 backdrop-blur-xl border border-white/20">
+                              <DropdownMenuItem onClick={() => setViewDetailsTenant(tenant)} className="text-white/90 focus:bg-white/10 focus:text-white cursor-pointer">
                                 <Eye className="h-4 w-4 mr-2" />
                                 Ver Detalles
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setEditTenant(tenant)}>
+                              <DropdownMenuItem onClick={() => setEditTenant(tenant)} className="text-white/90 focus:bg-white/10 focus:text-white cursor-pointer">
                                 <Edit className="h-4 w-4 mr-2" />
                                 Editar Información
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setSelectedTenant(tenant)}>
+                              <DropdownMenuItem onClick={() => setSelectedTenant(tenant)} className="text-white/90 focus:bg-white/10 focus:text-white cursor-pointer">
                                 <Key className="h-4 w-4 mr-2" />
                                 Credenciales MH
                               </DropdownMenuItem>
