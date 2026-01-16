@@ -58,6 +58,21 @@ export async function registerRoutes(
       const mhServiceWithBreaker = mhService as any;
       const mhCircuitState = mhServiceWithBreaker.getCircuitState?.();
 
+      // Stats de colas (si están disponibles)
+      let queuesHealth: any = { enabled: false };
+      try {
+        const { getQueuesStats } = await import("./lib/queues.js");
+        const stats = await getQueuesStats();
+        if (stats.length > 0) {
+          queuesHealth = {
+            enabled: true,
+            queues: stats,
+          };
+        }
+      } catch (err) {
+        // Ignorar si las colas no están disponibles
+      }
+
       const healthStatus = {
         status: mhCircuitState?.state === "OPEN" ? "degraded" : "ok",
         timestamp: new Date().toISOString(),
@@ -67,7 +82,8 @@ export async function registerRoutes(
             failureCount: mhCircuitState?.failureCount || 0,
             nextRetryIn: mhCircuitState?.nextRetryIn || null,
             backoffMultiplier: mhCircuitState?.backoffMultiplier || 1
-          }
+          },
+          queues: queuesHealth
         }
       };
 
@@ -120,6 +136,41 @@ export async function registerRoutes(
         message: "Error al obtener estado detallado",
         timestamp: new Date().toISOString()
       });
+    }
+  });
+
+  /**
+   * Endpoint de métricas Prometheus
+   * GET /metrics
+   * 
+   * Exporta métricas de colas BullMQ en formato Prometheus
+   */
+  app.get("/metrics", async (req: Request, res: Response) => {
+    try {
+      const { getQueues } = await import("./lib/queues.js");
+      const { getQueueMetrics, formatPrometheusMetrics } = await import("./lib/metrics.js");
+      const { transmisionQueue, firmaQueue, notificacionesQueue } = getQueues();
+      const allMetrics: any[] = [];
+
+      if (transmisionQueue) {
+        allMetrics.push(await getQueueMetrics(transmisionQueue));
+      }
+      if (firmaQueue) {
+        allMetrics.push(await getQueueMetrics(firmaQueue));
+      }
+      if (notificacionesQueue) {
+        allMetrics.push(await getQueueMetrics(notificacionesQueue));
+      }
+
+      if (allMetrics.length === 0) {
+        return res.status(503).send("# No queues available\n");
+      }
+
+      const prometheusFormat = formatPrometheusMetrics(allMetrics);
+      res.setHeader("Content-Type", "text/plain; version=0.0.4");
+      res.send(prometheusFormat);
+    } catch (err: any) {
+      res.status(500).send(`# Error: ${err.message}\n`);
     }
   });
 

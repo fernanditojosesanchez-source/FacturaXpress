@@ -10,8 +10,12 @@ import { createServer } from "http";
 import { storage } from "./storage.js";
 import { apiGeneralRateLimiter, loginRateLimiter } from "./lib/rate-limiters.js";
 import certificadosRouter from "./routes/certificados.js";
-import { initQueues } from "./lib/queues.js";
+import { initQueues, getQueuesStats } from "./lib/queues.js";
 import { startCertificateAlertsScheduler } from "./lib/alerts.js";
+import { initWorkers, closeWorkers } from "./lib/workers.js";
+import { setupBullBoard } from "./routes/bull-board.js";
+import { getQueueMetrics, formatPrometheusMetrics, getQueuesSummary } from "./lib/metrics.js";
+import { getQueues } from "./lib/queues.js";
 
 // Manejadores globales de errores
 process.on("uncaughtException", (error) => {
@@ -172,12 +176,25 @@ app.use((req, res, next) => {
 
     // Inicializar BullMQ (si Redis disponible) - sin bloquear el startup
     initQueues()
-      .then((q) => {
+      .then(async (q) => {
         if (!q.enabled) {
           log(`⚠️ BullMQ deshabilitado: ${q.reason || "sin razón"}`);
-        } else {
-          log("✅ BullMQ colas inicializadas");
+          return;
         }
+
+        log("✅ BullMQ colas inicializadas");
+
+        // Iniciar workers después de que las colas estén listas
+        const workers = await initWorkers();
+        if (workers.started > 0) {
+          log(`✅ ${workers.started} workers iniciados`);
+        }
+        if (workers.errors.length > 0) {
+          log(`⚠️ Errores iniciando workers: ${workers.errors.join(", ")}`);
+        }
+
+        // Montar Bull Board dashboard
+        setupBullBoard(app);
       })
       .catch((err) => {
         log(`⚠️ Error inicializando BullMQ: ${(err as Error).message}`);
@@ -221,8 +238,35 @@ app.use((req, res, next) => {
         log(`✅ Servidor listo en http://localhost:${port}`);
       },
     );
+
+    // Graceful shutdown
+    const shutdown = async () => {
+      log("🛑 Iniciando graceful shutdown...");
+      
+      // Cerrar workers primero
+      try {
+        await closeWorkers();
+      } catch (err) {
+        log("⚠️ Error cerrando workers:", err);
+      }
+      
+      // Cerrar servidor HTTP
+      httpServer.close(() => {
+        log("✅ Servidor HTTP cerrado");
+        process.exit(0);
+      });
+
+      // Forzar cierre después de 30 segundos
+      setTimeout(() => {
+        log("⚠️ Forzando cierre después de timeout");
+        process.exit(1);
+      }, 30000);
+    };
+
+    process.on("SIGTERM", shutdown);
+    process.on("SIGINT", shutdown);
   } catch (error) {
-    log(`❌ Error durante inicialización: ${error}`, "error");
+    log(`❌ Error durante inicialización: ${(error as Error).message}`);
     console.error(error);
     throw error;
   }

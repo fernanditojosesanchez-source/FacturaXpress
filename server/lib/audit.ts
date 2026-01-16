@@ -1,5 +1,5 @@
 import { db } from "../db.js";
-import { auditLogs, loginAttempts } from "@shared/schema";
+import { auditLogs, loginAttempts } from "../../shared/schema.js";
 import { sendToSIEM } from "./siem.js";
 
 /**
