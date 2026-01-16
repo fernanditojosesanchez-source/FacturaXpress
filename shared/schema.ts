@@ -160,6 +160,50 @@ export const outboxEvents = pgTable("outbox_events", {
 export type OutboxEvent = typeof outboxEvents.$inferSelect;
 export type InsertOutboxEvent = typeof outboxEvents.$inferInsert;
 
+// --- NOTIFICATION CHANNELS ---
+
+export const notificationChannelsTable = pgTable("notification_channels", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: uuid("tenant_id").references(() => tenants.id).notNull(),
+  type: text("type").notNull(), // email | sms | webhook
+  recipient: text("recipient").notNull(), // email address, phone number, or webhook URL
+  name: text("name"), // Display name: "Email Principal", "SMS Alertas", etc.
+  enabled: boolean("enabled").notNull().default(true),
+  config: jsonb("config"), // Additional config: { retries: 3, timeout: 10000 }
+  lastUsedAt: timestamp("last_used_at"),
+  failureCount: integer("failure_count").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (t) => ({
+  idx_tenant_type: index("idx_notification_channels_tenant_type").on(t.tenantId, t.type),
+  idx_tenant_enabled: index("idx_notification_channels_tenant_enabled").on(t.tenantId, t.enabled),
+}));
+
+export type NotificationChannel = typeof notificationChannelsTable.$inferSelect;
+export type InsertNotificationChannel = typeof notificationChannelsTable.$inferInsert;
+
+// --- NOTIFICATION LOGS ---
+
+export const notificationLogsTable = pgTable("notification_logs", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: uuid("tenant_id").references(() => tenants.id).notNull(),
+  channelId: uuid("channel_id").references(() => notificationChannelsTable.id),
+  type: text("type").notNull(), // cert_expiry, invoice_sent, invoice_failed
+  recipient: text("recipient").notNull(),
+  status: text("status").notNull(), // success | failed
+  messageId: text("message_id"),
+  error: text("error"),
+  retries: integer("retries").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (t) => ({
+  idx_tenant_type: index("idx_notification_logs_tenant_type").on(t.tenantId, t.type),
+  idx_tenant_status: index("idx_notification_logs_tenant_status").on(t.tenantId, t.status),
+  idx_created: index("idx_notification_logs_created").on(t.createdAt),
+}));
+
+export type NotificationLog = typeof notificationLogsTable.$inferSelect;
+export type InsertNotificationLog = typeof notificationLogsTable.$inferInsert;
+
 export const emisorTable = pgTable("emisor", {
   id: text("id").primaryKey(),
   tenantId: uuid("tenant_id").references(() => tenants.id),

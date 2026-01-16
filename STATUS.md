@@ -2,17 +2,17 @@
 
 ## Resumen Ejecutivo
 
-**Fase**: Post-auditoría técnica, implementación de mejoras P0/P1
-**Progreso General**: 3 de 16 TODOs completados (19%)
-**Última Actualización**: 2025-01-07
+**Fase**: Post-auditoría técnica, implementación de mejoras P0/P1 + Outbox
+**Progreso General**: 4 de 16 TODOs completados (25%)
+**Última Actualización**: 2026-01-16
 
 ### Estado por Prioridad
 
 | Prioridad | P0 | P1 | P2 | P3 |
 |-----------|-----|-----|-----|-----|
-| **Completados** | 2/2 ✅ | 0/4 | 0/8 | 0/2 |
-| **En Progreso** | - | - | - | - |
-| **Pendientes** | - | 4 | 8 | 2 |
+| **Completados** | 2/2 ✅ | 0/4 | 1/8 | 0/2 |
+| **En Progreso** | - | 1/4 | - | - |
+| **Pendientes** | - | 3 | 7 | 2 |
 
 ---
 
@@ -93,14 +93,25 @@
 
 ---
 
-## P2: Medios (0/8 completados)
+## P2: Medios (1/8 completados)
 
 ### ⏳ 8. Workers Dedicados + DLQ + Métricas
 - **Dependencia**: BullMQ (paso 4)
 - **Requisitos**: Procesos worker, Dead Letter Queues, Prometheus, Bull Board
 
-### ⏳ 9. Outbox Transaccional
-- **Requisitos**: Patrón outbox/inbox, procesador idempotente, garantía ACID
+### ✅ 9. Outbox Transaccional
+- **Estado**: COMPLETADO (end-to-end)
+- **Implementado**:
+  - Encolado transaccional al crear factura (ACID)
+  - Procesador en background por lotes con idempotencia
+  - Retries con backoff exponencial y disponibilidad diferida
+  - Métricas Prometheus expuestas en `/metrics` (gauges outbox)
+  - Endpoints admin: `GET /api/admin/outbox/stats`, `POST /api/admin/outbox/replay`
+  - Integrado en ciclo de vida del servidor (start/stop ordenado)
+- **Pendiente**:
+  - Ejecutar migraciones de nuevas tablas de notificaciones: `npm run db:push`
+  - Configurar ENV de SMTP/Twilio para notificaciones (prod/dev)
+  - Redis para BullMQ (no bloquea Outbox; se usa fallback)
 
 ### ⏳ 10. Modo Rendimiento Adaptativo
 - **Requisitos**: Detección hardware, toggle persistente, desactivar animaciones

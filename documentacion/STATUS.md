@@ -1,10 +1,16 @@
 # Estado del Proyecto FacturaXpress
 
-**Última Actualización:** 11 de Enero de 2026
+**Última Actualización:** 16 de Enero de 2026
 **Versión:** 2.1.0 (Seguridad Empresarial + SaaS)
 
 ## 🚀 Resumen Ejecutivo
 El sistema ha alcanzado **nivel de seguridad empresarial** con autenticación JWT, auditoría completa, y migración exitosa a Supabase PostgreSQL. Arquitectura SaaS multi-tenant con firma digital nativa y protección robusta contra amenazas.
+
+## 📥 Actualización (16 Ene 2026)
+- **Completado**: Patrón Outbox transaccional end-to-end (procesador, métricas, endpoints admin, integración servidor).
+- **En Progreso**: Sistema de notificaciones multi-canal (email/SMS/webhooks) integrado con alertas de certificado.
+- **Pendiente**: Aplicar migraciones de notificaciones (`npm run db:push`) y configurar ENV SMTP/Twilio.
+- **Plan**: Activar BullMQ cuando se resuelva conectividad Redis; mantener fallback operativo.
 
 ## ✅ Hitos Alcanzados (Enero 2026)
 
