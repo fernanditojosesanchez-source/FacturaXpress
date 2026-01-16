@@ -25,6 +25,7 @@ import { sendToSIEM } from "./siem.js";
 import { redisHealth } from "./redis.js";
 
 const log = console.log;
+const WORKER_IP = process.env.WORKER_IP || "worker";
 
 // ============================================================================
 // Worker de Transmisión (Firma + Envío al MH)
@@ -68,6 +69,7 @@ export async function processTransmision(job: Job<TransmisionJob>) {
       action: "transmision_success",
       tenantId,
       userId: job.data.userId || "system",
+      ipAddress: WORKER_IP,
       details: { facturaId, jobId: job.id },
     });
 
@@ -87,6 +89,7 @@ export async function processTransmision(job: Job<TransmisionJob>) {
       action: "transmision_failed",
       tenantId,
       userId: job.data.userId || "system",
+      ipAddress: WORKER_IP,
       details: { facturaId, error: error.message, jobId: job.id },
     });
 
@@ -118,7 +121,7 @@ export async function processFirma(job: Job<FirmaJob>) {
 
     // 2. Obtener certificado del tenant
     const certs = await storage.getCertificados(tenantId);
-    const certActivo = certs.find((c) => c.activo && new Date(c.validoHasta) > new Date());
+    const certActivo = certs.find((c: any) => c.activo && new Date(c.validoHasta) > new Date());
     if (!certActivo) {
       throw new Error(`Tenant ${tenantId} sin certificado válido`);
     }
@@ -135,6 +138,7 @@ export async function processFirma(job: Job<FirmaJob>) {
       action: "firma_success",
       tenantId,
       userId: job.data.userId || "system",
+      ipAddress: WORKER_IP,
       details: { documentoId, tipo, certificadoId: certActivo.id },
     });
 
@@ -146,6 +150,7 @@ export async function processFirma(job: Job<FirmaJob>) {
       action: "firma_failed",
       tenantId,
       userId: job.data.userId || "system",
+      ipAddress: WORKER_IP,
       details: { documentoId, error: error.message, tipo },
     });
 
@@ -196,6 +201,7 @@ export async function processNotificacion(job: Job<NotificacionJob>) {
       action: "notificacion_sent",
       tenantId,
       userId: "system",
+      ipAddress: WORKER_IP,
       details: { destinatario, tipo, jobId: job.id },
     });
 
@@ -207,6 +213,7 @@ export async function processNotificacion(job: Job<NotificacionJob>) {
       action: "notificacion_failed",
       tenantId,
       userId: "system",
+      ipAddress: WORKER_IP,
       details: { destinatario, error: error.message, tipo },
     });
 

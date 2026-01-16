@@ -1,4 +1,4 @@
-import type { Factura } from "@shared/schema";
+import type { Factura } from "../shared/schema.js";
 import { storage } from "./storage.js";
 import { signDTE } from "./lib/signer.js";
 import { getMHCircuitBreaker, CircuitState } from "./lib/circuit-breaker.js";
@@ -145,7 +145,7 @@ export class MHServiceReal implements MHService {
         throw new Error(`Fallo autenticación MH (${response.status}): ${errorText}`);
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as { body?: { token?: string } };
       if (!data.body || !data.body.token) {
         throw new Error("Respuesta de autenticación MH inválida: No se recibió token");
       }
@@ -193,7 +193,7 @@ export class MHServiceReal implements MHService {
         throw new Error(`Error MH: ${response.status}`);
       }
       
-      return await response.json();
+      return (await response.json()) as SelloMH;
     } catch (error) {
       console.error("[MH Real] Error:", error);
       throw error;
@@ -205,7 +205,7 @@ export class MHServiceReal implements MHService {
     const response = await fetch(`${this.apiUrl}/consulta/${codigoGeneracion}`, {
       headers: { "Authorization": `Bearer ${token}` }
     });
-    return await response.json();
+    return (await response.json()) as EstadoDTE;
   }
 
   async anularDTE(codigoGeneracion: string, motivo: string, tenantId: string): Promise<ResultadoAnulacion> {
@@ -245,7 +245,7 @@ export class MHServiceReal implements MHService {
         throw new Error(`Error MH invalidación: ${response.status}`);
       }
 
-      const resultado = await response.json();
+      const resultado = (await response.json()) as { selloAnulacion?: string };
       return {
         success: true,
         mensaje: "DTE invalidado correctamente",
@@ -343,7 +343,7 @@ export class MHServiceReal implements MHService {
         
         // Si falló más de 10 veces, marcar como error
         const record = await storage.getContingenciaQueue(tenantId, "pendiente");
-        const fallidoRecord = record.find(r => r.codigoGeneracion === item.codigoGeneracion);
+        const fallidoRecord = record.find((r: any) => r.codigoGeneracion === item.codigoGeneracion);
         if (fallidoRecord && fallidoRecord.intentosFallidos > 10) {
           await storage.updateContingenciaStatus(item.codigoGeneracion, "error", errorMsg);
           console.error(`[Contingencia] ❌ DTE ${item.codigoGeneracion} marca do como error tras 10 intentos`);

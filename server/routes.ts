@@ -143,12 +143,13 @@ export async function registerRoutes(
    * Endpoint de métricas Prometheus
    * GET /metrics
    * 
-   * Exporta métricas de colas BullMQ en formato Prometheus
+   * Exporta métricas de colas BullMQ y outbox en formato Prometheus
    */
   app.get("/metrics", async (req: Request, res: Response) => {
     try {
       const { getQueues } = await import("./lib/queues.js");
-      const { getQueueMetrics, formatPrometheusMetrics } = await import("./lib/metrics.js");
+      const { getQueueMetrics, formatPrometheusMetrics, formatOutboxMetrics } = await import("./lib/metrics.js");
+      const { getOutboxStats } = await import("./lib/outbox-processor.js");
       const { transmisionQueue, firmaQueue, notificacionesQueue } = getQueues();
       const allMetrics: any[] = [];
 
@@ -162,13 +163,22 @@ export async function registerRoutes(
         allMetrics.push(await getQueueMetrics(notificacionesQueue));
       }
 
-      if (allMetrics.length === 0) {
-        return res.status(503).send("# No queues available\n");
+      // Obtener métricas del outbox
+      const outboxStats = await getOutboxStats();
+
+      let metricsOutput = "";
+      
+      if (allMetrics.length > 0) {
+        metricsOutput += formatPrometheusMetrics(allMetrics);
+      } else {
+        metricsOutput += "# No queues available\n";
       }
 
-      const prometheusFormat = formatPrometheusMetrics(allMetrics);
+      // Agregar métricas del outbox
+      metricsOutput += "\n" + formatOutboxMetrics(outboxStats);
+
       res.setHeader("Content-Type", "text/plain; version=0.0.4");
-      res.send(prometheusFormat);
+      res.send(metricsOutput);
     } catch (err: any) {
       res.status(500).send(`# Error: ${err.message}\n`);
     }

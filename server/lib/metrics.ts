@@ -122,3 +122,28 @@ export function getQueuesSummary(metrics: QueueMetrics[]): {
     queues,
   };
 }
+
+/**
+ * Agrega métricas de outbox a formato Prometheus
+ */
+export function formatOutboxMetrics(outboxStats: {
+  pending: number;
+  failed: number;
+  avgLagMs: number;
+}): string {
+  const lines: string[] = [];
+
+  lines.push("# HELP outbox_pending_events Eventos pendientes en el outbox");
+  lines.push("# TYPE outbox_pending_events gauge");
+  lines.push(`outbox_pending_events ${outboxStats.pending}`);
+
+  lines.push("# HELP outbox_failed_events Eventos fallidos (después de max retries)");
+  lines.push("# TYPE outbox_failed_events gauge");
+  lines.push(`outbox_failed_events ${outboxStats.failed}`);
+
+  lines.push("# HELP outbox_avg_lag_ms Lag promedio de eventos en el outbox (ms)");
+  lines.push("# TYPE outbox_avg_lag_ms gauge");
+  lines.push(`outbox_avg_lag_ms ${outboxStats.avgLagMs}`);
+
+  return lines.join("\n") + "\n";
+}

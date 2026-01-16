@@ -138,6 +138,28 @@ export const auditLogs = pgTable("audit_logs", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// --- OUTBOX EVENTS ---
+
+export const outboxEvents = pgTable("outbox_events", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: uuid("tenant_id").references(() => tenants.id).notNull(),
+  aggregateId: text("aggregate_id"),
+  eventType: text("event_type").notNull(),
+  payload: jsonb("payload").notNull(),
+  status: text("status").notNull().default("pending"), // pending | processing | sent | failed
+  retries: integer("retries").notNull().default(0),
+  error: text("error"),
+  availableAt: timestamp("available_at").notNull().defaultNow(),
+  processedAt: timestamp("processed_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (t) => ({
+  idx_status_available: index("idx_outbox_status_available").on(t.status, t.availableAt),
+  idx_tenant_status: index("idx_outbox_tenant_status").on(t.tenantId, t.status),
+}));
+
+export type OutboxEvent = typeof outboxEvents.$inferSelect;
+export type InsertOutboxEvent = typeof outboxEvents.$inferInsert;
+
 export const emisorTable = pgTable("emisor", {
   id: text("id").primaryKey(),
   tenantId: uuid("tenant_id").references(() => tenants.id),

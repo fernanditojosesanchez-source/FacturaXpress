@@ -1,4 +1,4 @@
-import type { Factura, Emisor, InsertFactura } from "@shared/schema";
+import type { Factura, Emisor, InsertFactura } from "../shared/schema.js";
 import { randomUUID } from "crypto";
 
 // Datos de prueba realistas para El Salvador

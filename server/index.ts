@@ -13,6 +13,7 @@ import certificadosRouter from "./routes/certificados.js";
 import { initQueues, getQueuesStats } from "./lib/queues.js";
 import { startCertificateAlertsScheduler } from "./lib/alerts.js";
 import { initWorkers, closeWorkers } from "./lib/workers.js";
+import { startOutboxProcessor, stopOutboxProcessor } from "./lib/outbox-processor.js";
 import { setupBullBoard } from "./routes/bull-board.js";
 import { getQueueMetrics, formatPrometheusMetrics, getQueuesSummary } from "./lib/metrics.js";
 import { getQueues } from "./lib/queues.js";
@@ -195,6 +196,9 @@ app.use((req, res, next) => {
 
         // Montar Bull Board dashboard
         setupBullBoard(app);
+
+        // Iniciar el procesador de outbox
+        await startOutboxProcessor(5000); // Ejecutar cada 5 segundos
       })
       .catch((err) => {
         log(`⚠️ Error inicializando BullMQ: ${(err as Error).message}`);
@@ -243,11 +247,18 @@ app.use((req, res, next) => {
     const shutdown = async () => {
       log("🛑 Iniciando graceful shutdown...");
       
-      // Cerrar workers primero
+      // Detener procesador de outbox
+      try {
+        await stopOutboxProcessor();
+      } catch (err) {
+        log(`⚠️ Error deteniendo outbox processor: ${(err as Error)?.message || err}`);
+      }
+
+      // Cerrar workers
       try {
         await closeWorkers();
       } catch (err) {
-        log("⚠️ Error cerrando workers:", err);
+        log(`⚠️ Error cerrando workers: ${(err as Error)?.message || err}`);
       }
       
       // Cerrar servidor HTTP

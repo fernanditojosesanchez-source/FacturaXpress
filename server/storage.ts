@@ -1,10 +1,30 @@
-import { 
-  type User, type InsertUser, type Factura, type InsertFactura, type Emisor, type Tenant,
-  type Producto, type InsertProducto, type Certificado, type InsertCertificado,
-  users, emisorTable, facturasTable, secuencialControlTable, tenants, facturaItemsTable,
-  tenantCredentials, receptoresTable, apiKeys, contingenciaQueueTable, anulacionesTable,
-  productosTable, certificadosTable
-} from "@shared/schema";
+import {
+  type User,
+  type InsertUser,
+  type Factura,
+  type InsertFactura,
+  type Emisor,
+  type Tenant,
+  type Producto,
+  type InsertProducto,
+  type Certificado,
+  type InsertCertificado,
+  type OutboxEvent,
+  users,
+  emisorTable,
+  facturasTable,
+  secuencialControlTable,
+  tenants,
+  facturaItemsTable,
+  tenantCredentials,
+  receptoresTable,
+  apiKeys,
+  contingenciaQueueTable,
+  anulacionesTable,
+  productosTable,
+  certificadosTable,
+  outboxEvents,
+} from "../shared/schema.js";
 import { randomUUID, createHash } from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -32,6 +52,18 @@ export interface IStorage {
     totalUsuarios: number;
     totalFacturas: number;
   }>;
+
+  // Outbox
+  addOutboxEvent(event: {
+    tenantId: string;
+    eventType: string;
+    payload: any;
+    aggregateId?: string;
+    availableAt?: Date;
+  }): Promise<void>;
+  getPendingOutbox(limit: number): Promise<OutboxEvent[]>;
+  markOutboxSent(id: string): Promise<void>;
+  markOutboxFailed(id: string, error: string, retries: number, availableAt: Date): Promise<void>;
 
   // Credenciales (Certificados)
   getTenantCredentials(tenantId: string): Promise<any | undefined>;
@@ -190,22 +222,10 @@ export class DatabaseStorage implements IStorage {
     const [facturasCount] = await db.select({ count: sql<number>`count(*)::int` }).from(facturasTable);
 
     return {
-      totalEmpresas: empresasCount.count || 0,
-      empresasActivas: empresasActivasCount.count || 0,
-      totalUsuarios: usuariosCount.count || 0,
-      totalFacturas: facturasCount.count || 0,
-    };
-  }
-
-  async getTenantCredentials(tenantId: string): Promise<any | undefined> {
-    const [creds] = await db.select().from(tenantCredentials).where(eq(tenantCredentials.tenantId, tenantId)).limit(1);
-    if (!creds) return undefined;
-
-    return {
-      ...creds,
-      mhPass: decrypt(creds.mhPassEnc),
-      certificadoP12: decrypt(creds.certificadoP12Enc),
-      certificadoPass: decrypt(creds.certificadoPassEnc),
+      totalEmpresas: empresasCount.count,
+      empresasActivas: empresasActivasCount.count,
+      totalUsuarios: usuariosCount.count,
+      totalFacturas: facturasCount.count,
     };
   }
 
@@ -222,6 +242,23 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+  async getTenantCredentials(tenantId: string): Promise<any | undefined> {
+    const [creds] = await db
+      .select()
+      .from(tenantCredentials)
+      .where(eq(tenantCredentials.tenantId, tenantId))
+      .limit(1);
+
+    if (!creds) return undefined;
+
+    return {
+      ...creds,
+      mhPass: decrypt(creds.mhPassEnc),
+      certificadoP12: decrypt(creds.certificadoP12Enc),
+      certificadoPass: decrypt(creds.certificadoPassEnc),
+    };
+  }
+
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
@@ -230,6 +267,51 @@ export class DatabaseStorage implements IStorage {
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user;
+  }
+
+  // =====================
+  // Outbox
+  // =====================
+
+  async addOutboxEvent(event: {
+    tenantId: string;
+    eventType: string;
+    payload: any;
+    aggregateId?: string;
+    availableAt?: Date;
+  }): Promise<void> {
+    await db.insert(outboxEvents).values({
+      tenantId: event.tenantId,
+      eventType: event.eventType,
+      payload: event.payload,
+      aggregateId: event.aggregateId,
+      availableAt: event.availableAt || new Date(),
+      status: "pending",
+    });
+  }
+
+  async getPendingOutbox(limit: number): Promise<OutboxEvent[]> {
+    const now = new Date();
+    return await db
+      .select()
+      .from(outboxEvents)
+      .where(and(eq(outboxEvents.status, "pending"), sql`${outboxEvents.availableAt} <= ${now}`))
+      .orderBy(outboxEvents.createdAt)
+      .limit(limit);
+  }
+
+  async markOutboxSent(id: string): Promise<void> {
+    await db
+      .update(outboxEvents)
+      .set({ status: "sent", processedAt: new Date(), error: null })
+      .where(eq(outboxEvents.id, id));
+  }
+
+  async markOutboxFailed(id: string, error: string, retries: number, availableAt: Date): Promise<void> {
+    await db
+      .update(outboxEvents)
+      .set({ status: "pending", retries, error, availableAt })
+      .where(eq(outboxEvents.id, id));
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -410,7 +492,10 @@ export class DatabaseStorage implements IStorage {
     return row;
   }
 
-  async createCertificado(tenantId: string, c: Partial<InsertCertificado> & { huella: string }): Promise<Certificado> {
+  async createCertificado(
+    tenantId: string,
+    c: Partial<InsertCertificado> & { huella: string; validoHasta?: any }
+  ): Promise<Certificado> {
     const [row] = await db.insert(certificadosTable).values({
       ...c,
       tenantId,
@@ -491,7 +576,8 @@ export class DatabaseStorage implements IStorage {
       });
 
       if (insertFactura.cuerpoDocumento && insertFactura.cuerpoDocumento.length > 0) {
-        const items = insertFactura.cuerpoDocumento.map((item, idx) => ({
+        const items = insertFactura.cuerpoDocumento.map(
+          (item: InsertFactura["cuerpoDocumento"][number], idx: number) => ({
           facturaId: id,
           numItem: item.numItem || idx + 1,
           tipoItem: item.tipoItem,
@@ -504,9 +590,19 @@ export class DatabaseStorage implements IStorage {
           ventaGravada: (item.ventaGravada || 0).toString(),
           ivaItem: (item.ivaItem || 0).toString(),
           tributos: item.tributos || null,
-        }));
+        })
+        );
         await tx.insert(facturaItemsTable).values(items);
       }
+
+      // Registrar evento outbox transaccional
+      await tx.insert(outboxEvents).values({
+        tenantId,
+        aggregateId: id,
+        eventType: "factura_creada",
+        payload: { facturaId: id, tenantId },
+        status: "pending",
+      });
     });
     
     return factura;
