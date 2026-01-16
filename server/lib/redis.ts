@@ -1,7 +1,6 @@
-import { createClient, type RedisClient as RedisClientType } from "redis";
+import { createClient } from "redis";
 
-type RedisClient = RedisClientType;
-let client: RedisClient | null = null;
+let client: any | null = null;
 
 function getEnvBool(name: string, def = false): boolean {
   const v = process.env[name];
@@ -43,7 +42,7 @@ function buildRedisUrl(): { url?: string; config?: any } | null {
   return { config };
 }
 
-export async function getRedis(): Promise<RedisClient> {
+export async function getRedis(): Promise<any> {
   if (client && client.isOpen) return client;
 
   const cfg = buildRedisUrl();

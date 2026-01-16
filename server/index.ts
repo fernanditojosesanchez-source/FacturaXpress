@@ -10,6 +10,8 @@ import { createServer } from "http";
 import { storage } from "./storage";
 import { apiGeneralRateLimiter, loginRateLimiter } from "./lib/rate-limiters";
 import certificadosRouter from "./routes/certificados";
+import { initQueues } from "./lib/queues.js";
+import { startCertificateAlertsScheduler } from "./lib/alerts.js";
 
 // Manejadores globales de errores
 process.on("uncaughtException", (error) => {
@@ -167,6 +169,16 @@ app.use((req, res, next) => {
     await registerRoutes(httpServer, app);
     app.use("/api", certificadosRouter); // <-- AÑADIR ESTA LÍNEA
     log("✅ Rutas registradas");
+
+    // Inicializar BullMQ (si Redis disponible)
+    const q = await initQueues();
+    if (!q.enabled) {
+      log(`⚠️ BullMQ deshabilitado: ${q.reason || "sin razón"}`);
+    }
+
+    // Programar alertas de certificados
+    const timer = startCertificateAlertsScheduler();
+    if (timer) log("⏰ Scheduler de alertas de certificados iniciado");
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;

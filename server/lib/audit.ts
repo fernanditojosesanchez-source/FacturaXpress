@@ -1,5 +1,6 @@
 import { db } from "../db";
 import { auditLogs, loginAttempts } from "@shared/schema";
+import { sendToSIEM } from "./siem.js";
 
 /**
  * Sistema de auditoría centralizado
@@ -34,6 +35,15 @@ export async function logLoginAttempt(entry: LoginAttemptEntry): Promise<void> {
       userAgent: entry.userAgent,
       attemptedAt: new Date(),
     });
+
+    // Enviar a SIEM (eventos de login son relevantes)
+    await sendToSIEM({
+      type: entry.success ? "login_success" : "login_failed",
+      level: entry.success ? "info" : "warn",
+      ipAddress: entry.ipAddress,
+      userAgent: entry.userAgent,
+      details: { username: entry.username },
+    });
   } catch (error) {
     console.error("[Audit] Error logging login attempt:", error);
   }
@@ -56,6 +66,20 @@ export async function logAudit(entry: AuditLogEntry): Promise<void> {
     // Log crítico a consola para alertas inmediatas
     if (isActionCritical(entry.action)) {
       console.warn(`[AUDIT CRITICAL] ${entry.action} by ${entry.userId || "anonymous"} from ${entry.ipAddress}`);
+    }
+
+    // Enviar a SIEM: sólo críticos por defecto o todo si está habilitado
+    const sendAll = ["1", "true"].includes(String(process.env.SIEM_ENABLE_ALL || "").toLowerCase());
+    if (sendAll || isActionCritical(entry.action)) {
+      await sendToSIEM({
+        type: entry.action,
+        level: isActionCritical(entry.action) ? "warn" : "info",
+        userId: entry.userId,
+        tenantId: entry.tenantId,
+        ipAddress: entry.ipAddress,
+        userAgent: entry.userAgent,
+        details: entry.details,
+      });
     }
   } catch (error) {
     console.error("[Audit] Error logging audit:", error);

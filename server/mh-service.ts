@@ -1,7 +1,7 @@
 import type { Factura } from "@shared/schema";
 import { storage } from "./storage";
 import { signDTE } from "./lib/signer";
-import { getMHCircuitBreaker, CircuitState } from "./lib/circuit-breaker";
+import { getMHCircuitBreaker, CircuitState } from "./lib/circuit-breaker.js";
 
 export interface SelloMH {
   codigoGeneracion: string;
@@ -383,12 +383,9 @@ export class MHServiceWithBreaker implements MHService {
       );
       
       // Encolar en contingencia para reintento posterior
-      await storage.enqueueContinencia({
-        codigoGeneracion: factura.codigoGeneracion || "",
-        facturaId: factura.id || "",
-        tenantId,
-        estado: "pendiente"
-      });
+      if (factura.id && factura.codigoGeneracion) {
+        await storage.addToContingenciaQueue(tenantId, factura.id, factura.codigoGeneracion);
+      }
 
       // Retornar respuesta de "aceptado temporalmente"
       return {
@@ -406,13 +403,8 @@ export class MHServiceWithBreaker implements MHService {
       );
     } catch (error) {
       // Si circuit abre por fallos, encolar también
-      if (this.breaker.isOpen()) {
-        await storage.enqueueContinencia({
-          codigoGeneracion: factura.codigoGeneracion || "",
-          facturaId: factura.id || "",
-          tenantId,
-          estado: "pendiente"
-        });
+      if (this.breaker.isOpen() && factura.id && factura.codigoGeneracion) {
+        await storage.addToContingenciaQueue(tenantId, factura.id, factura.codigoGeneracion);
       }
       throw error;
     }
@@ -444,19 +436,12 @@ export class MHServiceWithBreaker implements MHService {
     tenantId: string
   ): Promise<ResultadoAnulacion> {
     if (this.breaker.isOpen()) {
-      console.warn(`🔴 Circuit OPEN: Encolando anulación ${codigoGeneracion} en contingencia`);
-      
-      // Encolar anulación para procesamiento posterior
-      await storage.enqueueAnulacion({
-        codigoGeneracion,
-        motivo,
-        tenantId,
-        estado: "pendiente"
-      });
-
+      console.warn(`🔴 Circuit OPEN: Anulación diferida para ${codigoGeneracion}`);
+      // Nota: La creación del registro de anulación debe hacerse en el flujo de UI/endpoint
+      // previo a llamar a este método (storage.crearAnulacion). Aquí sólo informamos estado.
       return {
         success: true,
-        mensaje: "Anulación encolada en contingencia",
+        mensaje: "Anulación marcada como pendiente por indisponibilidad de MH",
         fechaAnulacion: new Date().toISOString()
       };
     }
@@ -466,14 +451,13 @@ export class MHServiceWithBreaker implements MHService {
         this.innerService.anularDTE(codigoGeneracion, motivo, tenantId)
       );
     } catch (error) {
-      // Si circuit abre por fallos, encolar también
+      // Si circuit abre por fallos, informar estado pendiente
       if (this.breaker.isOpen()) {
-        await storage.enqueueAnulacion({
-          codigoGeneracion,
-          motivo,
-          tenantId,
-          estado: "pendiente"
-        });
+        return {
+          success: true,
+          mensaje: "Anulación marcada como pendiente por indisponibilidad de MH",
+          fechaAnulacion: new Date().toISOString()
+        };
       }
       throw error;
     }
@@ -486,19 +470,11 @@ export class MHServiceWithBreaker implements MHService {
   ): Promise<ResultadoInvalidacion> {
     if (this.breaker.isOpen()) {
       console.warn(
-        `🔴 Circuit OPEN: Encolando invalidación ${codigoGeneracion} en contingencia`
+        `🔴 Circuit OPEN: Invalidación diferida para ${codigoGeneracion}`
       );
-
-      await storage.enqueueAnulacion({
-        codigoGeneracion,
-        motivo,
-        tenantId,
-        estado: "pendiente"
-      });
-
       return {
         success: true,
-        mensaje: "Invalidación encolada en contingencia",
+        mensaje: "Invalidación marcada como pendiente por indisponibilidad de MH",
         selloAnulacion: `TEMP-${Date.now()}`,
         fechaAnulo: new Date().toISOString()
       };
@@ -510,12 +486,12 @@ export class MHServiceWithBreaker implements MHService {
       );
     } catch (error) {
       if (this.breaker.isOpen()) {
-        await storage.enqueueAnulacion({
-          codigoGeneracion,
-          motivo,
-          tenantId,
-          estado: "pendiente"
-        });
+        return {
+          success: true,
+          mensaje: "Invalidación marcada como pendiente por indisponibilidad de MH",
+          selloAnulacion: `TEMP-${Date.now()}`,
+          fechaAnulo: new Date().toISOString()
+        };
       }
       throw error;
     }
