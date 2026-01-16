@@ -2,8 +2,8 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { storage } from "./storage";
-import { logAudit, logLoginAttempt, AuditActions, getClientIP, getUserAgent } from "./lib/audit";
+import { storage } from "./storage.js";
+import { logAudit, logLoginAttempt, AuditActions, getClientIP, getUserAgent } from "./lib/audit.js";
 
 // Configuración JWT
 import { randomBytes } from "crypto";

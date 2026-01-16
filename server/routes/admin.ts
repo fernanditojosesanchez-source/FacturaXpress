@@ -1,8 +1,8 @@
 import type { Express, Request, Response } from "express";
 import { z } from "zod";
 import { randomBytes } from "crypto";
-import { requireSuperAdmin } from "../auth";
-import { storage } from "../storage";
+import { requireSuperAdmin } from "../auth.js";
+import { storage } from "../storage.js";
 
 const createTenantSchema = z.object({
   nombre: z.string().min(1, "El nombre es requerido"),

@@ -8,10 +8,10 @@ import {
 import { randomUUID, createHash } from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
-import { db } from "./db";
+import { db } from "./db.js";
 import { eq, desc, sql, and } from "drizzle-orm";
-import { encrypt, decrypt } from "./lib/crypto";
-import { saveSecretToVault, getSecretFromVault, deleteSecretFromVault, secretExists } from "./lib/vault";
+import { encrypt, decrypt } from "./lib/crypto.js";
+import { saveSecretToVault, getSecretFromVault, deleteSecretFromVault, secretExists } from "./lib/vault.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

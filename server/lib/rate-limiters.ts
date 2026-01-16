@@ -1,7 +1,7 @@
 import type { Request } from "express";
 import rateLimit, { type RateLimitRequestHandler } from "express-rate-limit";
 import type { Store as RateLimitStore } from "express-rate-limit";
-import { getRedis } from "./redis";
+import { getRedis } from "./redis.js";
 // rate-limit-redis no trae tipos oficiales; forzamos any al crear el store
 let RedisStoreCtor: any = null;
 try {

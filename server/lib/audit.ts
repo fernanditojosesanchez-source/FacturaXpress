@@ -1,4 +1,4 @@
-import { db } from "../db";
+import { db } from "../db.js";
 import { auditLogs, loginAttempts } from "@shared/schema";
 import { sendToSIEM } from "./siem.js";
 

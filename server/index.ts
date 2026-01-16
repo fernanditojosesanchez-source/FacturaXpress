@@ -4,12 +4,12 @@ import dns from "node:dns";
 dns.setDefaultResultOrder("ipv4first");
 import express, { type Request, Response, NextFunction } from "express";
 import helmet from "helmet";
-import { registerRoutes } from "./routes";
-import { serveStatic } from "./static";
+import { registerRoutes } from "./routes.js";
+import { serveStatic } from "./static.js";
 import { createServer } from "http";
-import { storage } from "./storage";
-import { apiGeneralRateLimiter, loginRateLimiter } from "./lib/rate-limiters";
-import certificadosRouter from "./routes/certificados";
+import { storage } from "./storage.js";
+import { apiGeneralRateLimiter, loginRateLimiter } from "./lib/rate-limiters.js";
+import certificadosRouter from "./routes/certificados.js";
 import { initQueues } from "./lib/queues.js";
 import { startCertificateAlertsScheduler } from "./lib/alerts.js";
 
@@ -170,11 +170,18 @@ app.use((req, res, next) => {
     app.use("/api", certificadosRouter); // <-- AÑADIR ESTA LÍNEA
     log("✅ Rutas registradas");
 
-    // Inicializar BullMQ (si Redis disponible)
-    const q = await initQueues();
-    if (!q.enabled) {
-      log(`⚠️ BullMQ deshabilitado: ${q.reason || "sin razón"}`);
-    }
+    // Inicializar BullMQ (si Redis disponible) - sin bloquear el startup
+    initQueues()
+      .then((q) => {
+        if (!q.enabled) {
+          log(`⚠️ BullMQ deshabilitado: ${q.reason || "sin razón"}`);
+        } else {
+          log("✅ BullMQ colas inicializadas");
+        }
+      })
+      .catch((err) => {
+        log(`⚠️ Error inicializando BullMQ: ${(err as Error).message}`);
+      });
 
     // Programar alertas de certificados
     const timer = startCertificateAlertsScheduler();
@@ -196,7 +203,7 @@ app.use((req, res, next) => {
       serveStatic(app);
     } else {
       log("Configurando Vite...");
-      const { setupVite } = await import("./vite");
+      const { setupVite } = await import("./vite.js");
       await setupVite(httpServer, app);
       log("✅ Vite configurado");
     }

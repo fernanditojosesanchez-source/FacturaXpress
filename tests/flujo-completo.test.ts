@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { DatabaseStorage } from "../server/storage";
-import { validateDTESchema } from "../server/dgii-validator";
+import { DatabaseStorage } from "../server/storage.js";
+import { validateDTESchema } from "../server/dgii-validator.js";
 
 // Nota: Usamos DatabaseStorage con una base de datos local o mockeada si es posible, 
 // o simplemente adaptamos el test para que compile con la nueva interfaz IStorage.

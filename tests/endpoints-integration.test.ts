@@ -171,7 +171,7 @@ describe("Endpoints de Contingencia e Invalidación", () => {
     app.use(express.json());
     server = createServer(app);
     
-    const { registerRoutes } = await import("../server/routes");
+    const { registerRoutes } = await import("../server/routes.js");
     await registerRoutes(server, app);
   });
 

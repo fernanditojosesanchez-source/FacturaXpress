@@ -79,11 +79,20 @@ export async function redisPing(): Promise<string> {
 
 export async function redisHealth(): Promise<{ ok: boolean; message: string }> {
   try {
-    const pong = await redisPing();
-    return { ok: pong === "PONG", message: pong };
+    // Timeout de 2 segundos para no bloquear el startup
+    const timeoutPromise = new Promise<{ ok: boolean; message: string }>((resolve) =>
+      setTimeout(() => resolve({ ok: false, message: "timeout" }), 2000)
+    );
+    const healthPromise = (async () => {
+      const pong = await redisPing();
+      return { ok: pong === "PONG", message: pong };
+    })();
+    return await Promise.race([healthPromise, timeoutPromise]);
   } catch (e) {
     const msg = (e as Error).message || String(e);
-    console.error("Redis health error:", msg);
+    if (process.env.NODE_ENV !== "test") {
+      console.error("Redis health error:", msg);
+    }
     return { ok: false, message: msg };
   }
 }

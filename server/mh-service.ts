@@ -1,6 +1,6 @@
 import type { Factura } from "@shared/schema";
-import { storage } from "./storage";
-import { signDTE } from "./lib/signer";
+import { storage } from "./storage.js";
+import { signDTE } from "./lib/signer.js";
 import { getMHCircuitBreaker, CircuitState } from "./lib/circuit-breaker.js";
 
 export interface SelloMH {

@@ -97,7 +97,7 @@ describe("Procesamiento de contingencia e invalidación", () => {
   beforeEach(async () => {
     mockStorage.reset();
     vi.clearAllMocks();
-    ({ MHServiceReal } = await import("../server/mh-service"));
+    ({ MHServiceReal } = await import("../server/mh-service.js"));
   });
 
   it("procesa la cola de contingencia y marca como completado cuando MH responde", async () => {
