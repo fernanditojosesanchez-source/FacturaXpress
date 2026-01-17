@@ -9,7 +9,8 @@ El sistema ha alcanzado **nivel de seguridad empresarial** con autenticación JW
 ## 📥 Actualización (16 Ene 2026)
 - **Completado**: Patrón Outbox transaccional end-to-end (procesador, métricas, endpoints admin, integración servidor).
 - **En Progreso**: Sistema de notificaciones multi-canal (email/SMS/webhooks) integrado con alertas de certificado.
-- **Pendiente**: Aplicar migraciones de notificaciones (`npm run db:push`) y configurar ENV SMTP/Twilio.
+- **Completado (BD)**: Tablas `outbox_events`, `notification_channels`, `notification_logs` aplicadas manualmente en Supabase (SQL).
+- **Pendiente**: Configurar ENV SMTP/Twilio y ajustar seeds de canales si se requieren por tenant; resolver TS en `server/dgii-validator.ts` y `shared/schema.ts`.
 - **Plan**: Activar BullMQ cuando se resuelva conectividad Redis; mantener fallback operativo.
 
 ## ✅ Hitos Alcanzados (Enero 2026)

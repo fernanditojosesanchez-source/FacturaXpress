@@ -109,9 +109,11 @@
   - Endpoints admin: `GET /api/admin/outbox/stats`, `POST /api/admin/outbox/replay`
   - Integrado en ciclo de vida del servidor (start/stop ordenado)
 - **Pendiente**:
-  - Ejecutar migraciones de nuevas tablas de notificaciones: `npm run db:push`
   - Configurar ENV de SMTP/Twilio para notificaciones (prod/dev)
   - Redis para BullMQ (no bloquea Outbox; se usa fallback)
+  - Resolver TS pendientes: `server/dgii-validator.ts` (Ajv/resolveJsonModule) y `shared/schema.ts` (boolean → never)
+  - Ajustar seeds/insert inicial de canales (opcional) si no se cargan por app
+  - **BD**: Tablas `outbox_events`, `notification_channels`, `notification_logs` ya aplicadas en Supabase (SQL manual)
 
 ### ⏳ 10. Modo Rendimiento Adaptativo
 - **Requisitos**: Detección hardware, toggle persistente, desactivar animaciones
