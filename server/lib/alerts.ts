@@ -52,7 +52,7 @@ export async function checkCertExpiryAndNotify(): Promise<{ alerts: number }> {
       // Enviar a SIEM
       await sendToSIEM({
         type: "cert_expiry_warning",
-        level: remaining <= 7 ? "warn" : remaining <= 15 ? "info" : "debug",
+        level: remaining <= 7 ? "warn" : "info",
         tenantId: tenant.id,
         details,
       });
@@ -66,6 +66,7 @@ export async function checkCertExpiryAndNotify(): Promise<{ alerts: number }> {
         type: "cert_expiry" as const,
         channel: channel.type as "email" | "sms" | "webhook",
         recipient: channel.recipient,
+        body: `Su certificado digital expira en ${remaining} día(s). Válido hasta: ${new Date((cert as any).validoHasta).toLocaleDateString("es-SV")}`,
         metadata: {
           daysRemaining: remaining,
           validUntil: new Date((cert as any).validoHasta).toLocaleDateString("es-SV"),

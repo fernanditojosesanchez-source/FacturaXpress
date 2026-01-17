@@ -142,6 +142,9 @@ async function sendWebhook(
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
         const response = await fetch(url, {
           method: "POST",
           headers: {
@@ -150,8 +153,10 @@ async function sendWebhook(
             "X-Webhook-Timestamp": new Date().toISOString(),
           },
           body: JSON.stringify(payload),
-          timeout: 10000,
+          signal: controller.signal,
         });
+        
+        clearTimeout(timeoutId);
 
         if (response.ok) {
           return {
