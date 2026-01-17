@@ -552,6 +552,8 @@ export const certificadoSchema = z.object({
   validoDesde: z.date().optional(),
   validoHasta: z.date().optional(),
   diasParaExpiracion: z.number().optional(),
+  ultimaValidacion: z.string().optional(),
+  erroresValidacion: z.any().optional(),
   contrasena: z.string().min(1, "Contraseña es requerida"),
   estado: z.enum(["pendiente", "validado", "activo", "expirado", "revocado"]).default("pendiente"),
   activo: z.boolean().default(false),

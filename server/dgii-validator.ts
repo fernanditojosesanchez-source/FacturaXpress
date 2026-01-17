@@ -1,12 +1,16 @@
-import Ajv from "ajv";
-import addFormats from "ajv-formats";
-import factuuraSchema from "./dgii-resources/factura-schema.json";
+import AjvConstructor from "ajv";
+import addFormatsConstructor from "ajv-formats";
+import facturaSchema from "./dgii-resources/factura-schema.json" assert { type: "json" };
 
-const ajv = new Ajv();
-addFormats(ajv); // Agregar soporte para formatos como 'email', 'date', etc.
+// Ajv configurado para reportar todos los errores y permitir formatos adicionales
+const Ajv = AjvConstructor.default;
+const addFormats = addFormatsConstructor.default;
+
+const ajv = new Ajv({ allErrors: true, strict: false });
+addFormats(ajv);
 
 // Compilar schemas de validación DGII
-const validateFactura = ajv.compile(factuuraSchema);
+const validateFactura = ajv.compile(facturaSchema as any);
 
 export interface DTEValidationError {
   field: string;
