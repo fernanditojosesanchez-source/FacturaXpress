@@ -40,6 +40,7 @@ let alertsTimer: NodeJS.Timeout | null = null;
 let schemaSyncTimer: NodeJS.Timeout | null = null;
 let dlqCleanupTimer: NodeJS.Timeout | null = null;
 let catalogSyncTimer: NodeJS.Timeout | null = null;
+let featureFlagsRolloutTimer: NodeJS.Timeout | null = null;
 
 // Seguridad: Confiar en el primer proxy (necesario para Rate Limiting detrás de Nginx/LoadBalancers)
 // Esto asegura que req.ip y x-forwarded-for sean procesados correctamente y no spoofed fácilmente.
@@ -224,6 +225,21 @@ app.use((req, res, next) => {
     catalogSyncTimer = startCatalogSyncScheduler();
     if (catalogSyncTimer) log("⏰ Scheduler de sincronización de catálogos iniciado");
 
+    // Programar auto-rollout de feature flags (P3.2: Canary Deployments)
+    // Ejecuta cada 15 minutos para incrementar porcentajes gradualmente
+    featureFlagsRolloutTimer = setInterval(async () => {
+      try {
+        const { featureFlagsService } = await import("./lib/feature-flags-service.js");
+        const result = await featureFlagsService.processAutomaticRollouts();
+        if (result.updated > 0) {
+          log(`✅ Auto-rollout: ${result.updated}/${result.processed} flags actualizados`);
+        }
+      } catch (error) {
+        log(`❌ Error en auto-rollout de feature flags: ${(error as Error).message}`);
+      }
+    }, 15 * 60 * 1000); // 15 minutos
+    if (featureFlagsRolloutTimer) log("⏰ Scheduler de auto-rollout de feature flags iniciado (cada 15 min)");
+
     // Programar limpieza de DLQ (jobs antiguos >30 días)
     dlqCleanupTimer = startDLQCleanup();
     if (dlqCleanupTimer) log("⏰ Scheduler de limpieza de DLQ iniciado");
@@ -270,13 +286,18 @@ app.use((req, res, next) => {
       
       // Detener schedulers
       if (alertsTimer) {
+        clearInterval(alertsTimer);
+        log("✅ Scheduler de alertas detenido");
+      }
+      
       if (dlqCleanupTimer) {
         clearInterval(dlqCleanupTimer);
         log("✅ Scheduler de DLQ detenido");
       }
       
-        clearInterval(alertsTimer);
-        log("✅ Scheduler de alertas detenido");
+      if (featureFlagsRolloutTimer) {
+        clearInterval(featureFlagsRolloutTimer);
+        log("✅ Scheduler de auto-rollout de feature flags detenido");
       }
       
       if (catalogSyncTimer) {
