@@ -5,6 +5,7 @@
 **Fase**: Post-auditoría técnica, implementación de mejoras P0/P1/P2
 **Progreso General**: 10 de 16 TODOs completados (63%)
 **Última Actualización**: 2026-01-16
+**Última Sesión**: Completados #6 Schema Sync, #8 DLQ, #10 Performance Mode, #11 Offline Sync
 
 ### Estado por Prioridad
 
@@ -155,7 +156,7 @@
   - `GET /api/admin/dlq/stats` - Estadísticas de DLQ
   - `POST /api/admin/dlq/retry` - Reintentar job específico
   - `DELETE /api/admin/dlq/jobs/:dlqId` - Eliminar job del DLQ
-- **Commit**: siguiente
+- **Commit**: `d674409`
 
 ### ✅ 9. Outbox Transaccional
 - **Estado**: COMPLETADO (end-to-end)
@@ -190,7 +191,7 @@
   - `GET /api/performance/config` - Obtener configuración actual
   - `POST /api/performance/detect` - Detectar perfil hardware
   - `GET /api/admin/performance/stats` - Estadísticas globales (admin)
-- **Commit**: siguiente
+- **Commit**: `d674409`
 
 ### ✅ 11. Borradores Offline + Sync
 - **Estado**: COMPLETADO
@@ -213,7 +214,7 @@
   - `syncDrafts()` - Sincroniza todos los borradores pendientes
   - `getOfflineStats()` - Estadísticas de borradores
   - `useOfflineSync()` - Hook con auto-sync y estado online/offline
-- **Commit**: siguiente
+- **Commit**: `d674409`
 
 ### ⏳ 12. Vista Soporte Sigma + Auditoría
 - **Requisitos**: Métricas, logs sin PII, RBAC, acceso temporal
@@ -285,19 +286,49 @@ feat(rate-limit): habilitar store Redis distribuido con fallback a memoria
 
 ## Roadmap Próximos Pasos
 
-### Corto Plazo (1-2 semanas)
-1. **Resolver conectividad Redis** (agregar IP a allowlist)
-2. **Iniciar BullMQ** (paso 4 - diseño de colas)
-3. **Alertas certificados** (paso 5 - P1 alto)
+### Corto Plazo (Próxima Sesión)
+1. **Resolver conectividad Redis** → Desbloquea BullMQ (#4)
+2. **Preparar despliegue producción**:
+   - Credenciales SMTP/Twilio para notificaciones
+   - URLs oficiales schemas MH
+   - Configurar SIEM webhook
+   - Validar end-to-end: alerts, notifications, schema sync
+3. **Continuar P2**: Vista Soporte Sigma (#12), Stock en Tránsito (#13)
 
 ### Mediano Plazo (2-4 semanas)
-4. **Workers dedicados** (paso 5)
-5. **Outbox transaccional** (paso 6)
-6. **Sync de esquemas** (paso 7)
+4. **Migración a Monorepo** (#14) - Mejor organización del código
+5. **Pruebas de Carga** (#15) - k6/Locust, SLOs, chaos testing
 
-### Largo Plazo (4-8+ semanas)
-7. **P2 items** (UX, offline, Sigma, stock, monorepo)
-8. **Pruebas carga** y despliegue gradual
+### Largo Plazo (4+ semanas)
+6. **P3 items**: Despliegue gradual (#16), Feature flags
+7. **Optimizaciones adicionales**: Performance tuning post-testing
+
+---
+
+## Sesión Actual: Resumen
+
+**Fecha**: 2026-01-16  
+**Duración**: Sesión extendida  
+**Completados**: 4 items (Schema Sync, DLQ, Performance Mode, Offline Sync)
+
+### 🎯 Logros
+- ✅ #6: Sincronización automática de esquemas DGII/MH
+- ✅ #8: Dead Letter Queue con gestión admin
+- ✅ #10: Performance Mode adaptativo
+- ✅ #11: Offline Sync con IndexedDB + Service Worker
+
+### 📦 Entregables
+- 7 archivos nuevos creados
+- 6 archivos modificados
+- 1,898 líneas agregadas
+- 3 commits exitosos
+- TypeScript sin errores
+- Documentación actualizada
+
+### 🚀 Progreso
+- Inicio: 6/16 (38%)
+- Final: **10/16 (63%)**
+- Incremento: +25% en una sesión
 
 ---
 
