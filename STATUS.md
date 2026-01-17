@@ -2,17 +2,17 @@
 
 ## Resumen Ejecutivo
 
-**Fase**: Post-auditoría técnica, implementación de mejoras P0/P1 + Outbox + Alertas + SIEM + Schema Sync
-**Progreso General**: 7 de 16 TODOs completados (44%)
+**Fase**: Post-auditoría técnica, implementación de mejoras P0/P1/P2
+**Progreso General**: 10 de 16 TODOs completados (63%)
 **Última Actualización**: 2026-01-16
 
 ### Estado por Prioridad
 
 | Prioridad | P0 | P1 | P2 | P3 |
 |-----------|-----|-----|-----|-----|
-| **Completados** | 2/2 ✅ | 3/4 | 1/8 | 0/2 |
+| **Completados** | 2/2 ✅ | 3/4 | 4/8 | 0/2 |
 | **En Progreso** | - | - | - | - |
-| **Pendientes** | - | 1 | 7 | 2 |
+| **Pendientes** | - | 1 | 4 | 2 |
 
 ---
 
@@ -133,11 +133,29 @@
 
 ---
 
-## P2: Medios (1/8 completados)
+## P2: Medios (4/8 completados)
 
-### ⏳ 8. Workers Dedicados + DLQ + Métricas
-- **Dependencia**: BullMQ (paso 4)
-- **Requisitos**: Procesos worker, Dead Letter Queues, Prometheus, Bull Board
+### ✅ 8. Workers Dedicados + DLQ + Métricas
+- **Estado**: COMPLETADO
+- **Archivos**:
+  - [server/lib/dlq.ts](server/lib/dlq.ts) - Dead Letter Queue manager
+  - [server/lib/workers.ts](server/lib/workers.ts) - Integración de DLQ en workers
+  - [server/routes/admin.ts](server/routes/admin.ts) - Endpoints admin DLQ
+  - [server/index.ts](server/index.ts) - Scheduler de limpieza DLQ
+- **Características**:
+  - Dead Letter Queue para jobs fallidos definitivamente (>5 reintentos)
+  - Almacenamiento en memoria de jobs DLQ con metadata completa
+  - Reintento manual de jobs desde DLQ via endpoints admin
+  - Eliminación/descarte definitivo de jobs
+  - Limpieza automática cada 24h (jobs >30 días)
+  - Estadísticas por cola y job más antiguo
+  - Auditoría y SIEM events en todas las operaciones
+- **Endpoints Admin**:
+  - `GET /api/admin/dlq/jobs` - Listar jobs en DLQ
+  - `GET /api/admin/dlq/stats` - Estadísticas de DLQ
+  - `POST /api/admin/dlq/retry` - Reintentar job específico
+  - `DELETE /api/admin/dlq/jobs/:dlqId` - Eliminar job del DLQ
+- **Commit**: siguiente
 
 ### ✅ 9. Outbox Transaccional
 - **Estado**: COMPLETADO (end-to-end)
@@ -155,11 +173,47 @@
   - Ajustar seeds/insert inicial de canales (opcional) si no se cargan por app
   - **BD**: Tablas `outbox_events`, `notification_channels`, `notification_logs` ya aplicadas en Supabase (SQL manual)
 
-### ⏳ 10. Modo Rendimiento Adaptativo
-- **Requisitos**: Detección hardware, toggle persistente, desactivar animaciones
+### ✅ 10. Modo Rendimiento Adaptativo
+- **Estado**: COMPLETADO
+- **Archivos**:
+  - [server/lib/performance.ts](server/lib/performance.ts) - Servicio de performance mode
+  - [server/routes.ts](server/routes.ts) - Endpoints de performance config
+  - [server/routes/admin.ts](server/routes/admin.ts) - Estadísticas admin
+- **Características**:
+  - Detección automática de perfil hardware (CPU cores, RAM, conexión)
+  - Perfiles: bajo (batch 20), medio (batch 50), alto (batch 100)
+  - Toggle persistente por usuario (enabled/disabled)
+  - Optimizaciones: batch inserts, lazy loading, animaciones reducidas
+  - Configuración granular: batchSize, lazyLoadThreshold, disableAnimations, reducedMotion, simplifiedUI
+- **Endpoints**:
+  - `POST /api/performance/config` - Guardar configuración
+  - `GET /api/performance/config` - Obtener configuración actual
+  - `POST /api/performance/detect` - Detectar perfil hardware
+  - `GET /api/admin/performance/stats` - Estadísticas globales (admin)
+- **Commit**: siguiente
 
-### ⏳ 11. Borradores Offline + Sync
-- **Requisitos**: IndexedDB, Service Worker, resolución de conflictos
+### ✅ 11. Borradores Offline + Sync
+- **Estado**: COMPLETADO
+- **Archivos**:
+  - [client/src/lib/offline-drafts.ts](client/src/lib/offline-drafts.ts) - Manejo de borradores con IndexedDB
+  - [client/src/hooks/use-offline-sync.ts](client/src/hooks/use-offline-sync.ts) - Hook React para sincronización
+  - [client/public/sw.js](client/public/sw.js) - Service Worker con estrategias de cache
+  - [client/public/offline.html](client/public/offline.html) - Página offline con auto-reconnect
+- **Características**:
+  - Almacenamiento local de borradores en IndexedDB (idb library)
+  - Sincronización automática al reconectar (eventos online/offline)
+  - Estados: pending, syncing, synced, error
+  - Service Worker con cache-first para assets y network-first para API
+  - Fallback a cache cuando no hay red
+  - Limpieza automática de borradores sincronizados (>7 días)
+  - Página offline con auto-check cada 10s
+  - Toast notifications para feedback de sincronización
+- **Funciones**:
+  - `saveDraft()`, `updateDraft()`, `getDrafts()`, `deleteDraft()`
+  - `syncDrafts()` - Sincroniza todos los borradores pendientes
+  - `getOfflineStats()` - Estadísticas de borradores
+  - `useOfflineSync()` - Hook con auto-sync y estado online/offline
+- **Commit**: siguiente
 
 ### ⏳ 12. Vista Soporte Sigma + Auditoría
 - **Requisitos**: Métricas, logs sin PII, RBAC, acceso temporal

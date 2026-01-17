@@ -23,6 +23,7 @@ import { storage } from "../storage.js";
 import { logAudit } from "./audit.js";
 import { sendToSIEM } from "./siem.js";
 import { redisHealth } from "./redis.js";
+import { addToDLQ } from "./dlq.js";
 
 const log = console.log;
 const WORKER_IP = process.env.WORKER_IP || "worker";
@@ -279,8 +280,13 @@ export async function initWorkers(): Promise<{ started: number; errors: string[]
       log(`✅ [Worker Transmisión] Job ${job.id} completado`);
     });
 
-    transmisionWorker.on("failed", (job, err) => {
+    transmisionWorker.on("failed", async (job, err) => {
       log(`❌ [Worker Transmisión] Job ${job?.id} falló: ${err.message}`);
+      
+      // Si se agotaron todos los reintentos, mover a DLQ
+      if (job && job.attemptsMade >= (job.opts.attempts || 5)) {
+        await addToDLQ(job, err, "transmision");
+      }
     });
 
     started++;
@@ -303,8 +309,12 @@ export async function initWorkers(): Promise<{ started: number; errors: string[]
       log(`✅ [Worker Firma] Job ${job.id} completado`);
     });
 
-    firmaWorker.on("failed", (job, err) => {
+    firmaWorker.on("failed", async (job, err) => {
       log(`❌ [Worker Firma] Job ${job?.id} falló: ${err.message}`);
+      
+      if (job && job.attemptsMade >= (job.opts.attempts || 5)) {
+        await addToDLQ(job, err, "firma");
+      }
     });
 
     started++;
@@ -327,8 +337,12 @@ export async function initWorkers(): Promise<{ started: number; errors: string[]
       log(`✅ [Worker Notificaciones] Job ${job.id} completado`);
     });
 
-    notificacionesWorker.on("failed", (job, err) => {
+    notificacionesWorker.on("failed", async (job, err) => {
       log(`❌ [Worker Notificaciones] Job ${job?.id} falló: ${err.message}`);
+      
+      if (job && job.attemptsMade >= (job.opts.attempts || 5)) {
+        await addToDLQ(job, err, "notificaciones");
+      }
     });
 
     started++;

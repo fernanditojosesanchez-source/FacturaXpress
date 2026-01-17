@@ -1489,5 +1489,65 @@ export async function registerRoutes(
     });
   }
 
+  // ============================================
+  // PERFORMANCE MODE & OFFLINE SYNC
+  // ============================================
+
+  // Guardar configuración de performance
+  app.post("/api/performance/config", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const userId = (req as any).user.id;
+      const { enabled, settings, hardwareInfo } = req.body;
+
+      const { savePerformanceConfig } = await import("./lib/performance.js");
+      await savePerformanceConfig(tenantId, userId, enabled, settings, hardwareInfo);
+
+      await logAudit({
+        action: "performance_config_updated" as any,
+        tenantId,
+        userId,
+        ipAddress: getClientIP(req),
+        details: { enabled, batchSize: settings?.batchSize },
+      });
+
+      res.json({ success: true, message: "Configuración guardada" });
+    } catch (error: any) {
+      console.error("Error saving performance config:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Obtener configuración de performance
+  app.get("/api/performance/config", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = getTenantId(req);
+      const userId = (req as any).user.id;
+
+      const { getPerformanceConfig } = await import("./lib/performance.js");
+      const config = getPerformanceConfig(tenantId, userId);
+
+      res.json(config || { enabled: false });
+    } catch (error: any) {
+      console.error("Error getting performance config:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Detectar perfil de rendimiento
+  app.post("/api/performance/detect", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { hardwareInfo } = req.body;
+
+      const { detectPerformanceProfile } = await import("./lib/performance.js");
+      const profile = detectPerformanceProfile(hardwareInfo);
+
+      res.json(profile);
+    } catch (error: any) {
+      console.error("Error detecting performance profile:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   return httpServer;
 }

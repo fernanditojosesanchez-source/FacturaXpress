@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sin conexión - FacturaXpress</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      padding: 48px 32px;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 16px;
+      color: #1a202c;
+    }
+
+    p {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #4a5568;
+      margin-bottom: 32px;
+    }
+
+    .features {
+      text-align: left;
+      margin-bottom: 32px;
+      padding: 24px;
+      background: #f7fafc;
+      border-radius: 8px;
+    }
+
+    .features h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: #2d3748;
+    }
+
+    .features ul {
+      list-style: none;
+    }
+
+    .features li {
+      padding: 8px 0;
+      color: #4a5568;
+      display: flex;
+      align-items: center;
+    }
+
+    .features li::before {
+      content: "✓";
+      color: #48bb78;
+      font-weight: bold;
+      margin-right: 12px;
+      font-size: 18px;
+    }
+
+    .button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-weight: 600;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .status {
+      margin-top: 24px;
+      padding: 16px;
+      background: #fed7d7;
+      border-radius: 8px;
+      color: #742a2a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .status.online {
+      background: #c6f6d5;
+      color: #22543d;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .checking {
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📡</div>
+    
+    <h1>Sin conexión a Internet</h1>
+    
+    <p>
+      No te preocupes, puedes seguir trabajando. Tus cambios se guardarán 
+      localmente y se sincronizarán automáticamente cuando vuelvas a conectarte.
+    </p>
+
+    <div class="features">
+      <h2>Funcionalidades disponibles offline:</h2>
+      <ul>
+        <li>Crear y editar borradores de facturas</li>
+        <li>Consultar facturas previamente cargadas</li>
+        <li>Ver reportes guardados en caché</li>
+        <li>Sincronización automática al reconectar</li>
+      </ul>
+    </div>
+
+    <button class="button" onclick="checkConnection()">
+      Intentar reconectar
+    </button>
+
+    <div class="status" id="status">
+      <span>🔴</span>
+      <span>Sin conexión</span>
+    </div>
+  </div>
+
+  <script>
+    function checkConnection() {
+      const statusDiv = document.getElementById('status');
+      statusDiv.innerHTML = '<span class="checking">🔄</span><span>Verificando conexión...</span>';
+      
+      fetch('/api/health', { method: 'GET' })
+        .then(response => {
+          if (response.ok) {
+            statusDiv.className = 'status online';
+            statusDiv.innerHTML = '<span>🟢</span><span>Conectado - Redirigiendo...</span>';
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 1000);
+          } else {
+            throw new Error('No conectado');
+          }
+        })
+        .catch(() => {
+          statusDiv.className = 'status';
+          statusDiv.innerHTML = '<span>🔴</span><span>Aún sin conexión. Intentando en 5 segundos...</span>';
+          setTimeout(checkConnection, 5000);
+        });
+    }
+
+    // Auto-check cada 10 segundos
+    setInterval(checkConnection, 10000);
+
+    // Listener de eventos online/offline del navegador
+    window.addEventListener('online', () => {
+      const statusDiv = document.getElementById('status');
+      statusDiv.className = 'status online';
+      statusDiv.innerHTML = '<span>🟢</span><span>Conexión restaurada - Redirigiendo...</span>';
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1000);
+    });
+
+    window.addEventListener('offline', () => {
+      const statusDiv = document.getElementById('status');
+      statusDiv.className = 'status';
+      statusDiv.innerHTML = '<span>🔴</span><span>Sin conexión</span>';
+    });
+  </script>
+</body>
+</html>

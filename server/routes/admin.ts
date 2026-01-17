@@ -308,5 +308,85 @@ export function registerAdminRoutes(app: Express) {
 			res.status(500).json({ message: "Error activando schema" });
 		}
 	});
-}
 
+	// === ENDPOINTS DE DLQ (DEAD LETTER QUEUE) ===
+
+	// Obtener jobs en DLQ
+	app.get("/api/admin/dlq/jobs", ...requireSuperAdmin, async (_req: Request, res: Response) => {
+		try {
+			const { getDLQJobs } = await import("../lib/dlq.js");
+			const jobs = getDLQJobs();
+			res.json(jobs);
+		} catch (error) {
+			console.error("Error getting DLQ jobs:", error);
+			res.status(500).json({ message: "Error obteniendo jobs DLQ" });
+		}
+	});
+
+	// Obtener estadísticas de DLQ
+	app.get("/api/admin/dlq/stats", ...requireSuperAdmin, async (_req: Request, res: Response) => {
+		try {
+			const { getDLQStats } = await import("../lib/dlq.js");
+			const stats = getDLQStats();
+			res.json(stats);
+		} catch (error) {
+			console.error("Error getting DLQ stats:", error);
+			res.status(500).json({ message: "Error obteniendo estadísticas DLQ" });
+		}
+	});
+
+	// Reintentar job del DLQ
+	app.post("/api/admin/dlq/retry", ...requireSuperAdmin, async (req: Request, res: Response) => {
+		try {
+			const { dlqId } = req.body;
+			if (!dlqId) {
+				return res.status(400).json({ message: "dlqId requerido" });
+			}
+
+			const { retryDLQJob } = await import("../lib/dlq.js");
+			const { transmisionQueue } = await import("../lib/queues.js");
+			
+			if (!transmisionQueue) {
+				return res.status(503).json({ message: "Queue no disponible" });
+			}
+
+			const result = await retryDLQJob(dlqId, transmisionQueue);
+			res.json(result);
+		} catch (error) {
+			console.error("Error retrying DLQ job:", error);
+			res.status(500).json({ message: "Error reintentando job" });
+		}
+	});
+
+	// Eliminar job del DLQ
+	app.delete("/api/admin/dlq/jobs/:dlqId", ...requireSuperAdmin, async (req: Request, res: Response) => {
+		try {
+			const { dlqId } = req.params;
+			const { removeDLQJob } = await import("../lib/dlq.js");
+			const removed = await removeDLQJob(dlqId);
+
+			if (removed) {
+				res.json({ success: true, message: "Job eliminado" });
+			} else {
+				res.status(404).json({ message: "Job no encontrado" });
+			}
+		} catch (error) {
+			console.error("Error removing DLQ job:", error);
+			res.status(500).json({ message: "Error eliminando job" });
+		}
+	});
+
+	// === ENDPOINTS DE PERFORMANCE MODE ===
+
+	// Estadísticas de performance configs
+	app.get("/api/admin/performance/stats", ...requireSuperAdmin, async (_req: Request, res: Response) => {
+		try {
+			const { getPerformanceStats } = await import("../lib/performance.js");
+			const stats = getPerformanceStats();
+			res.json(stats);
+		} catch (error) {
+			console.error("Error getting performance stats:", error);
+			res.status(500).json({ message: "Error obteniendo estadísticas" });
+		}
+	});
+}

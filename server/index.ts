@@ -15,6 +15,7 @@ import { startCertificateAlertsScheduler } from "./lib/alerts.js";
 import { initWorkers, closeWorkers } from "./lib/workers.js";
 import { startOutboxProcessor, stopOutboxProcessor } from "./lib/outbox-processor.js";
 import { startSchemaSync, stopSchemaSync } from "./lib/schema-sync.js";
+import { startDLQCleanup } from "./lib/dlq.js";
 import { setupBullBoard } from "./routes/bull-board.js";
 import { getQueueMetrics, formatPrometheusMetrics, getQueuesSummary } from "./lib/metrics.js";
 import { getQueues } from "./lib/queues.js";
@@ -36,6 +37,7 @@ const httpServer = createServer(app);
 // Mantener referencia a schedulers para detenerlos en shutdown
 let alertsTimer: NodeJS.Timeout | null = null;
 let schemaSyncTimer: NodeJS.Timeout | null = null;
+let dlqCleanupTimer: NodeJS.Timeout | null = null;
 
 // Seguridad: Confiar en el primer proxy (necesario para Rate Limiting detrás de Nginx/LoadBalancers)
 // Esto asegura que req.ip y x-forwarded-for sean procesados correctamente y no spoofed fácilmente.
@@ -215,6 +217,10 @@ app.use((req, res, next) => {
 
     // Programar sincronización de schemas DGII/MH
     schemaSyncTimer = startSchemaSync();
+
+    // Programar limpieza de DLQ (jobs antiguos >30 días)
+    dlqCleanupTimer = startDLQCleanup();
+    if (dlqCleanupTimer) log("⏰ Scheduler de limpieza de DLQ iniciado");
     if (schemaSyncTimer) log("⏰ Scheduler de sincronización de schemas iniciado");
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -258,6 +264,11 @@ app.use((req, res, next) => {
       
       // Detener schedulers
       if (alertsTimer) {
+      if (dlqCleanupTimer) {
+        clearInterval(dlqCleanupTimer);
+        log("✅ Scheduler de DLQ detenido");
+      }
+      
         clearInterval(alertsTimer);
         log("✅ Scheduler de alertas detenido");
       }
