@@ -244,5 +244,69 @@ export function registerAdminRoutes(app: Express) {
 			res.status(500).json({ message: "Error durante replay del outbox" });
 		}
 	});
+
+	// === ENDPOINTS DE SCHEMA SYNC ===
+	
+	// Sincronización manual de schemas
+	app.post("/api/admin/schemas/sync", ...requireSuperAdmin, async (_req: Request, res: Response) => {
+		try {
+			const { syncSchemas } = await import("../lib/schema-sync.js");
+			const result = await syncSchemas();
+			res.json({
+				success: true,
+				updated: result.updated,
+				errors: result.errors,
+			});
+		} catch (error) {
+			console.error("Error syncing schemas:", error);
+			res.status(500).json({ message: "Error sincronizando schemas" });
+		}
+	});
+
+	// Obtener estadísticas de schemas
+	app.get("/api/admin/schemas/stats", ...requireSuperAdmin, async (_req: Request, res: Response) => {
+		try {
+			const { getSchemaSyncStats } = await import("../lib/schema-sync.js");
+			const stats = getSchemaSyncStats();
+			res.json(stats);
+		} catch (error) {
+			console.error("Error getting schema stats:", error);
+			res.status(500).json({ message: "Error obteniendo estadísticas" });
+		}
+	});
+
+	// Listar versiones de schemas
+	app.get("/api/admin/schemas/versions", ...requireSuperAdmin, async (_req: Request, res: Response) => {
+		try {
+			const { listSchemaVersions } = await import("../lib/schema-sync.js");
+			const versions = listSchemaVersions();
+			res.json(versions);
+		} catch (error) {
+			console.error("Error listing schema versions:", error);
+			res.status(500).json({ message: "Error listando versiones" });
+		}
+	});
+
+	// Activar versión específica (rollback)
+	app.post("/api/admin/schemas/activate", ...requireSuperAdmin, async (req: Request, res: Response) => {
+		try {
+			const { type, version } = req.body;
+			if (!type || !version) {
+				return res.status(400).json({ message: "type y version requeridos" });
+			}
+
+			const { activateSchemaVersion } = await import("../lib/schema-sync.js");
+			const success = await activateSchemaVersion(type, version);
+			
+			if (success) {
+				res.json({ success: true, message: "Schema activado", type, version });
+			} else {
+				res.status(404).json({ message: "Versión no encontrada" });
+			}
+		} catch (error) {
+			console.error("Error activating schema:", error);
+			res.status(500).json({ message: "Error activando schema" });
+		}
+	});
 }
 

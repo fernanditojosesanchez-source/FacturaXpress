@@ -14,6 +14,7 @@ import { initQueues, getQueuesStats } from "./lib/queues.js";
 import { startCertificateAlertsScheduler } from "./lib/alerts.js";
 import { initWorkers, closeWorkers } from "./lib/workers.js";
 import { startOutboxProcessor, stopOutboxProcessor } from "./lib/outbox-processor.js";
+import { startSchemaSync, stopSchemaSync } from "./lib/schema-sync.js";
 import { setupBullBoard } from "./routes/bull-board.js";
 import { getQueueMetrics, formatPrometheusMetrics, getQueuesSummary } from "./lib/metrics.js";
 import { getQueues } from "./lib/queues.js";
@@ -32,8 +33,9 @@ process.on("unhandledRejection", (reason) => {
 const app = express();
 const httpServer = createServer(app);
 
-// Mantener referencia al scheduler de alertas para detenerlo en shutdown
+// Mantener referencia a schedulers para detenerlos en shutdown
 let alertsTimer: NodeJS.Timeout | null = null;
+let schemaSyncTimer: NodeJS.Timeout | null = null;
 
 // Seguridad: Confiar en el primer proxy (necesario para Rate Limiting detrás de Nginx/LoadBalancers)
 // Esto asegura que req.ip y x-forwarded-for sean procesados correctamente y no spoofed fácilmente.
@@ -211,6 +213,10 @@ app.use((req, res, next) => {
     alertsTimer = startCertificateAlertsScheduler();
     if (alertsTimer) log("⏰ Scheduler de alertas de certificados iniciado");
 
+    // Programar sincronización de schemas DGII/MH
+    schemaSyncTimer = startSchemaSync();
+    if (schemaSyncTimer) log("⏰ Scheduler de sincronización de schemas iniciado");
+
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
@@ -250,11 +256,13 @@ app.use((req, res, next) => {
     const shutdown = async () => {
       log("🛑 Iniciando graceful shutdown...");
       
-      // Detener scheduler de alertas
+      // Detener schedulers
       if (alertsTimer) {
         clearInterval(alertsTimer);
         log("✅ Scheduler de alertas detenido");
       }
+      
+      stopSchemaSync(schemaSyncTimer);
       
       // Detener procesador de outbox
       try {

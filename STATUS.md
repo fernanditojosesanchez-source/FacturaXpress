@@ -2,17 +2,17 @@
 
 ## Resumen Ejecutivo
 
-**Fase**: Post-auditoría técnica, implementación de mejoras P0/P1 + Outbox + Alertas + SIEM
-**Progreso General**: 6 de 16 TODOs completados (38%)
+**Fase**: Post-auditoría técnica, implementación de mejoras P0/P1 + Outbox + Alertas + SIEM + Schema Sync
+**Progreso General**: 7 de 16 TODOs completados (44%)
 **Última Actualización**: 2026-01-16
 
 ### Estado por Prioridad
 
 | Prioridad | P0 | P1 | P2 | P3 |
 |-----------|-----|-----|-----|-----|
-| **Completados** | 2/2 ✅ | 2/4 | 1/8 | 0/2 |
+| **Completados** | 2/2 ✅ | 3/4 | 1/8 | 0/2 |
 | **En Progreso** | - | - | - | - |
-| **Pendientes** | - | 2 | 7 | 2 |
+| **Pendientes** | - | 1 | 7 | 2 |
 
 ---
 
@@ -54,7 +54,7 @@
 
 ---
 
-## P1: Altos (0/4 completados)
+## P1: Altos (3/4 completados)
 
 ### ⏳ 4. BullMQ y Colas Críticas
 - **Prioridad**: Alta (infraestructura de jobs)
@@ -81,15 +81,33 @@
 - **Pendiente**:
   - Configurar credenciales SMTP/Twilio en producción
   - Insertar canales por tenant en `notification_channels` (opcional, usa ENV como fallback)
-- **Commit**: `5597c38`, siguiente
+- **Commit**: `5597c38`
 
-### ⏳ 6. Sync de Esquemas DGII/MH
-- **Prioridad**: Alta (compatibility)
-- **Requisitos**:
-  - Descarga automática de nuevas versiones
-  - Versionado local
-  - Flags de activación y rollback
-- **Próximo**: Diseño de servicio de sincronización
+### ✅ 6. Sync de Esquemas DGII/MH
+- **Estado**: COMPLETADO
+- **Archivos**:
+  - [server/lib/schema-sync.ts](server/lib/schema-sync.ts) - Servicio de sincronización automática
+  - [server/routes/admin.ts](server/routes/admin.ts) - Endpoints admin: sync, stats, versions, activate
+  - [server/index.ts](server/index.ts) - Scheduler integrado en lifecycle
+  - [.env.example](.env.example) - Variables ENV documentadas
+- **Características**:
+  - Descarga automática de schemas desde URLs del MH (factura, CCF, nota crédito)
+  - Versionado local con hash SHA256 (detección de cambios)
+  - Scheduler configurable (default cada 24h)
+  - Almacenamiento en `./server/dgii-resources/versions/`
+  - Activación de versiones específicas (rollback capability)
+  - Eventos SIEM para actualizaciones y errores
+- **Endpoints Admin**:
+  - `POST /api/admin/schemas/sync` - Sincronización manual
+  - `GET /api/admin/schemas/stats` - Estadísticas (versiones activas)
+  - `GET /api/admin/schemas/versions` - Listar todas las versiones
+  - `POST /api/admin/schemas/activate` - Activar versión específica
+- **Configuración ENV**:
+  - `SCHEMA_SYNC_ENABLED=true` (habilitado por defecto)
+  - `SCHEMA_SYNC_INTERVAL_HOURS=24` (frecuencia de verificación)
+  - `SCHEMA_STORAGE_DIR` (directorio de almacenamiento)
+  - URLs por tipo de documento (factura, CCF, NC)
+- **Commit**: siguiente
 
 ### ✅ 7. Streaming de Logs a SIEM
 - **Estado**: COMPLETADO
