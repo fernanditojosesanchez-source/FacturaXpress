@@ -14,6 +14,7 @@ import { registerAdminRoutes } from "./routes/admin.js";
 import { registerUserRoutes } from "./routes/users.js";
 import { facturaCreationRateLimiter, transmisionRateLimiter } from "./lib/rate-limiters.js";
 import { logAudit, AuditActions, getClientIP, getUserAgent } from "./lib/audit.js";
+import { sendToSIEM } from "./lib/siem.js";
 import { sql } from "drizzle-orm";
 
 export async function registerRoutes(
@@ -87,9 +88,23 @@ export async function registerRoutes(
         }
       };
 
+      // Enviar evento SIEM si el sistema está degradado
+      if (healthStatus.status === "degraded") {
+        await sendToSIEM({
+          type: "system_degraded",
+          level: "warn",
+          details: { mhCircuitState: mhCircuitState?.state, services: healthStatus.services }
+        });
+      }
+
       const statusCode = healthStatus.status === "ok" ? 200 : 503;
       res.status(statusCode).json(healthStatus);
     } catch (error) {
+      await sendToSIEM({
+        type: "health_check_error",
+        level: "error",
+        details: { error: (error as Error).message }
+      });
       res.status(500).json({
         status: "error",
         message: "Error al obtener estado del sistema",
@@ -794,8 +809,27 @@ export async function registerRoutes(
         details: { facturaId: factura.id, codigoGeneracion: factura.codigoGeneracion }
       });
 
+      // Evento SIEM para factura creada
+      await sendToSIEM({
+        type: "factura_created",
+        level: "info",
+        userId,
+        tenantId,
+        ipAddress,
+        details: { facturaId: factura.id, codigoGeneracion: factura.codigoGeneracion, tipoDte: factura.tipoDte }
+      });
+
       res.status(201).json(factura);
     } catch (error) {
+      // Evento SIEM para error de creación
+      await sendToSIEM({
+        type: "factura_creation_error",
+        level: "error",
+        userId: (req as any).user?.id,
+        tenantId: getTenantId(req),
+        ipAddress: getClientIP(req),
+        details: { error: (error as Error).message }
+      });
       console.error("Error creating factura:", error);
       res.status(500).json({ error: "Error al crear factura" });
     }
@@ -1003,6 +1037,21 @@ export async function registerRoutes(
         }
       });
 
+      // Evento SIEM para transmisión exitosa
+      await sendToSIEM({
+        type: "factura_transmitted",
+        level: sello.estado === "PROCESADO" ? "info" : "warn",
+        userId,
+        tenantId,
+        ipAddress,
+        details: { 
+          facturaId: req.params.id,
+          codigoGeneracion: factura.codigoGeneracion,
+          estadoMH: sello.estado,
+          nuevoEstado
+        }
+      });
+
       res.json({ 
         success: sello.estado === "PROCESADO",
         sello,
@@ -1010,6 +1059,16 @@ export async function registerRoutes(
       });
     } catch (error) {
       console.error("Error al transmitir factura:", error);
+      
+      // Evento SIEM para error de transmisión
+      await sendToSIEM({
+        type: "factura_transmission_error",
+        level: "error",
+        userId: (req as any).user?.id,
+        tenantId: getTenantId(req),
+        ipAddress: getClientIP(req),
+        details: { facturaId: req.params.id, error: (error as Error).message }
+      });
       
       // Si error es de conexión, agregar a contingencia
       const errorMsg = error instanceof Error ? error.message : "Error desconocido";

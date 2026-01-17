@@ -2,17 +2,17 @@
 
 ## Resumen Ejecutivo
 
-**Fase**: Post-auditoría técnica, implementación de mejoras P0/P1 + Outbox + Alertas
-**Progreso General**: 5 de 16 TODOs completados (31%)
+**Fase**: Post-auditoría técnica, implementación de mejoras P0/P1 + Outbox + Alertas + SIEM
+**Progreso General**: 6 de 16 TODOs completados (38%)
 **Última Actualización**: 2026-01-16
 
 ### Estado por Prioridad
 
 | Prioridad | P0 | P1 | P2 | P3 |
 |-----------|-----|-----|-----|-----|
-| **Completados** | 2/2 ✅ | 1/4 | 1/8 | 0/2 |
+| **Completados** | 2/2 ✅ | 2/4 | 1/8 | 0/2 |
 | **En Progreso** | - | - | - | - |
-| **Pendientes** | - | 3 | 7 | 2 |
+| **Pendientes** | - | 2 | 7 | 2 |
 
 ---
 
@@ -91,13 +91,27 @@
   - Flags de activación y rollback
 - **Próximo**: Diseño de servicio de sincronización
 
-### ⏳ 7. Streaming de Logs a SIEM
-- **Prioridad**: Alta (compliance/auditoría)
-- **Requisitos**:
-  - Exportación segura (Datadog/ELK/S3)
-  - Retención inmutable
-  - Integridad y alertas
-- **Próximo**: Integración con SIEM
+### ✅ 7. Streaming de Logs a SIEM
+- **Estado**: COMPLETADO
+- **Archivos**:
+  - [server/lib/siem.ts](server/lib/siem.ts) - Cliente SIEM con webhook HTTP
+  - [server/lib/audit.ts](server/lib/audit.ts) - Envío de eventos de auditoría
+  - [server/lib/workers.ts](server/lib/workers.ts) - Eventos de workers/jobs
+  - [server/lib/alerts.ts](server/lib/alerts.ts) - Alertas de certificados
+  - [server/routes.ts](server/routes.ts) - Eventos de negocio (facturas, salud sistema)
+  - [.env.example](.env.example) - Variables SIEM documentadas
+- **Eventos Capturados**:
+  - Autenticación: login exitoso/fallido, logout, bloqueos
+  - Operaciones: creación/transmisión facturas, certificados
+  - Sistema: health check degradado, errores críticos
+  - Workers: fallos en procesamiento de colas
+  - Alertas: expiraciones de certificados
+- **Características**:
+  - Envío asíncrono sin bloquear flujo
+  - API Key opcional para autenticación
+  - Retry automático en errores
+  - Logs estructurados (JSON)
+- **Commit**: siguiente
 
 ---
 
