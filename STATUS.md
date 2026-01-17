@@ -2,16 +2,16 @@
 
 ## Resumen Ejecutivo
 
-**Fase**: Post-auditoría técnica, implementación de mejoras P0/P1 + Outbox
-**Progreso General**: 4 de 16 TODOs completados (25%)
+**Fase**: Post-auditoría técnica, implementación de mejoras P0/P1 + Outbox + Alertas
+**Progreso General**: 5 de 16 TODOs completados (31%)
 **Última Actualización**: 2026-01-16
 
 ### Estado por Prioridad
 
 | Prioridad | P0 | P1 | P2 | P3 |
 |-----------|-----|-----|-----|-----|
-| **Completados** | 2/2 ✅ | 0/4 | 1/8 | 0/2 |
-| **En Progreso** | - | 1/4 | - | - |
+| **Completados** | 2/2 ✅ | 1/4 | 1/8 | 0/2 |
+| **En Progreso** | - | - | - | - |
 | **Pendientes** | - | 3 | 7 | 2 |
 
 ---
@@ -66,14 +66,22 @@
 - **Dependencia**: Redis conectado (bloqueador actual)
 - **Próximo**: Diseño de payloads y workers
 
-### ⏳ 5. Alertas Expiración Certificados
-- **Prioridad**: Alta (compliance/UX)
-- **Requisitos**:
-  - Servicio programado (node-cron)
-  - Alertas: 90/60/30/15/7 días
-  - Canales: Email, SMS, Webhooks
-  - Escalamiento y acuse de recibo
-- **Próximo**: Implementar servicio de alertas
+### ✅ 5. Alertas Expiración Certificados
+- **Estado**: COMPLETADO
+- **Archivos**:
+  - [server/lib/alerts.ts](server/lib/alerts.ts) - Verificación y notificaciones (90/60/30/15/7 días)
+  - [server/lib/notifications.ts](server/lib/notifications.ts) - Email (SMTP), SMS (Twilio), Webhooks
+  - [server/index.ts](server/index.ts) - Scheduler integrado en startup/shutdown
+  - [.env.example](.env.example) - Variables ENV documentadas
+- **Características**:
+  - Scheduler configurable (default 60 min)
+  - Multi-canal: Email, SMS, Webhooks
+  - Logging a auditoría y SIEM
+  - Graceful shutdown
+- **Pendiente**:
+  - Configurar credenciales SMTP/Twilio en producción
+  - Insertar canales por tenant en `notification_channels` (opcional, usa ENV como fallback)
+- **Commit**: `5597c38`, siguiente
 
 ### ⏳ 6. Sync de Esquemas DGII/MH
 - **Prioridad**: Alta (compatibility)

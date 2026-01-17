@@ -32,6 +32,9 @@ process.on("unhandledRejection", (reason) => {
 const app = express();
 const httpServer = createServer(app);
 
+// Mantener referencia al scheduler de alertas para detenerlo en shutdown
+let alertsTimer: NodeJS.Timeout | null = null;
+
 // Seguridad: Confiar en el primer proxy (necesario para Rate Limiting detrás de Nginx/LoadBalancers)
 // Esto asegura que req.ip y x-forwarded-for sean procesados correctamente y no spoofed fácilmente.
 app.set("trust proxy", 1);
@@ -205,8 +208,8 @@ app.use((req, res, next) => {
       });
 
     // Programar alertas de certificados
-    const timer = startCertificateAlertsScheduler();
-    if (timer) log("⏰ Scheduler de alertas de certificados iniciado");
+    alertsTimer = startCertificateAlertsScheduler();
+    if (alertsTimer) log("⏰ Scheduler de alertas de certificados iniciado");
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
@@ -246,6 +249,12 @@ app.use((req, res, next) => {
     // Graceful shutdown
     const shutdown = async () => {
       log("🛑 Iniciando graceful shutdown...");
+      
+      // Detener scheduler de alertas
+      if (alertsTimer) {
+        clearInterval(alertsTimer);
+        log("✅ Scheduler de alertas detenido");
+      }
       
       // Detener procesador de outbox
       try {
