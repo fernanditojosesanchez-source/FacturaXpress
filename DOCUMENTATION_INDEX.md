@@ -1,8 +1,24 @@
 # 📚 Índice de Documentación - FacturaXpress
 
 **Última actualización:** 17 de enero de 2026  
-**Versión:** 2.1.0 (Stock + Sigma + Feature Flags)  
-**Status:** ✅ 91% COMPLETADO (21/23 tareas)
+**Versión:** 2.1.0 (Stock + Sigma + Feature Flags + Deployment)  
+**Status:** ✅ 100% COMPLETADO (24/24 tareas) - Deployment ejecutado
+
+---
+
+## 🚀 NUEVO: Deployment & Cron Jobs
+
+### [DEPLOYMENT_COMPLETE.md](DEPLOYMENT_COMPLETE.md) 🎉 PRODUCTION READY
+**Propósito:** Documentación completa del deployment ejecutado  
+**Contiene:**
+- 4 migraciones SQL ejecutadas en Supabase
+- 2 cron jobs configurados (Feature Flags + Catalog Sync)
+- 14 nuevas tablas de BD + 28+ índices
+- 6 triggers PostgreSQL + 13 RLS policies
+- Verificación completa y status de deployment
+- Próximos pasos y validación post-deployment
+
+**Lee esto si:** Necesitas entender qué se deployó
 
 ---
 
