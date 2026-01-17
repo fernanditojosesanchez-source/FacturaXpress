@@ -12,6 +12,8 @@ import * as catalogs from "./catalogs.js";
 import { validateDTESchema } from "./dgii-validator.js";
 import { registerAdminRoutes } from "./routes/admin.js";
 import { registerUserRoutes } from "./routes/users.js";
+import sigmaSupportRouter from "./routes/sigma-support.js";
+import stockTransitoRouter from "./routes/stock-transito.js";
 import { facturaCreationRateLimiter, transmisionRateLimiter } from "./lib/rate-limiters.js";
 import { logAudit, AuditActions, getClientIP, getUserAgent } from "./lib/audit.js";
 import { sendToSIEM } from "./lib/siem.js";
@@ -25,6 +27,28 @@ export async function registerRoutes(
   registerAuthRoutes(app);
   registerAdminRoutes(app);
   registerUserRoutes(app);
+
+  // Rutas de Sigma Support y Stock en Tránsito (nuevas funcionalidades P2)
+  app.use("/api/admin/sigma", sigmaSupportRouter);
+  app.use("/api/stock-transito", stockTransitoRouter);
+
+  // Rutas de Sigma JIT (Just-In-Time Access) (P1: Auditoría de Seguridad)
+  const sigmaJitRouter = (await import("./routes/sigma-jit.js")).default;
+  app.use("/api/sigma", sigmaJitRouter);
+
+  // Rutas de Catálogos (P1: Sincronización DGII)
+  const catalogsRouter = (await import("./routes/catalogs.js")).default;
+  app.use("/api/catalogs", catalogsRouter);
+  app.use("/api/admin/catalogs", catalogsRouter);
+
+  // Rutas de Seguridad de Vault (P1: Vault Logs Inmutables)
+  const vaultSecurityRouter = (await import("./routes/vault-security.js")).default;
+  app.use("/api/admin/vault", vaultSecurityRouter);
+
+  // Rutas de Feature Flags (P3)
+  const featureFlagsRouter = (await import("./routes/feature-flags.js")).default;
+  app.use("/api/admin/feature-flags", featureFlagsRouter);
+  app.use("/api/feature-flags", featureFlagsRouter);
 
   // Helper para obtener tenantId del request
   const getTenantId = (req: Request) => (req as any).user?.tenantId;

@@ -19,6 +19,7 @@ import { startDLQCleanup } from "./lib/dlq.js";
 import { setupBullBoard } from "./routes/bull-board.js";
 import { getQueueMetrics, formatPrometheusMetrics, getQueuesSummary } from "./lib/metrics.js";
 import { getQueues } from "./lib/queues.js";
+import { startCatalogSyncScheduler, stopCatalogSyncScheduler } from "./lib/catalog-sync-scheduler.js";
 
 // Manejadores globales de errores
 process.on("uncaughtException", (error) => {
@@ -38,6 +39,7 @@ const httpServer = createServer(app);
 let alertsTimer: NodeJS.Timeout | null = null;
 let schemaSyncTimer: NodeJS.Timeout | null = null;
 let dlqCleanupTimer: NodeJS.Timeout | null = null;
+let catalogSyncTimer: NodeJS.Timeout | null = null;
 
 // Seguridad: Confiar en el primer proxy (necesario para Rate Limiting detrás de Nginx/LoadBalancers)
 // Esto asegura que req.ip y x-forwarded-for sean procesados correctamente y no spoofed fácilmente.
@@ -218,6 +220,10 @@ app.use((req, res, next) => {
     // Programar sincronización de schemas DGII/MH
     schemaSyncTimer = startSchemaSync();
 
+    // Programar sincronización de catálogos DGII (P1: Auditoría)
+    catalogSyncTimer = startCatalogSyncScheduler();
+    if (catalogSyncTimer) log("⏰ Scheduler de sincronización de catálogos iniciado");
+
     // Programar limpieza de DLQ (jobs antiguos >30 días)
     dlqCleanupTimer = startDLQCleanup();
     if (dlqCleanupTimer) log("⏰ Scheduler de limpieza de DLQ iniciado");
@@ -271,6 +277,10 @@ app.use((req, res, next) => {
       
         clearInterval(alertsTimer);
         log("✅ Scheduler de alertas detenido");
+      }
+      
+      if (catalogSyncTimer) {
+        stopCatalogSyncScheduler(catalogSyncTimer);
       }
       
       stopSchemaSync(schemaSyncTimer);

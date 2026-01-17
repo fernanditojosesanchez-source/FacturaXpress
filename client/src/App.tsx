@@ -32,6 +32,8 @@ const ClientesPage = lazy(() => import("@/pages/clientes"));
 const CertificadosPage = lazy(() => import("@/pages/certificados"));
 const SuperAdminPage = lazy(() => import("@/pages/super-admin"));
 const UsuariosPage = lazy(() => import("@/pages/usuarios"));
+const StockTransitoPage = lazy(() => import("@/pages/stock-transito"));
+const SigmaSupportPage = lazy(() => import("@/pages/sigma-support"));
 
 // Componente skeleton para loading
 function PageLoader() {
@@ -127,6 +129,22 @@ function Router() {
       <Route path="/configuracion">
         <Protected>
           <Configuracion />
+        </Protected>
+      </Route>
+
+      <Route path="/stock-transito">
+        <Protected>
+          <Suspense fallback={<PageLoader />}>
+            <StockTransitoPage />
+          </Suspense>
+        </Protected>
+      </Route>
+
+      <Route path="/sigma-support">
+        <Protected>
+          <Suspense fallback={<PageLoader />}>
+            <SigmaSupportPage />
+          </Suspense>
         </Protected>
       </Route>
 
@@ -252,8 +270,10 @@ function AppContent() {
       { label: "Historial", href: "/historial", roles: ["tenant_admin", "manager", "cashier"] },
       { label: "Clientes", href: "/clientes", roles: ["tenant_admin", "manager", "cashier"] },
       { label: "Productos", href: "/productos", roles: ["tenant_admin", "manager"] },
+      { label: "Stock en Tránsito", href: "/stock-transito", roles: ["tenant_admin", "manager"] },
       { label: "Notas", href: "/notas", roles: ["tenant_admin", "manager"] },
       { label: "Reportes", href: "/reportes", roles: ["tenant_admin", "manager"] },
+      { label: "Soporte Sigma", href: "/sigma-support", roles: ["tenant_admin"] },
       { label: "Certificados", href: "/certificados", roles: ["tenant_admin"] },
       { label: "Configuración", href: "/configuracion", roles: ["tenant_admin"] },
     ];

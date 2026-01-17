@@ -11,6 +11,7 @@
  * - Dead Letter Queue para fallos definitivos
  * - Métricas de procesamiento (completed, failed, active)
  * - Graceful shutdown
+ * - Worker Thread para firma JWS (no bloquea event loop)
  */
 
 import { Worker, Job } from "bullmq";
@@ -24,6 +25,8 @@ import { logAudit } from "./audit.js";
 import { sendToSIEM } from "./siem.js";
 import { redisHealth } from "./redis.js";
 import { addToDLQ } from "./dlq.js";
+// ✅ Importar signer con Worker Thread en lugar del síncrono
+import { signDTE } from "./signer-worker.js";
 
 const log = console.log;
 const WORKER_IP = process.env.WORKER_IP || "worker";
@@ -51,8 +54,18 @@ export async function processTransmision(job: Job<TransmisionJob>) {
     // 3. Firmar documento (si no está firmado)
     if (!factura.selloRecibido) {
       log(`[Worker Transmisión] Firmando factura ${facturaId}...`);
-      // TODO: Implementar firma digital con certificado del tenant
-      // const firmado = await firmarDocumento(factura, tenantId);
+      
+      // Obtener certificado del tenant
+      const certs = await storage.getCertificados(tenantId);
+      const certActivo = certs.find((c: any) => c.activo && new Date(c.validoHasta) > new Date());
+      if (!certActivo) {
+        throw new Error(`Tenant ${tenantId} sin certificado válido`);
+      }
+
+      // ✅ Usar signDTE con Worker Thread (no bloquea event loop)
+      const firmado = await signDTE(factura, certActivo.p12Base64, certActivo.password);
+      
+      log(`[Worker Transmisión] Factura firmada: ${firmado.signature.substring(0, 20)}...`);
     }
 
     // 4. Transmitir al MH
@@ -129,8 +142,11 @@ export async function processFirma(job: Job<FirmaJob>) {
 
     // 3. Firmar documento
     log(`[Worker Firma] Firmando con certificado ${certActivo.id}...`);
-    // TODO: Implementar firma digital real
-    // const firma = await firmarConCertificado(doc, certActivo);
+    
+    // ✅ Usar signDTE con Worker Thread (no bloquea event loop)
+    const firma = await signDTE(doc, certActivo.p12Base64, certActivo.password);
+    
+    log(`[Worker Firma] Documento firmado: ${firma.signature.substring(0, 20)}...`);
 
     // 4. Guardar firma
     // await storage.guardarFirmaDocumento(documentoId, tenantId, firma);

@@ -637,46 +637,78 @@ export class DatabaseStorage implements IStorage {
 
   async getNextNumeroControl(tenantId: string, emisorNit: string, tipoDte: string): Promise<string> {
     return await db.transaction(async (tx) => {
-      let [record] = await tx
-        .select()
-        .from(secuencialControlTable)
+      // ESTRATEGIA ATÓMICA: Intentar UPDATE primero (caso común)
+      // Si no existe el registro, INSERT con ON CONFLICT
+      // Esto elimina la ventana de race condition del SELECT + UPDATE
+      
+      // Paso 1: Intentar incrementar el secuencial existente
+      const [updated] = await tx
+        .update(secuencialControlTable)
+        .set({
+          secuencial: sql`${secuencialControlTable.secuencial} + 1`,
+          fechaActualizacion: new Date(),
+        })
         .where(
           and(
             eq(secuencialControlTable.tenantId, tenantId),
             eq(secuencialControlTable.emisorNit, emisorNit),
             eq(secuencialControlTable.tipoDte, tipoDte)
           )
-        );
+        )
+        .returning();
 
-      let newSecuencial = 1;
-
+      let record = updated;
+      
+      // Paso 2: Si no existía, crear nuevo registro con UPSERT
       if (!record) {
-        [record] = await tx
-          .insert(secuencialControlTable)
-          .values({
-            tenantId,
-            emisorNit,
-            tipoDte,
-            secuencial: 1,
-          })
-          .returning();
-      } else {
-        newSecuencial = record.secuencial + 1;
-        [record] = await tx
-          .update(secuencialControlTable)
-          .set({
-            secuencial: newSecuencial,
-            fechaActualizacion: new Date(),
-          })
-          .where(eq(secuencialControlTable.id, record.id))
-          .returning();
+        try {
+          [record] = await tx
+            .insert(secuencialControlTable)
+            .values({
+              tenantId,
+              emisorNit,
+              tipoDte,
+              secuencial: 1,
+              fechaCreacion: new Date(),
+              fechaActualizacion: new Date(),
+            })
+            .returning();
+        } catch (error: any) {
+          // Si hubo conflicto (otro proceso creó el registro), reintentar el UPDATE
+          if (error.code === '23505') { // PostgreSQL unique violation
+            const [retried] = await tx
+              .update(secuencialControlTable)
+              .set({
+                secuencial: sql`${secuencialControlTable.secuencial} + 1`,
+                fechaActualizacion: new Date(),
+              })
+              .where(
+                and(
+                  eq(secuencialControlTable.tenantId, tenantId),
+                  eq(secuencialControlTable.emisorNit, emisorNit),
+                  eq(secuencialControlTable.tipoDte, tipoDte)
+                )
+              )
+              .returning();
+            
+            if (!retried) {
+              throw new Error('No se pudo obtener el siguiente número de control después de reintento');
+            }
+            record = retried;
+          } else {
+            throw error;
+          }
+        }
       }
 
+      // Generar el numeroControl con el secuencial actualizado
       const prefix = String(tipoDte).padStart(3, '0');
-      const suffix = String(newSecuencial).padStart(18, '0');
+      const suffix = String(record.secuencial).padStart(18, '0');
       const numeroControl = `${prefix}-${suffix}`;
 
-      await tx.update(secuencialControlTable)
+      // Actualizar el campo ultimoNumeroControl para referencia
+      await tx
+        .update(secuencialControlTable)
         .set({ ultimoNumeroControl: numeroControl })
         .where(eq(secuencialControlTable.id, record.id));
 

@@ -3,6 +3,17 @@ import { pgTable, text, varchar, decimal, integer, timestamp, jsonb, serial, uni
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Re-export new P2 schemas
+export * from "./schema-stock-transito.js";
+export * from "./schema-sigma-support.js";
+export * from "./schema-sigma-jit.js";
+
+// Re-export P1 schemas (Catalog Sync)
+export * from "./schema-catalog-sync.js";
+
+// Re-export P3 schemas (Feature Flags)
+export * from "./schema-feature-flags.js";
+
 // --- TABLAS PARA MULTI-TENANCY ---
 
 export const tenants = pgTable("tenants", {

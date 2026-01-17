@@ -1,3 +1,16 @@
+/**
+ * Firma Digital JWS - LEGACY IMPLEMENTATION
+ * 
+ * ADVERTENCIA: Esta implementación ejecuta en el hilo principal y es CPU-intensive.
+ * Para uso en producción, usar signer-worker.ts que delega a Worker Threads.
+ * 
+ * Este archivo se mantiene por compatibilidad y testing, pero NO debería
+ * usarse directamente en endpoints de producción.
+ * 
+ * @deprecated Usar signDTE de signer-worker.ts en su lugar
+ * @see server/lib/signer-worker.ts
+ */
+
 import forge from "node-forge";
 import stringify from "fast-json-stable-stringify";
 
@@ -9,8 +22,13 @@ export interface SignResult {
 /**
  * Firma un DTE usando el estándar JWS requerido por el MH.
  * CORREGIDO: Usa canonicalización JSON para garantizar orden consistente del Hash.
+ * 
+ * IMPORTANTE: Esta implementación es CPU-intensive y bloquea el event loop.
+ * En producción, usar signDTE de signer-worker.ts que usa Worker Threads.
+ * 
+ * @deprecated Usar signer-worker.ts para evitar bloqueo del event loop
  */
-export async function signDTE(
+export async function signDTESync(
   dte: any, 
   p12Base64: string, 
   password: string

@@ -1,0 +1,104 @@
+{
+  "slos": {
+    "availability": {
+      "description": "Porcentaje de tiempo que el servicio está disponible",
+      "target": 99.9,
+      "measurement": "uptime / total_time",
+      "threshold": "http_req_failed < 0.001",
+      "alert": {
+        "warning": 99.5,
+        "critical": 99.0
+      }
+    },
+    "latency": {
+      "description": "Tiempo de respuesta del API",
+      "p95": {
+        "target": 500,
+        "unit": "ms",
+        "threshold": "http_req_duration{p(95)}<500"
+      },
+      "p99": {
+        "target": 1000,
+        "unit": "ms",
+        "threshold": "http_req_duration{p(99)}<1000"
+      },
+      "alert": {
+        "warning": {
+          "p95": 750,
+          "p99": 1500
+        },
+        "critical": {
+          "p95": 1000,
+          "p99": 2000
+        }
+      }
+    },
+    "throughput": {
+      "description": "Número de requests procesadas por segundo",
+      "target": 1000,
+      "unit": "req/s",
+      "measurement": "http_reqs.rate"
+    },
+    "error_rate": {
+      "description": "Porcentaje de requests que fallan",
+      "target": 0.1,
+      "unit": "%",
+      "threshold": "http_req_failed < 0.001",
+      "alert": {
+        "warning": 1.0,
+        "critical": 5.0
+      }
+    }
+  },
+  "test_schedules": {
+    "smoke": {
+      "frequency": "on_every_deploy",
+      "duration": "1m",
+      "blocking": true
+    },
+    "load": {
+      "frequency": "weekly",
+      "day": "sunday",
+      "time": "02:00",
+      "duration": "23m"
+    },
+    "stress": {
+      "frequency": "monthly",
+      "day": 1,
+      "time": "03:00",
+      "duration": "38m"
+    },
+    "spike": {
+      "frequency": "before_major_events",
+      "duration": "8m"
+    },
+    "chaos": {
+      "frequency": "quarterly",
+      "duration": "7m"
+    }
+  },
+  "thresholds": {
+    "smoke": {
+      "http_req_duration_p95": 500,
+      "http_req_failed_rate": 0.01
+    },
+    "load": {
+      "http_req_duration_p95": 1000,
+      "http_req_duration_p99": 2000,
+      "http_req_failed_rate": 0.05
+    },
+    "stress": {
+      "http_req_duration_p95": 3000,
+      "http_req_duration_p99": 5000,
+      "http_req_failed_rate": 0.10
+    },
+    "spike": {
+      "http_req_duration_p95": 5000,
+      "http_req_failed_rate": 0.20
+    },
+    "chaos": {
+      "http_req_duration_p95": 2000,
+      "http_req_failed_rate": 0.15
+    }
+  }
+}
