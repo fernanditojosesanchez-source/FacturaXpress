@@ -1,0 +1,757 @@
+{
+	"info": {
+		"_postman_id": "facturaxpress-2025-v1",
+		"name": "FacturaXpress API",
+		"description": "Colección completa de endpoints de FacturaXpress v2.1.0\n\nIncluy:\n- Autenticación\n- DTEs (Facturas, Crédito Fiscal, Notas)\n- Feature Flags\n- Catalogos DGII\n- Sigma Support JIT\n- Health Checks\n\nBase URL: http://localhost:5000\nProducción: https://api.facturaxpress.com (TBD)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "facturaxpress"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('access_token', jsonData.token);",
+									"    pm.environment.set('user_id', jsonData.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"securepassword\",\n  \"nombre\": \"Nuevo Usuario\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check Detailed",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/health/detailed",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"health",
+								"detailed"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Feature Flags",
+			"item": [
+				{
+					"name": "Get All Feature Flags",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/feature-flags",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"feature-flags"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Feature Flag by Key",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/feature-flags/{{flag_key}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"feature-flags",
+								"{{flag_key}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Feature Flag",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"new_payment_method\",\n  \"nombre\": \"New Payment Method - PagoMóvil\",\n  \"estrategia\": \"gradual\",\n  \"habilitado\": true,\n  \"porcentaje_rollout\": 0,\n  \"descripcion\": \"Gradual rollout de nuevo método de pago\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/feature-flags",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"feature-flags"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Feature Flag",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"habilitado\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/feature-flags/{{flag_key}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"feature-flags",
+								"{{flag_key}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Evaluate Feature Flag",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/feature-flags/{{flag_key}}/evaluate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"feature-flags",
+								"{{flag_key}}",
+								"evaluate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Catalogos DGII",
+			"item": [
+				{
+					"name": "Get Catalog Versions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/catalogs/versions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"catalogs",
+								"versions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Force Catalog Sync",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"force\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/catalogs/sync",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"catalogs",
+								"sync"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sync History",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/catalogs/history?limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"catalogs",
+								"history"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sync Alerts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/catalogs/alerts?resolved=false",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"catalogs",
+								"alerts"
+							],
+							"query": [
+								{
+									"key": "resolved",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sigma JIT",
+			"item": [
+				{
+					"name": "Create JIT Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tenant_id\": \"test-tenant\",\n  \"reason\": \"Soporte técnico\",\n  \"description\": \"Revisión de configuración\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/sigma-jit/requests",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"sigma-jit",
+								"requests"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Review JIT Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"approved\": true,\n  \"valid_for_hours\": 2,\n  \"notes\": \"Aprobado para soporte técnico\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/sigma-jit/requests/{{request_id}}/review",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"sigma-jit",
+								"requests",
+								"{{request_id}}",
+								"review"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List JIT Requests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/sigma-jit/requests?status=pending",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"sigma-jit",
+								"requests"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Extend JIT Access",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"extend_hours\": 1,\n  \"reason\": \"Necesito más tiempo para completar el soporte\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/sigma-jit/extensions/{{extension_id}}/extend",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"sigma-jit",
+								"extensions",
+								"{{extension_id}}",
+								"extend"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Revoke JIT Access",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Soporte completado\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/sigma-jit/requests/{{request_id}}/revoke",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"sigma-jit",
+								"requests",
+								"{{request_id}}",
+								"revoke"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "DTEs",
+			"item": [
+				{
+					"name": "Create Factura",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tipo\": \"factura\",\n  \"receptor\": {\n    \"rnc\": \"123456789\",\n    \"razon_social\": \"Empresa ABC\"\n  },\n  \"items\": [\n    {\n      \"descripcion\": \"Producto 1\",\n      \"cantidad\": 2,\n      \"precio_unitario\": 100.00\n    }\n  ],\n  \"subtotal\": 200.00,\n  \"itbis\": 36.00,\n  \"total\": 236.00\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/dtes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dtes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get DTE by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/dtes/{{dte_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dtes",
+								"{{dte_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List DTEs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/dtes?tipo=factura&limit=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dtes"
+							],
+							"query": [
+								{
+									"key": "tipo",
+									"value": "factura"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate DTE",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dte_id\": \"{{dte_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/dtes/validate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dtes",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Stock en Tránsito",
+			"item": [
+				{
+					"name": "Get Stock Movements",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/stock/movements?status=en_transito",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"stock",
+								"movements"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "en_transito"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transport Efficiency",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/stock/transport-efficiency",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"stock",
+								"transport-efficiency"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Worker Metrics",
+			"item": [
+				{
+					"name": "Get Worker Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/worker-metrics",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"worker-metrics"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "flag_key",
+			"value": "test_feature",
+			"type": "string"
+		},
+		{
+			"key": "dte_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "request_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "extension_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
