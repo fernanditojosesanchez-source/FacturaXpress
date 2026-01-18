@@ -14,6 +14,9 @@
 import forge from "node-forge";
 import stringify from "fast-json-stable-stringify";
 
+// Re-export de signer-worker para compatibilidad
+export { signDTE, getSignerMetrics } from "./signer-worker.js";
+
 export interface SignResult {
   body: string; 
   signature: string;
