@@ -9,13 +9,16 @@
  * - Queue de trabajos pendientes
  * - Timeout de seguridad (30s por firma)
  * - Métricas de performance
+ * - ✅ SEGURIDAD: Limpieza segura de certificados (zero-fill)
  * 
  * @see AUDITORIA_SEGURIDAD_2026_01.md - Punto #5 (P0: Crítico)
+ * @see AUDITORIA_CRITICA_2026.md - Hallazgo #4 (P0: Memory Security)
  */
 
 import { Worker } from 'worker_threads';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getSecureMemoryService } from './secure-memory.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -44,6 +47,7 @@ class SignerWorkerPool {
   private readonly poolSize: number;
   private readonly timeout: number = 30000; // 30 segundos
   private isShuttingDown: boolean = false;
+  private secureMemory: any; // ✅ SEGURIDAD: Referencia al servicio
 
   // Métricas
   private metrics = {
@@ -56,6 +60,7 @@ class SignerWorkerPool {
 
   constructor(poolSize: number = 4) {
     this.poolSize = poolSize;
+    this.secureMemory = getSecureMemoryService(); // ✅ Obtener una sola vez
     this.initializePool();
   }
 
@@ -124,6 +129,8 @@ class SignerWorkerPool {
 
   /**
    * Firmar DTE usando worker del pool
+   * 
+   * ✅ SEGURIDAD: Usa getSecureMemoryService() para auto-limpiar certificados
    */
   async signDTE(dte: any, p12Base64: string, password: string): Promise<SignResult> {
     if (this.isShuttingDown) {
@@ -163,6 +170,8 @@ class SignerWorkerPool {
 
   /**
    * Ejecutar tarea en worker disponible
+   * 
+   * ✅ SEGURIDAD: Limpieza segura después de enviar al worker
    */
   private executeTask(task: WorkerTask): void {
     const worker = this.availableWorkers.shift();
@@ -196,6 +205,13 @@ class SignerWorkerPool {
 
       // Devolver worker al pool
       this.availableWorkers.push(worker);
+
+      // ✅ SEGURIDAD: Limpiar referencias a certificados
+      // Después de que el worker haya procesado, limpiar los buffers
+      this.secureMemory.zeroFillMultiple(
+        Buffer.from(task.p12Base64, 'base64'),
+        Buffer.from(task.password, 'utf-8')
+      );
 
       // Procesar resultado
       if (result.success) {

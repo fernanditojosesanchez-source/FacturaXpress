@@ -1,6 +1,7 @@
 import { storage } from "../storage.js";
 import { addTransmisionJob, addFirmaJob, addNotificacionJob } from "./queues.js";
 import { log } from "../index.js";
+import { getLockService, type LockResult } from "./distributed-lock.js";
 
 const BATCH_SIZE = 50;
 const OUTBOX_LOCK_KEY = "outbox:processing";
@@ -158,11 +159,17 @@ async function processBatch(): Promise<{ processed: number; failed: number; erro
 }
 
 /**
- * Inicia el procesador de outbox
- * Ejecuta cada intervalMs milisegundos
+ * Inicia el procesador de outbox con Distributed Lock (Redis-backed)
+ * 
+ * Cambios respecto a versión anterior:
+ * - ✅ Usa distributed lock para prevenir duplicación en multi-instancia
+ * - ✅ Variable `isProcessing` REMOVIDA (ya no es suficiente en Kubernetes)
+ * - ✅ Redis lock con auto-renewal durante el procesamiento
+ * - ✅ Graceful handling de lock timeouts
+ * 
+ * @see AUDITORIA_CRITICA_2026.md - Hallazgo #2 (P0: Race Conditions)
  */
 let processorTimer: NodeJS.Timeout | null = null;
-let isProcessing = false;
 
 export async function startOutboxProcessor(intervalMs: number = 5000): Promise<void> {
   if (processorTimer) {
@@ -170,17 +177,29 @@ export async function startOutboxProcessor(intervalMs: number = 5000): Promise<v
     return;
   }
 
-  log(`🚀 Iniciando outbox processor (intervalo: ${intervalMs}ms)`, "outbox");
+  log(`🚀 Iniciando outbox processor (intervalo: ${intervalMs}ms) con Distributed Lock`, "outbox");
 
   const processLoop = async () => {
-    if (isProcessing) {
-      // Evitar concurrencia si el lote anterior aún está en progreso
-      return;
-    }
+    const lockService = getLockService();
+    let lockResult: LockResult | null = null;
 
-    isProcessing = true;
     try {
+      // Intentar adquirir lock distribuido
+      lockResult = await lockService.acquireLock(OUTBOX_LOCK_KEY, {
+        ttlMs: LOCK_TTL,
+        maxWaitMs: 2000, // No esperar demasiado si otra instancia está procesando
+        autoRenew: true,  // Auto-renovar mientras se procesa
+      });
+
+      if (!lockResult.acquired) {
+        // Otra instancia está procesando el lote, skip silenciosamente
+        // log(`⏭️ Skip: otra instancia está procesando outbox`, "outbox");
+        return;
+      }
+
+      // ✅ Tenemos el lock, procesar batch
       const result = await processBatch();
+      
       if (result.processed > 0 || result.failed > 0) {
         log(
           `📊 Outbox: ${result.processed} enviados, ${result.failed} con retry${
@@ -192,7 +211,11 @@ export async function startOutboxProcessor(intervalMs: number = 5000): Promise<v
     } catch (err) {
       log(`❌ Error en outbox processor loop: ${(err as Error).message}`, "outbox");
     } finally {
-      isProcessing = false;
+      // Liberar lock si lo tenemos
+      if (lockResult?.acquired && lockResult?.lockId) {
+        const lockService = getLockService();
+        await lockService.releaseLock(OUTBOX_LOCK_KEY, lockResult.lockId);
+      }
     }
   };
 

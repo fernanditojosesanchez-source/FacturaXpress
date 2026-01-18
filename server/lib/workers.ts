@@ -62,8 +62,14 @@ export async function processTransmision(job: Job<TransmisionJob>) {
         throw new Error(`Tenant ${tenantId} sin certificado válido`);
       }
 
+      // Validar que el certificado tiene datos completos
+      if (!certActivo.archivo || !certActivo.contrasena) {
+        throw new Error(`Certificado incompleto: falta archivo o contraseña`);
+      }
+
       // ✅ Usar signDTE con Worker Thread (no bloquea event loop)
-      const firmado = await signDTE(factura, certActivo.p12Base64, certActivo.password);
+      // Nota: certActivo.archivo es el p12 en Base64, certActivo.contrasena es la pwd
+      const firmado = await signDTE(factura, certActivo.archivo, certActivo.contrasena);
       
       log(`[Worker Transmisión] Factura firmada: ${firmado.signature.substring(0, 20)}...`);
     }
@@ -140,11 +146,17 @@ export async function processFirma(job: Job<FirmaJob>) {
       throw new Error(`Tenant ${tenantId} sin certificado válido`);
     }
 
+    // Validar que el certificado tiene datos completos
+    if (!certActivo.archivo || !certActivo.contrasena) {
+      throw new Error(`Certificado incompleto: falta archivo o contraseña`);
+    }
+
     // 3. Firmar documento
     log(`[Worker Firma] Firmando con certificado ${certActivo.id}...`);
     
     // ✅ Usar signDTE con Worker Thread (no bloquea event loop)
-    const firma = await signDTE(doc, certActivo.p12Base64, certActivo.password);
+    // Nota: certActivo.archivo es el p12 en Base64, certActivo.contrasena es la pwd
+    const firma = await signDTE(doc, certActivo.archivo, certActivo.contrasena);
     
     log(`[Worker Firma] Documento firmado: ${firma.signature.substring(0, 20)}...`);
 
