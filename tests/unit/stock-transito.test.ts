@@ -1,16 +1,51 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { 
-  createStockTransito, 
-  updateStockTransito,
-  receiveStockTransito,
-  devuelveStockTransito,
-  getStockTransitoStats 
-} from "../../server/lib/stock-transito.ts";
+import { describe, it, expect, beforeEach, vi, beforeAll } from "vitest";
 
-// Mock de las dependencias
-vi.mock("../../server/db.ts");
-vi.mock("../../server/lib/audit.ts");
-vi.mock("../../server/lib/siem.ts");
+// Mocks HOISTED antes de importar el módulo bajo prueba
+const mockDb = {
+  insert: vi.fn(() => ({
+    values: vi.fn(() => ({
+      returning: vi.fn(async () => [{ id: "mock-id" }]),
+    })),
+  })),
+  update: vi.fn(() => ({
+    set: vi.fn(() => ({
+      where: vi.fn(async () => undefined),
+    })),
+  })),
+  select: vi.fn((shape?: any) => ({
+    from: vi.fn(() => ({
+      where: vi.fn(async () => {
+        if (shape && typeof shape === "object" && Object.keys(shape).length > 0) {
+          const result: any = {};
+          for (const k of Object.keys(shape)) result[k] = 0;
+          return [result];
+        }
+        return [];
+      }),
+      limit: vi.fn(async () => []),
+    })),
+  })),
+};
+
+vi.mock("../../server/db.ts", () => ({ db: mockDb }));
+vi.mock("../../server/lib/audit.ts", () => ({ logAudit: vi.fn(async () => undefined) }));
+vi.mock("../../server/lib/siem.ts", () => ({ sendToSIEM: vi.fn(async () => undefined) }));
+
+// Importar módulo bajo prueba DESPUÉS de definir los mocks
+let createStockTransito: any,
+  updateStockTransito: any,
+  receiveStockTransito: any,
+  devuelveStockTransito: any,
+  getStockTransitoStats: any;
+
+beforeAll(async () => {
+  const svc = await import("../../server/lib/stock-transito.ts");
+  createStockTransito = svc.createStockTransito;
+  updateStockTransito = svc.updateStockTransito;
+  receiveStockTransito = svc.receiveStockTransito;
+  devuelveStockTransito = svc.devuelveStockTransito;
+  getStockTransitoStats = svc.getStockTransitoStats;
+});
 
 describe("Stock en Tránsito - Servicios", () => {
   const mockTenantId = "tenant-123";

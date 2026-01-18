@@ -1,12 +1,13 @@
 // tests/setup.ts - Configuración global de tests
 import { config } from "dotenv";
 
-// Cargar variables de entorno
+// Cargar variables de entorno: primero .env.test, luego .env como fallback
+config({ path: ".env.test" });
 config();
 
-// Verificar que DATABASE_URL está disponible
+// Asegurar DATABASE_URL presente para evitar throws al importar db.ts
 if (!process.env.DATABASE_URL) {
-  console.warn("⚠️  DATABASE_URL no configurado, algunos tests pueden fallar");
+  process.env.DATABASE_URL = "postgres://postgres:postgres@127.0.0.1:5432/test";
 }
 
 // Configurar modo de pruebas para evitar side effects

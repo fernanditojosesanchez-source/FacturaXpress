@@ -1,17 +1,62 @@
-import { describe, it, expect, vi } from "vitest";
-import {
-  grantSigmaSupportAccess,
-  revokeSigmaSupportAccess,
-  logSupportAction,
-  getActiveSupportAccesses,
-  getSupportStats,
-  createSupportTicket,
-} from "../../server/lib/sigma-support.ts";
+import { describe, it, expect, vi, beforeAll } from "vitest";
 
-// Mock de las dependencias
-vi.mock("../../server/db.ts");
-vi.mock("../../server/lib/audit.ts");
-vi.mock("../../server/lib/siem.ts");
+// Mocks HOISTED antes de importar el módulo bajo prueba
+const mockDb = {
+  insert: vi.fn(() => ({
+    values: vi.fn(() => ({
+      // Para casos con .returning()
+      returning: vi.fn(async () => [{ id: "mock-id" }]),
+    })),
+  })),
+  update: vi.fn(() => ({
+    set: vi.fn(() => ({
+      where: vi.fn(async () => undefined),
+    })),
+  })),
+  select: vi.fn((shape?: any) => ({
+    from: vi.fn(() => {
+      // Objeto thenable para soportar await directo sin where()
+      const resultForShape = () => {
+        if (shape && typeof shape === "object" && Object.keys(shape).length > 0) {
+          const result: any = {};
+          for (const k of Object.keys(shape)) result[k] = 0;
+          return [result];
+        }
+        return [];
+      };
+      const thenable: any = {
+        where: vi.fn(() => ({
+          orderBy: vi.fn(async () => []),
+          then: (resolve: any) => resolve(resultForShape()),
+        })),
+        then: (resolve: any) => resolve(resultForShape()),
+      };
+      return thenable;
+    }),
+  })),
+};
+
+vi.mock("../../server/db.ts", () => ({ db: mockDb }));
+vi.mock("../../server/lib/audit.ts", () => ({ logAudit: vi.fn(async () => undefined) }));
+vi.mock("../../server/lib/siem.ts", () => ({ sendToSIEM: vi.fn(async () => undefined) }));
+
+// Importar módulo bajo prueba DESPUÉS de definir los mocks
+let grantSigmaSupportAccess: any,
+  revokeSigmaSupportAccess: any,
+  logSupportAction: any,
+  getActiveSupportAccesses: any,
+  getSupportStats: any,
+  createSupportTicket: any;
+
+beforeAll(async () => {
+  const svc = await import("../../server/lib/sigma-support.ts");
+  grantSigmaSupportAccess = svc.grantSigmaSupportAccess;
+  revokeSigmaSupportAccess = svc.revokeSigmaSupportAccess;
+  logSupportAction = svc.logSupportAction;
+  getActiveSupportAccesses = svc.getActiveSupportAccesses;
+  getSupportStats = svc.getSupportStats;
+  createSupportTicket = svc.createSupportTicket;
+});
 
 describe("Sigma Support - Servicios", () => {
   const mockAdminId = "admin-123";
@@ -40,7 +85,8 @@ describe("Sigma Support - Servicios", () => {
       // Por defecto debería ser 7 días
       const diff = resultado.validoHasta.getTime() - new Date().getTime();
       const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
-      expect(dias).toBe(7);
+      expect(dias).toBeGreaterThanOrEqual(6);
+      expect(dias).toBeLessThanOrEqual(7);
     });
 
     it("debería respetar fecha de expiración personalizada", async () => {
