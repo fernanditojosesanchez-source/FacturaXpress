@@ -14,7 +14,11 @@
     "db:push": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 drizzle-kit push",
     "db:check": "tsx script/db-check.ts",
     "check:redis": "tsx script/test-redis.ts",
-    "sync:schemas": "tsx script/sync-schemas.ts"
+    "sync:schemas": "tsx script/sync-schemas.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@bull-board/api": "^6.16.2",
