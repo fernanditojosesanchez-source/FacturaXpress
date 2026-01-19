@@ -83,7 +83,7 @@ async function main() {
   try {
     const { db } = await import("../server/db.js");
     const { sql } = await import("drizzle-orm");
-    
+
     // Intentar insertar tenant de prueba (ignorar si ya existe)
     await db.execute(
       sql`INSERT INTO public.tenants (id, nombre, slug, tipo, estado)
@@ -96,7 +96,7 @@ async function main() {
           )
           ON CONFLICT (id) DO NOTHING`
     );
-    
+
     // Intentar insertar usuario de prueba (ignorar si ya existe)
     await db.execute(
       sql`INSERT INTO public.users (id, tenant_id, username, password, nombre, role)
@@ -110,12 +110,12 @@ async function main() {
           )
           ON CONFLICT (id) DO NOTHING`
     );
-    
+
     logInfo("Tenant y usuario de prueba listos");
   } catch (err) {
     logInfo(`Preparación: ${(err as Error).message}`);
   }
-  
+
   // ============================================================================
   // LIMPIEZA PREVIA: Eliminar secreto si existe (directamente desde DB)
   // ============================================================================
@@ -123,14 +123,14 @@ async function main() {
   try {
     const { db } = await import("../server/db.js");
     const { sql } = await import("drizzle-orm");
-    
+
     const secretName = `${testTenantId}_cert_password_${testSecretName}`;
-    
+
     // Eliminar de vault.secrets si existe
     await db.execute(
       sql`DELETE FROM vault.secrets WHERE name = ${secretName}`
     );
-    
+
     // Eliminar de vault_references si existe
     await db.execute(
       sql`DELETE FROM public.vault_references 
@@ -138,7 +138,7 @@ async function main() {
             AND secret_type = 'cert_password'
             AND reference_name = ${testSecretName}`
     );
-    
+
     logInfo("Secretos anteriores eliminados");
   } catch (err) {
     logInfo(`Limpieza completada: ${(err as Error).message}`);
@@ -218,7 +218,7 @@ async function main() {
   logTest("Test 4: Tenant Isolation");
   try {
     const anotherTenantId = "660e8400-e29b-41d4-a716-446655440001"; // Otro UUID válido
-    
+
     try {
       await getSecretFromVault(
         anotherTenantId,
@@ -227,7 +227,7 @@ async function main() {
         testUserId,
         "127.0.0.1"
       );
-      
+
       logError("FALLO DE SEGURIDAD: Se pudo leer secreto de otro tenant!");
       testsFailed++;
     } catch (err) {
@@ -286,18 +286,18 @@ async function main() {
   log(colors.bright + colors.cyan, "═══════════════════════════════════════════════════════════════");
   log(colors.bright + colors.cyan, "   📊 RESUMEN DE TESTS");
   log(colors.bright + colors.cyan, "═══════════════════════════════════════════════════════════════");
-  
+
   const totalTests = testsPassed + testsFailed;
   const successRate = ((testsPassed / totalTests) * 100).toFixed(1);
-  
+
   log(colors.green, `\n✅ Tests Pasados: ${testsPassed}/${totalTests}`);
-  
+
   if (testsFailed > 0) {
     log(colors.red, `❌ Tests Fallidos: ${testsFailed}/${totalTests}`);
   }
-  
+
   log(colors.cyan, `📈 Tasa de Éxito: ${successRate}%\n`);
-  
+
   if (testsFailed === 0) {
     log(colors.green, "🎉 ¡Todos los tests pasaron exitosamente!");
     log(colors.green, "🔒 Supabase Vault está funcionando correctamente\n");

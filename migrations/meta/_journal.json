@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1767808783870,
-      "tag": "0000_flippant_tarot",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1768619055183,
-      "tag": "0001_tranquil_joystick",
+      "when": 1768771213140,
+      "tag": "0000_young_shocker",
       "breakpoints": true
     }
   ]

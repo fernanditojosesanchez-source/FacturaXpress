@@ -1,5 +1,6 @@
 // Restart: 2026-01-11 12:15
 import "dotenv/config";
+import { logger } from "./lib/logger.js";
 import dns from "node:dns";
 dns.setDefaultResultOrder("ipv4first");
 import express, { type Request, Response, NextFunction } from "express";
@@ -10,26 +11,22 @@ import { createServer } from "http";
 import { storage } from "./storage.js";
 import { apiGeneralRateLimiter, loginRateLimiter } from "./lib/rate-limiters.js";
 import certificadosRouter from "./routes/certificados.js";
-import { initQueues, getQueuesStats } from "./lib/queues.js";
+import { initQueues } from "./lib/queues.js";
 import { startCertificateAlertsScheduler } from "./lib/alerts.js";
 import { initWorkers, closeWorkers } from "./lib/workers.js";
 import { startOutboxProcessor, stopOutboxProcessor } from "./lib/outbox-processor.js";
 import { startSchemaSync, stopSchemaSync } from "./lib/schema-sync.js";
 import { startDLQCleanup } from "./lib/dlq.js";
 import { setupBullBoard } from "./routes/bull-board.js";
-import { getQueueMetrics, formatPrometheusMetrics, getQueuesSummary } from "./lib/metrics.js";
-import { getQueues } from "./lib/queues.js";
 import { startCatalogSyncScheduler, stopCatalogSyncScheduler } from "./lib/catalog-sync-scheduler.js";
 
 // Manejadores globales de errores
 process.on("uncaughtException", (error) => {
-  console.error("❌ UNCAUGHT EXCEPTION:", error);
-  // No matamos el proceso, solo lo registramos
+  logger.error("❌ UNCAUGHT EXCEPTION:", error);
 });
 
 process.on("unhandledRejection", (reason) => {
-  console.error("❌ UNHANDLED REJECTION:", reason);
-  // No matamos el proceso, solo lo registramos
+  logger.error("❌ UNHANDLED REJECTION:", reason);
 });
 
 const app = express();
@@ -42,11 +39,9 @@ let dlqCleanupTimer: NodeJS.Timeout | null = null;
 let catalogSyncTimer: NodeJS.Timeout | null = null;
 let featureFlagsRolloutTimer: NodeJS.Timeout | null = null;
 
-// Seguridad: Confiar en el primer proxy (necesario para Rate Limiting detrás de Nginx/LoadBalancers)
-// Esto asegura que req.ip y x-forwarded-for sean procesados correctamente y no spoofed fácilmente.
 app.set("trust proxy", 1);
 
-// CORS mejorado: Solo permitir orígenes específicos en producción
+// CORS mejorado
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || ["http://localhost:5000", "http://localhost:3015"];
 
 app.use((req, res, next) => {
@@ -57,25 +52,24 @@ app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key");
   }
-  
+
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
   next();
 });
 
-// Helmet: Headers de seguridad HTTP
 app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"], // Vite dev needs unsafe-eval, blob: for service workers
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // ✅ Permitir Google Fonts CSS
-        fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"], // ✅ Permitir archivos de fuentes (.woff2)
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
         imgSrc: ["'self'", "data:", "https:"],
         connectSrc: ["'self'", "ws:", "wss:"],
-        workerSrc: ["'self'", "blob:"], // ✅ Permitir Service Workers desde blob URLs
+        workerSrc: ["'self'", "blob:"],
         objectSrc: ["'none'"],
         mediaSrc: ["'self'"],
         frameSrc: ["'none'"],
@@ -90,58 +84,31 @@ app.use(
   })
 );
 
-declare module "http" {
-  interface IncomingMessage {
-    rawBody: unknown;
-  }
-}
-
 app.use(
   express.json({
     verify: (req, _res, buf) => {
-      req.rawBody = buf;
+      (req as any).rawBody = buf;
     },
   }),
 );
 
 app.use(express.urlencoded({ extended: false }));
-
-// Rate limiting mejorado: por tenant + IP
 app.use("/api/auth/login", loginRateLimiter);
 app.use("/api", apiGeneralRateLimiter);
 
 export function log(message: string, source = "express") {
-  const formattedTime = new Date().toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  });
-
-  console.log(`${formattedTime} [${source}] ${message}`);
+  logger.info(`[${source}] ${message}`);
 }
 
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
 
   res.on("finish", () => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
-      // Reducir ruido: no loguear /api/auth/me para evitar spam en terminal
-      if (path === "/api/auth/me") {
-        return;
-      }
-      const logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-
-      log(logLine);
+      if (path === "/api/auth/me") return;
+      log(`${req.method} ${path} ${res.statusCode} in ${duration}ms`);
     }
   });
 
@@ -150,83 +117,50 @@ app.use((req, res, next) => {
 
 (async () => {
   try {
-    // Inicializar base de datos (PostgreSQL/Supabase)
     log("Inicializando storage...");
     await storage.initialize();
     log("✅ Storage inicializado");
 
-    // Crear usuario por defecto si no existe
     const existingUser = await storage.getUserByUsername("admin");
     if (!existingUser) {
       log("Creando usuario admin...");
       const adminPassword = process.env.ADMIN_PASSWORD || "admin";
-      
-      if (process.env.NODE_ENV === "production" && !process.env.ADMIN_PASSWORD) {
-        log("⚠️ ADVERTENCIA: Creando usuario admin con contraseña por defecto en producción. Configure ADMIN_PASSWORD.");
-      }
 
       const bcrypt = await import("bcrypt");
       const hashedPassword = await bcrypt.hash(adminPassword, 10);
-      
-      // Crear tenant por defecto primero si no existe
       const defaultTenant = await storage.ensureDefaultTenant();
-      
-      await storage.createUser({ 
-        username: "admin", 
+
+      await storage.createUser({
+        username: "admin",
         password: hashedPassword,
         role: "super_admin",
-        tenantId: defaultTenant.id 
+        tenantId: defaultTenant.id
       });
-      log(`✅ Usuario admin creado (Password: ${process.env.ADMIN_PASSWORD ? "********" : "admin"})`);
+      log(`✅ Usuario admin creado`);
     }
 
     log("Registrando rutas...");
     await registerRoutes(httpServer, app);
-    app.use("/api", certificadosRouter); // <-- AÑADIR ESTA LÍNEA
+    app.use("/api", certificadosRouter);
     log("✅ Rutas registradas");
 
-    // Inicializar BullMQ (si Redis disponible) - sin bloquear el startup
     initQueues()
       .then(async (q) => {
-        if (!q.enabled) {
-          log(`⚠️ BullMQ deshabilitado: ${q.reason || "sin razón"}`);
-          return;
-        }
-
+        if (!q.enabled) return;
         log("✅ BullMQ colas inicializadas");
-
-        // Iniciar workers después de que las colas estén listas
         const workers = await initWorkers();
-        if (workers.started > 0) {
-          log(`✅ ${workers.started} workers iniciados`);
-        }
-        if (workers.errors.length > 0) {
-          log(`⚠️ Errores iniciando workers: ${workers.errors.join(", ")}`);
-        }
-
-        // Montar Bull Board dashboard
+        if (workers.started > 0) log(`✅ ${workers.started} workers iniciados`);
         setupBullBoard(app);
-
-        // Iniciar el procesador de outbox
-        await startOutboxProcessor(5000); // Ejecutar cada 5 segundos
+        await startOutboxProcessor(5000);
       })
       .catch((err) => {
         log(`⚠️ Error inicializando BullMQ: ${(err as Error).message}`);
       });
 
-    // Programar alertas de certificados
     alertsTimer = startCertificateAlertsScheduler();
-    if (alertsTimer) log("⏰ Scheduler de alertas de certificados iniciado");
-
-    // Programar sincronización de schemas DGII/MH
     schemaSyncTimer = startSchemaSync();
-
-    // Programar sincronización de catálogos DGII (P1: Auditoría)
     catalogSyncTimer = startCatalogSyncScheduler();
-    if (catalogSyncTimer) log("⏰ Scheduler de sincronización de catálogos iniciado");
 
-    // Programar auto-rollout de feature flags (P3.2: Canary Deployments)
-    // Ejecuta cada 15 minutos para incrementar porcentajes gradualmente
     featureFlagsRolloutTimer = setInterval(async () => {
       try {
         const { featureFlagsService } = await import("./lib/feature-flags-service.js");
@@ -237,25 +171,17 @@ app.use((req, res, next) => {
       } catch (error) {
         log(`❌ Error en auto-rollout de feature flags: ${(error as Error).message}`);
       }
-    }, 15 * 60 * 1000); // 15 minutos
-    if (featureFlagsRolloutTimer) log("⏰ Scheduler de auto-rollout de feature flags iniciado (cada 15 min)");
+    }, 15 * 60 * 1000);
 
-    // Programar limpieza de DLQ (jobs antiguos >30 días)
     dlqCleanupTimer = startDLQCleanup();
-    if (dlqCleanupTimer) log("⏰ Scheduler de limpieza de DLQ iniciado");
-    if (schemaSyncTimer) log("⏰ Scheduler de sincronización de schemas iniciado");
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
-
       log(`❌ Error: ${message}`, "error");
       res.status(status).json({ message });
     });
 
-    // importantly only setup vite in development and after
-    // setting up all the other routes so the catch-all route
-    // doesn't interfere with the other routes
     if (process.env.NODE_ENV === "production") {
       log("Modo producción: sirviendo archivos estáticos");
       serveStatic(app);
@@ -266,82 +192,31 @@ app.use((req, res, next) => {
       log("✅ Vite configurado");
     }
 
-    // ALWAYS serve the app on the port specified in the environment variable PORT
-    // Other ports are firewalled. Default to 5000 if not specified.
-    // this serves both the API and the client.
-    // It is the only port that is not firewalled.
     const port = parseInt(process.env.PORT || "5000", 10);
-    log(`Iniciando servidor en puerto ${port}...`);
-    httpServer.listen(
-      port,
-      () => {
-        log(`serving on port ${port}`);
-        log(`✅ Servidor listo en http://localhost:${port}`);
-      },
-    );
+    httpServer.listen(port, () => {
+      log(`✅ Servidor listo en puerto ${port}`);
+    });
 
-    // Graceful shutdown
     const shutdown = async () => {
       log("🛑 Iniciando graceful shutdown...");
-      
-      // Detener schedulers
-      if (alertsTimer) {
-        clearInterval(alertsTimer);
-        log("✅ Scheduler de alertas detenido");
-      }
-      
-      if (dlqCleanupTimer) {
-        clearInterval(dlqCleanupTimer);
-        log("✅ Scheduler de DLQ detenido");
-      }
-      
-      if (featureFlagsRolloutTimer) {
-        clearInterval(featureFlagsRolloutTimer);
-        log("✅ Scheduler de auto-rollout de feature flags detenido");
-      }
-      
-      if (catalogSyncTimer) {
-        stopCatalogSyncScheduler(catalogSyncTimer);
-      }
-      
+      if (alertsTimer) clearInterval(alertsTimer);
+      if (dlqCleanupTimer) clearInterval(dlqCleanupTimer);
+      if (featureFlagsRolloutTimer) clearInterval(featureFlagsRolloutTimer);
+      if (catalogSyncTimer) stopCatalogSyncScheduler(catalogSyncTimer);
       stopSchemaSync(schemaSyncTimer);
-      
-      // Detener procesador de outbox
-      try {
-        await stopOutboxProcessor();
-      } catch (err) {
-        log(`⚠️ Error deteniendo outbox processor: ${(err as Error)?.message || err}`);
-      }
-
-      // Cerrar workers
-      try {
-        await closeWorkers();
-      } catch (err) {
-        log(`⚠️ Error cerrando workers: ${(err as Error)?.message || err}`);
-      }
-      
-      // Cerrar servidor HTTP
+      try { await stopOutboxProcessor(); } catch (err) { }
+      try { await closeWorkers(); } catch (err) { }
       httpServer.close(() => {
         log("✅ Servidor HTTP cerrado");
         process.exit(0);
       });
-
-      // Forzar cierre después de 30 segundos
-      setTimeout(() => {
-        log("⚠️ Forzando cierre después de timeout");
-        process.exit(1);
-      }, 30000);
+      setTimeout(() => process.exit(1), 30000);
     };
 
     process.on("SIGTERM", shutdown);
     process.on("SIGINT", shutdown);
   } catch (error) {
-    log(`❌ Error durante inicialización: ${(error as Error).message}`);
-    console.error(error);
-    throw error;
+    logger.error(`❌ Error durante inicialización: ${(error as Error).message}`, error);
+    process.exit(1);
   }
-})().catch((err) => {
-  log(`❌ Fatal error during startup: ${err.message}`, "error");
-  console.error(err);
-  process.exit(1);
-});
+})();

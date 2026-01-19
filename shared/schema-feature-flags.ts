@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, uuid, boolean, timestamp, integer, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { tenants } from "./schema.js";
+import { tenants } from "./schema.ts";
 
 /**
  * Feature Flags Schema - Sistema de control de features y rollout gradual

@@ -48,7 +48,7 @@ export function useSuspendTenant() {
   });
 }
 
-export function useDeleteTenant() {
+export function useDeleteTenant(onSuccess?: () => void) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -64,6 +64,7 @@ export function useDeleteTenant() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "tenants"] });
       queryClient.invalidateQueries({ queryKey: ["admin", "metrics"] });
+      if (onSuccess) onSuccess();
       toast({
         title: "Empresa eliminada",
         description: "La empresa se eliminó correctamente",
@@ -73,6 +74,39 @@ export function useDeleteTenant() {
       toast({
         title: "Error",
         description: "No se pudo eliminar la empresa",
+        variant: "destructive",
+      });
+    },
+  });
+}
+export function useCreateTenant(onSuccess?: () => void) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (data: any) => {
+      const res = await fetch("/api/admin/tenants", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error((await res.json()).message);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "tenants"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "metrics"] });
+      if (onSuccess) onSuccess();
+      toast({
+        title: "Empresa creada",
+        description: "La empresa se registró exitosamente en el ecosistema",
+      });
+    },
+    onError: (err: Error) => {
+      toast({
+        title: "Error al crear",
+        description: err.message,
         variant: "destructive",
       });
     },

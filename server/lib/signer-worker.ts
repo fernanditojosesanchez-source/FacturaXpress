@@ -30,8 +30,8 @@ export interface SignResult {
 
 interface WorkerTask {
   dte: any;
-  p12Base64: string;
-  password: string;
+  p12Buffer: Buffer;
+  passwordBuffer: Buffer;
   resolve: (result: SignResult) => void;
   reject: (error: Error) => void;
   timeoutId?: NodeJS.Timeout;
@@ -74,7 +74,7 @@ class SignerWorkerPool {
       try {
         // Crear worker sin workerData (se enviará por cada tarea)
         const worker = new Worker(workerPath);
-        
+
         worker.on('error', (error) => {
           console.error(`[SignerWorkerPool] Worker ${i} error:`, error);
           // Remover worker defectuoso y crear uno nuevo
@@ -103,11 +103,11 @@ class SignerWorkerPool {
    */
   private replaceWorker(oldWorker: Worker): void {
     const workerPath = path.join(__dirname, 'signer-worker-impl.js');
-    
+
     // Remover worker viejo
     this.workers = this.workers.filter(w => w !== oldWorker);
     this.availableWorkers = this.availableWorkers.filter(w => w !== oldWorker);
-    
+
     try {
       oldWorker.terminate();
     } catch (e) {
@@ -119,7 +119,7 @@ class SignerWorkerPool {
       const newWorker = new Worker(workerPath);
       this.workers.push(newWorker);
       this.availableWorkers.push(newWorker);
-      
+
       // Procesar siguiente tarea si hay en cola
       this.processNextTask();
     } catch (error) {
@@ -132,10 +132,14 @@ class SignerWorkerPool {
    * 
    * ✅ SEGURIDAD: Usa getSecureMemoryService() para auto-limpiar certificados
    */
-  async signDTE(dte: any, p12Base64: string, password: string): Promise<SignResult> {
+  async signDTE(dte: any, p12: string | Buffer, password: string | Buffer): Promise<SignResult> {
     if (this.isShuttingDown) {
       throw new Error('Worker pool is shutting down');
     }
+
+    // ✅ Convertir a Buffers si son strings para evitar duplicación en heap
+    const p12Buffer = Buffer.isBuffer(p12) ? p12 : Buffer.from(p12, 'base64');
+    const passwordBuffer = Buffer.isBuffer(password) ? password : Buffer.from(password, 'utf-8');
 
     const startTime = Date.now();
     this.metrics.totalTasks++;
@@ -143,8 +147,8 @@ class SignerWorkerPool {
     return new Promise<SignResult>((resolve, reject) => {
       const task: WorkerTask = {
         dte,
-        p12Base64,
-        password,
+        p12Buffer,
+        passwordBuffer,
         resolve: (result) => {
           const duration = Date.now() - startTime;
           this.metrics.completedTasks++;
@@ -175,7 +179,7 @@ class SignerWorkerPool {
    */
   private executeTask(task: WorkerTask): void {
     const worker = this.availableWorkers.shift();
-    
+
     if (!worker) {
       // No hay worker disponible, regresar a la cola
       this.taskQueue.unshift(task);
@@ -185,10 +189,10 @@ class SignerWorkerPool {
     // Configurar timeout
     task.timeoutId = setTimeout(() => {
       task.reject(new Error('Firma timeout (30s excedido)'));
-      
+
       // Terminar worker y reemplazar
       this.replaceWorker(worker);
-      
+
       // Procesar siguiente tarea
       this.processNextTask();
     }, this.timeout);
@@ -208,10 +212,7 @@ class SignerWorkerPool {
 
       // ✅ SEGURIDAD: Limpiar referencias a certificados
       // Después de que el worker haya procesado, limpiar los buffers
-      this.secureMemory.zeroFillMultiple(
-        Buffer.from(task.p12Base64, 'base64'),
-        Buffer.from(task.password, 'utf-8')
-      );
+      this.secureMemory.zeroFillMultiple(task.p12Buffer, task.passwordBuffer);
 
       // Procesar resultado
       if (result.success) {
@@ -230,10 +231,11 @@ class SignerWorkerPool {
     worker.on('message', messageHandler);
 
     // Enviar datos al worker
+    // Node.js clona estructuradamente los Buffers (copia eficiente)
     worker.postMessage({
       dte: task.dte,
-      p12Base64: task.p12Base64,
-      password: task.password,
+      p12: task.p12Buffer,
+      password: task.passwordBuffer,
     });
   }
 
@@ -267,9 +269,9 @@ class SignerWorkerPool {
    */
   async shutdown(): Promise<void> {
     this.isShuttingDown = true;
-    
+
     console.log('[SignerWorkerPool] Shutting down...');
-    
+
     // Rechazar tareas en cola
     this.taskQueue.forEach(task => {
       if (task.timeoutId) {
@@ -281,8 +283,8 @@ class SignerWorkerPool {
 
     // Terminar todos los workers
     await Promise.all(
-      this.workers.map(worker => 
-        worker.terminate().catch(err => 
+      this.workers.map(worker =>
+        worker.terminate().catch(err =>
           console.error('[SignerWorkerPool] Error terminating worker:', err)
         )
       )
@@ -290,7 +292,7 @@ class SignerWorkerPool {
 
     this.workers = [];
     this.availableWorkers = [];
-    
+
     console.log('[SignerWorkerPool] Shutdown complete');
   }
 }
@@ -305,7 +307,7 @@ function getWorkerPool(): SignerWorkerPool {
   if (!workerPool) {
     const poolSize = parseInt(process.env.SIGNER_WORKER_POOL_SIZE || '4', 10);
     workerPool = new SignerWorkerPool(poolSize);
-    
+
     // Graceful shutdown en señales de terminación
     process.on('SIGINT', async () => {
       if (workerPool) {
@@ -313,7 +315,7 @@ function getWorkerPool(): SignerWorkerPool {
       }
       process.exit(0);
     });
-    
+
     process.on('SIGTERM', async () => {
       if (workerPool) {
         await workerPool.shutdown();
@@ -321,7 +323,7 @@ function getWorkerPool(): SignerWorkerPool {
       process.exit(0);
     });
   }
-  
+
   return workerPool;
 }
 
@@ -333,11 +335,11 @@ function getWorkerPool(): SignerWorkerPool {
  */
 export async function signDTE(
   dte: any,
-  p12Base64: string,
-  password: string
+  p12: string | Buffer,
+  password: string | Buffer
 ): Promise<SignResult> {
   const pool = getWorkerPool();
-  return pool.signDTE(dte, p12Base64, password);
+  return pool.signDTE(dte, p12, password);
 }
 
 /**
@@ -357,7 +359,7 @@ export async function healthCheck(): Promise<boolean> {
   try {
     const pool = getWorkerPool();
     const metrics = pool.getMetrics();
-    
+
     // Pool está sano si tiene al menos 1 worker disponible o activo
     return metrics.activeWorkers + metrics.availableWorkers > 0;
   } catch (error) {

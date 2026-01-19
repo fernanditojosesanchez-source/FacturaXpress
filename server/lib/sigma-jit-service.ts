@@ -19,8 +19,8 @@
  */
 
 import { db } from "../db.js";
-import { 
-  sigmaSupportAccessRequestsTable, 
+import {
+  sigmaSupportAccessRequestsTable,
   sigmaSupportAccessExtensionsTable,
   sigmaSupportJitPoliciesTable,
   type SigmaSupportAccessRequest,
@@ -28,6 +28,8 @@ import {
 } from "../../shared/schema-sigma-jit.js";
 import { sigmaSupportAccessTable } from "../../shared/schema-sigma-support.js";
 import { eq, and, or, lt, desc } from "drizzle-orm";
+import { logger } from "./logger.js";
+
 
 interface RequestAccessParams {
   requestedBy: string;
@@ -38,6 +40,7 @@ interface RequestAccessParams {
   reason: string;
   estimatedDuration?: number; // ms (default 2h)
   urgency?: "low" | "normal" | "high" | "critical";
+  breakGlass?: boolean; // ✅ EMERGENCY ONLY
   scopeRequested?: {
     canViewLogs: boolean;
     canViewMetrics: boolean;
@@ -76,6 +79,7 @@ export async function requestJitAccess(params: RequestAccessParams): Promise<Sig
     reason,
     estimatedDuration = 7200000, // 2 horas
     urgency = "normal",
+    breakGlass = false,
     scopeRequested = {
       canViewLogs: true,
       canViewMetrics: true,
@@ -91,7 +95,7 @@ export async function requestJitAccess(params: RequestAccessParams): Promise<Sig
   const maxDuration = policy.maxAccessDuration || 7200000;
   const finalDuration = Math.min(estimatedDuration, maxDuration);
 
-  // Validar scope contra política permitida
+  // Validar scope contra política permitida (Break-Glass ignora esto y pide todo lo necesario, pero respetamos la estructura)
   const allowedScopes = policy.allowedScopes as any || {};
   const finalScope = {
     canViewLogs: scopeRequested.canViewLogs && allowedScopes.canViewLogs !== false,
@@ -103,22 +107,44 @@ export async function requestJitAccess(params: RequestAccessParams): Promise<Sig
   // Crear solicitud
   const expiresAt = new Date(Date.now() + (policy.requestExpirationTime || 86400000)); // 24h
 
+  const requestData: any = {
+    requestedBy,
+    requestedByName,
+    requestedByEmail,
+    tenantId,
+    tenantNombre,
+    reason: breakGlass ? `[BREAK GLASS] ${reason}` : reason,
+    estimatedDuration: finalDuration,
+    urgency: breakGlass ? "critical" : urgency, // Break glass siempre es crítico
+    scopeRequested: finalScope,
+    status: "pending",
+    expiresAt,
+    isBreakGlass: breakGlass,
+  };
+
   const [request] = await db
     .insert(sigmaSupportAccessRequestsTable)
-    .values({
-      requestedBy,
-      requestedByName,
-      requestedByEmail,
-      tenantId,
-      tenantNombre,
-      reason,
-      estimatedDuration: finalDuration,
-      urgency,
-      scopeRequested: finalScope,
-      status: "pending",
-      expiresAt,
-    })
+    .values(requestData)
     .returning();
+
+  // 🚨 BREAK GLASS PROTOCOL 🚨
+  if (breakGlass) {
+    logger.error(`🚨 [JIT] BREAK GLASS INITIATED for Tenant ${tenantNombre} (${tenantId}) by ${requestedByEmail}`);
+
+    // Auto-approve immediately w/o policy check
+    const approval = await reviewJitAccessRequest({
+      requestId: request.id,
+      reviewedBy: "system",
+      reviewedByName: "🚨 BREAK GLASS PROTOCOL",
+      approved: true,
+      reviewNotes: "EMERGENCY ACCESS BYPASSED TENANT APPROVAL. INCIDENT LOGGED.",
+    });
+
+    // TODO: Send CRITICAL ALERT (SMS/PagerDuty) to Tenant Admins AND Sigma Security
+    // await sendCriticalAlert(request); 
+
+    return approval;
+  }
 
   // Auto-aprobar si la política lo permite y es urgencia crítica
   if (
@@ -178,7 +204,7 @@ export async function reviewJitAccessRequest(params: ReviewRequestParams): Promi
       .update(sigmaSupportAccessRequestsTable)
       .set({ status: "expired" })
       .where(eq(sigmaSupportAccessRequestsTable.id, requestId));
-    
+
     throw new Error(`Solicitud ${requestId} expiró`);
   }
 
@@ -239,7 +265,7 @@ export async function reviewJitAccessRequest(params: ReviewRequestParams): Promi
     await sendJitApprovedNotification(updatedRequest, access);
   } else {
     console.log(`[JIT] Solicitud rechazada: ${requestId} (razón: ${reviewNotes || "N/A"})`);
-    
+
     // Notificar al solicitante
     await sendJitRejectedNotification(updatedRequest);
   }

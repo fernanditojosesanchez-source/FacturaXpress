@@ -67,7 +67,7 @@ export async function initQueues(): Promise<{ enabled: boolean; reason?: string 
     }
 
     transmisionQueue = new Queue<TransmisionJob>(
-      process.env.Q_TRANSMISION_NAME || "fx:transmision",
+      process.env.Q_TRANSMISION_NAME || "fx-transmision",
       {
         connection,
         defaultJobOptions: {
@@ -78,7 +78,7 @@ export async function initQueues(): Promise<{ enabled: boolean; reason?: string 
     );
 
     firmaQueue = new Queue<FirmaJob>(
-      process.env.Q_FIRMA_NAME || "fx:firma",
+      process.env.Q_FIRMA_NAME || "fx-firma",
       {
         connection,
         defaultJobOptions: {
@@ -89,7 +89,7 @@ export async function initQueues(): Promise<{ enabled: boolean; reason?: string 
     );
 
     notificacionesQueue = new Queue<NotificacionJob>(
-      process.env.Q_NOTIFS_NAME || "fx:notificaciones",
+      process.env.Q_NOTIFS_NAME || "fx-notificaciones",
       {
         connection,
         defaultJobOptions: {
@@ -101,9 +101,9 @@ export async function initQueues(): Promise<{ enabled: boolean; reason?: string 
     );
 
     // Opcional: eventos
-    new QueueEvents(process.env.Q_TRANSMISION_NAME || "fx:transmision", { connection });
-    new QueueEvents(process.env.Q_FIRMA_NAME || "fx:firma", { connection });
-    new QueueEvents(process.env.Q_NOTIFS_NAME || "fx:notificaciones", { connection });
+    new QueueEvents(process.env.Q_TRANSMISION_NAME || "fx-transmision", { connection });
+    new QueueEvents(process.env.Q_FIRMA_NAME || "fx-firma", { connection });
+    new QueueEvents(process.env.Q_NOTIFS_NAME || "fx-notificaciones", { connection });
 
     console.log("✅ BullMQ colas inicializadas con DLQ");
     return { enabled: true };

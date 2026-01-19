@@ -2,6 +2,7 @@ import type { Factura } from "../shared/schema.js";
 import { storage } from "./storage.js";
 import { signDTE } from "./lib/signer.js";
 import { getMHCircuitBreaker, CircuitState } from "./lib/circuit-breaker.js";
+import { logger } from "./lib/logger.js";
 
 export interface SelloMH {
   codigoGeneracion: string;
@@ -44,26 +45,26 @@ export interface MHService {
 
 export class MHServiceMock implements MHService {
   private procesados: Map<string, SelloMH> = new Map();
-  
+
   async transmitirDTE(factura: Factura, _tenantId: string): Promise<SelloMH> {
-    console.log(`[MH Mock] Transmitiendo DTE ${factura.codigoGeneracion}`);
+    logger.info(`[MH Mock] Transmitiendo DTE ${factura.codigoGeneracion}`);
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
+
     const exito = Math.random() > 0.05;
     const sello: SelloMH = {
       codigoGeneracion: factura.codigoGeneracion || "",
-      selloRecibido: exito 
+      selloRecibido: exito
         ? `SELLO-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`
         : "",
       fechaSello: new Date().toISOString(),
       estado: exito ? "PROCESADO" : "RECHAZADO",
       observaciones: exito ? "Aceptado (Simulación Multi-tenant)" : "Error simulado"
     };
-    
+
     if (exito) this.procesados.set(factura.codigoGeneracion || "", sello);
     return sello;
   }
-  
+
   async consultarEstado(codigoGeneracion: string, _tenantId: string): Promise<EstadoDTE> {
     const sello = this.procesados.get(codigoGeneracion);
     return {
@@ -79,10 +80,10 @@ export class MHServiceMock implements MHService {
   }
 
   async invalidarDTE(codigoGeneracion: string, _motivo: string, _tenantId: string): Promise<ResultadoInvalidacion> {
-    console.log(`[MH Mock] Invalidando DTE ${codigoGeneracion}`);
+    logger.info(`[MH Mock] Invalidando DTE ${codigoGeneracion}`);
     this.procesados.delete(codigoGeneracion);
-    return { 
-      success: true, 
+    return {
+      success: true,
       mensaje: "DTE invalidado (Simulación)",
       selloAnulacion: `ANULO-${Date.now()}`,
       fechaAnulo: new Date().toISOString()
@@ -91,7 +92,7 @@ export class MHServiceMock implements MHService {
 
   async procesarAnulacionesPendientes(_tenantId: string): Promise<void> {
     // Mock procesa automáticamente
-    console.log(`[Anulación] Cola procesada en Mock`);
+    logger.info(`[Anulación] Cola procesada en Mock`);
   }
 
   async verificarConexion(_tenantId: string): Promise<boolean> { return true; }
@@ -103,23 +104,23 @@ export class MHServiceMock implements MHService {
 
   async procesarColaContingencia(tenantId: string): Promise<void> {
     // Mock procesa automáticamente
-    console.log(`[Contingencia] Cola de ${tenantId} procesada en Mock`);
+    logger.info(`[Contingencia] Cola de ${tenantId} procesada en Mock`);
   }
 }
 
 export class MHServiceReal implements MHService {
   private apiUrl: string;
-  
+
   constructor() {
     this.apiUrl = process.env.MH_API_URL || "https://api.mh.gob.sv";
   }
-  
+
   private async getAuthToken(tenantId: string): Promise<string> {
     const creds = await storage.getTenantCredentials(tenantId);
     if (!creds || !creds.mhUsuario || !creds.mhPass) {
       throw new Error("Credenciales del Ministerio de Hacienda no configuradas para este Tenant.");
     }
-    
+
     // Si estamos en modo simulación (o falta URL), usamos token falso
     if (process.env.MH_MOCK_MODE === "true" || !this.apiUrl) {
       return "mock-auth-token";
@@ -152,7 +153,7 @@ export class MHServiceReal implements MHService {
 
       return data.body.token;
     } catch (error) {
-      console.error("[MH Auth] Error al obtener token:", error);
+      logger.error("[MH Auth] Error al obtener token:", error);
       throw error;
     }
   }
@@ -164,16 +165,21 @@ export class MHServiceReal implements MHService {
     }
 
     // 1. Firmar el DTE dinámicamente con las credenciales del Tenant
-    console.log(`[MH Real] Firmando DTE para tenant ${tenantId}...`);
+    logger.info(`[MH Real] Firmando DTE para tenant ${tenantId}...`);
+
+    // COMPLIANCE: Mapear modelo plano a estructura DTE JSON v3
+    const { mapFacturaToDteJson } = await import("./lib/dte-mapper.js");
+    const dteJson = mapFacturaToDteJson(factura);
+
     const { body: jwsFirmado } = await signDTE(
-      factura, 
-      creds.certificadoP12, 
+      dteJson,
+      creds.certificadoP12,
       creds.certificadoPass
     );
 
     // 2. Transmitir a Hacienda
     const token = await this.getAuthToken(tenantId);
-    
+
     try {
       const response = await fetch(`${this.apiUrl}/recepcion-dte`, {
         method: "POST",
@@ -183,19 +189,19 @@ export class MHServiceReal implements MHService {
         },
         body: JSON.stringify({
           ambiente: creds.ambiente || "00",
-          idEnvio: 1, // Incremental
+          idEnvio: Date.now() % 1000000000, // Entero seguro dinámico
           version: 1,
           documento: jwsFirmado // El JWS compacto
         })
       });
-      
+
       if (!response.ok) {
         throw new Error(`Error MH: ${response.status}`);
       }
-      
+
       return (await response.json()) as SelloMH;
     } catch (error) {
-      console.error("[MH Real] Error:", error);
+      logger.error("[MH Real] Error:", error);
       throw error;
     }
   }
@@ -215,8 +221,8 @@ export class MHServiceReal implements MHService {
   }
 
   async invalidarDTE(codigoGeneracion: string, motivo: string, tenantId: string): Promise<ResultadoInvalidacion> {
-    console.log(`[MH Real] Invalidando DTE ${codigoGeneracion} con motivo: ${motivo}`);
-    
+    logger.info(`[MH Real] Invalidando DTE ${codigoGeneracion} con motivo: ${motivo}`);
+
     try {
       const token = await this.getAuthToken(tenantId);
       const creds = await storage.getTenantCredentials(tenantId);
@@ -253,22 +259,22 @@ export class MHServiceReal implements MHService {
         fechaAnulo: new Date().toISOString()
       };
     } catch (error) {
-      console.error("[MH Real] Error en invalidación:", error);
+      logger.error("[MH Real] Error en invalidación:", error);
       throw error;
     }
   }
 
   async procesarAnulacionesPendientes(tenantId: string): Promise<void> {
-    console.log(`[Anulación] Procesando anulaciones pendientes para tenant ${tenantId}...`);
-    
+    logger.info(`[Anulación] Procesando anulaciones pendientes para tenant ${tenantId}...`);
+
     const pendientes = await storage.getAnulacionesPendientes(tenantId);
-    
+
     for (const item of pendientes) {
       try {
         await storage.updateAnulacionStatus(item.codigoGeneracion, "procesando");
-        
+
         const resultado = await this.invalidarDTE(item.codigoGeneracion, item.motivo, tenantId);
-        
+
         if (resultado.success) {
           await storage.updateAnulacionStatus(
             item.codigoGeneracion,
@@ -276,16 +282,16 @@ export class MHServiceReal implements MHService {
             resultado.selloAnulacion,
             { fechaAnulo: resultado.fechaAnulo }
           );
-          console.log(`[Anulación] ✅ DTE ${item.codigoGeneracion} invalidado exitosamente`);
+          logger.info(`[Anulación] ✅ DTE ${item.codigoGeneracion} invalidado exitosamente`);
         }
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : "Error desconocido";
         await storage.updateAnulacionStatus(item.codigoGeneracion, "pendiente", undefined, undefined, errorMsg);
-        
+
         const record = await storage.getAnulacion(item.codigoGeneracion, tenantId);
         if (record && record.intentosFallidos > 10) {
           await storage.updateAnulacionStatus(item.codigoGeneracion, "error", undefined, undefined, errorMsg);
-          console.error(`[Anulación] ❌ DTE ${item.codigoGeneracion} marca do como error tras 10 intentos`);
+          logger.error(`[Anulación] ❌ DTE ${item.codigoGeneracion} marca do como error tras 10 intentos`);
         }
       }
     }
@@ -300,7 +306,7 @@ export class MHServiceReal implements MHService {
       // Hacer un ping simple al API del MH
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
+
       const response = await fetch(`${this.apiUrl}/status`, {
         method: "GET",
         signal: controller.signal
@@ -308,20 +314,20 @@ export class MHServiceReal implements MHService {
       clearTimeout(timeoutId);
       return response.ok;
     } catch (error) {
-      console.error("[MH Real] Servicio no disponible:", error);
+      logger.error("[MH Real] Servicio no disponible:", error);
       return false;
     }
   }
 
   async procesarColaContingencia(tenantId: string): Promise<void> {
-    console.log(`[Contingencia] Procesando cola pendiente para tenant ${tenantId}...`);
-    
+    logger.info(`[Contingencia] Procesando cola pendiente para tenant ${tenantId}...`);
+
     const pendientes = await storage.getContingenciaQueue(tenantId, "pendiente");
-    
+
     for (const item of pendientes) {
       try {
         await storage.updateContingenciaStatus(item.codigoGeneracion, "procesando");
-        
+
         // Obtener factura original
         const factura = await storage.getFactura(item.facturaId, tenantId);
         if (!factura) {
@@ -330,23 +336,23 @@ export class MHServiceReal implements MHService {
 
         // Reintentar transmisión
         const resultado = await this.transmitirDTE(factura, tenantId);
-        
+
         if (resultado.estado === "PROCESADO") {
           await storage.marcarContingenciaCompleta(item.codigoGeneracion);
-          console.log(`[Contingencia] ✅ DTE ${item.codigoGeneracion} transmitido exitosamente`);
+          logger.info(`[Contingencia] ✅ DTE ${item.codigoGeneracion} transmitido exitosamente`);
         } else {
           throw new Error(`Rechazo del MH: ${resultado.observaciones}`);
         }
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : "Error desconocido";
         await storage.updateContingenciaStatus(item.codigoGeneracion, "pendiente", errorMsg);
-        
+
         // Si falló más de 10 veces, marcar como error
         const record = await storage.getContingenciaQueue(tenantId, "pendiente");
         const fallidoRecord = record.find((r: any) => r.codigoGeneracion === item.codigoGeneracion);
         if (fallidoRecord && fallidoRecord.intentosFallidos > 10) {
           await storage.updateContingenciaStatus(item.codigoGeneracion, "error", errorMsg);
-          console.error(`[Contingencia] ❌ DTE ${item.codigoGeneracion} marca do como error tras 10 intentos`);
+          logger.error(`[Contingencia] ❌ DTE ${item.codigoGeneracion} marca do como error tras 10 intentos`);
         }
       }
     }
@@ -378,10 +384,10 @@ export class MHServiceWithBreaker implements MHService {
   async transmitirDTE(factura: Factura, tenantId: string): Promise<SelloMH> {
     // Si circuit está abierto, encolar en contingencia automáticamente
     if (this.breaker.isOpen()) {
-      console.warn(
+      logger.warn(
         `🔴 Circuit OPEN: Encolando DTE ${factura.codigoGeneracion} en contingencia`
       );
-      
+
       // Encolar en contingencia para reintento posterior
       if (factura.id && factura.codigoGeneracion) {
         await storage.addToContingenciaQueue(tenantId, factura.id, factura.codigoGeneracion);
@@ -402,12 +408,31 @@ export class MHServiceWithBreaker implements MHService {
         this.innerService.transmitirDTE(factura, tenantId)
       );
     } catch (error) {
-      // Si circuit abre por fallos, encolar también
-      if (this.breaker.isOpen() && factura.id && factura.codigoGeneracion) {
+      const errorMsg = error instanceof Error ? error.message : "Error desconocido";
+      const isConnectionError = errorMsg.includes("ECONNREFUSED") ||
+        errorMsg.includes("ETIMEDOUT") ||
+        errorMsg.includes("ENOTFOUND") ||
+        errorMsg.includes("fetch failed");
+
+      // Si falla por conexión O el circuit abre por fallos, encolar en contingencia
+      if ((isConnectionError || this.breaker.isOpen()) && factura.id && factura.codigoGeneracion) {
+        logger.warn(`⚠️ Error de conexión o Circuit abierto. Activando CONTINGENCIA para ${factura.codigoGeneracion}`);
+
         await storage.addToContingenciaQueue(tenantId, factura.id, factura.codigoGeneracion);
+
+        // Retornar respuesta de contingencia exitosa (aceptada por NEEXUM)
+        return {
+          codigoGeneracion: factura.codigoGeneracion,
+          selloRecibido: `CONT-${Date.now()}`,
+          fechaSello: new Date().toISOString(),
+          estado: "PENDIENTE",
+          observaciones: `Transmitido vía CONTINGENCIA (Diferida) por error: ${errorMsg}`
+        };
       }
+
       throw error;
     }
+
   }
 
   async consultarEstado(codigoGeneracion: string, tenantId: string): Promise<EstadoDTE> {
@@ -436,7 +461,7 @@ export class MHServiceWithBreaker implements MHService {
     tenantId: string
   ): Promise<ResultadoAnulacion> {
     if (this.breaker.isOpen()) {
-      console.warn(`🔴 Circuit OPEN: Anulación diferida para ${codigoGeneracion}`);
+      logger.warn(`🔴 Circuit OPEN: Anulación diferida para ${codigoGeneracion}`);
       // Nota: La creación del registro de anulación debe hacerse en el flujo de UI/endpoint
       // previo a llamar a este método (storage.crearAnulacion). Aquí sólo informamos estado.
       return {
@@ -469,7 +494,7 @@ export class MHServiceWithBreaker implements MHService {
     tenantId: string
   ): Promise<ResultadoInvalidacion> {
     if (this.breaker.isOpen()) {
-      console.warn(
+      logger.warn(
         `🔴 Circuit OPEN: Invalidación diferida para ${codigoGeneracion}`
       );
       return {
@@ -505,7 +530,7 @@ export class MHServiceWithBreaker implements MHService {
           this.innerService.procesarAnulacionesPendientes(tenantId)
         );
       } catch (error) {
-        console.error("[Circuit Breaker] Error procesando anulaciones:", error);
+        logger.error("[Circuit Breaker] Error procesando anulaciones:", error);
         // No relanzar; permitir reintentos posteriores
       }
     }
@@ -539,7 +564,7 @@ export class MHServiceWithBreaker implements MHService {
       this.breaker.recordSuccess();
     } catch (error) {
       // No registrar como fallo del breaker; la cola de contingencia es fallback
-      console.error("[Contingencia] Error procesando cola:", error);
+      logger.error("[Contingencia] Error procesando cola:", error);
     }
   }
 
@@ -555,7 +580,7 @@ export class MHServiceWithBreaker implements MHService {
    */
   resetCircuit() {
     this.breaker.reset();
-    console.log("🔧 Circuit Breaker reset manual");
+    logger.info("🔧 Circuit Breaker reset manual");
   }
 }
 
@@ -570,10 +595,10 @@ export function createMHService(): MHService {
 
   // Si se fuerza Mock, o si estamos en Dev y no se fuerza Real -> Usar Mock
   if (forceMock || (isDev && !forceReal)) {
-    console.log("🛠️  Modo Hacienda: MOCK (Simulación activada)");
+    logger.info("🛠️  Modo Hacienda: MOCK (Simulación activada)");
     innerService = new MHServiceMock();
   } else {
-    console.log("🔌 Modo Hacienda: REAL (Conectando con API MH)");
+    logger.info("🔌 Modo Hacienda: REAL (Conectando con API MH)");
     innerService = new MHServiceReal();
   }
 

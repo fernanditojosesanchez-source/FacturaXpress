@@ -1,6 +1,7 @@
-import { 
-  Home, Receipt, FileText, Settings, Key, Building2, Ticket, Package, 
-  Users, BarChart3, Download, Shield, LogOut, CreditCard, AlertCircle
+import {
+  Home, Receipt, FileText, Settings, Ticket, Package,
+  Users, BarChart3, Download, Shield, LogOut, CreditCard, AlertCircle,
+  User, Loader2
 } from "lucide-react";
 import {
   Sidebar,
@@ -30,9 +31,8 @@ import {
 
 export function AppSidebar() {
   const [location, navigate] = useLocation();
-  const { data: authData, logout } = useAuth();
-  const { user, tenant } = authData || {};
-  const { hasPermission, canAccessModule, isRole } = usePermissions();
+  const { user, tenant, logout } = useAuth();
+  const { hasPermission, canAccessModule, isRole, isAnyRole } = usePermissions();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   if (!user) {
@@ -160,8 +160,8 @@ export function AppSidebar() {
       {/* Header */}
       <SidebarHeader className="space-y-4 border-b p-4">
         <div>
-          <h2 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            FacturaXpress
+          <h2 className="text-xl font-black italic tracking-tighter bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            NEEXUM
           </h2>
           {tenant && (
             <p className="text-xs text-muted-foreground">{tenant.nombre}</p>
@@ -191,7 +191,7 @@ export function AppSidebar() {
           {/* Role Badge */}
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
-              {user.role.replace(/_/g, " ").toUpperCase()}
+              {user.role?.replace(/_/g, " ").toUpperCase() || "USER"}
             </Badge>
             {tenant?.origen === "sigma" && (
               <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-900">
@@ -210,7 +210,7 @@ export function AppSidebar() {
             return null;
           }
 
-          if (section.requireAdmin && !isRole(["tenant_admin", "super_admin"])) {
+          if (section.requireAdmin && !isAnyRole(["tenant_admin", "super_admin"])) {
             return null;
           }
 
@@ -290,7 +290,7 @@ export function AppSidebar() {
               <DropdownMenuSeparator />
 
               {/* Mostrar opciones según rol */}
-              {isRole(["tenant_admin", "super_admin"]) && (
+              {isAnyRole(["tenant_admin", "super_admin"]) && (
                 <>
                   <DropdownMenuItem onClick={() => navigate("/usuarios")}>
                     <Users className="h-4 w-4 mr-2" />

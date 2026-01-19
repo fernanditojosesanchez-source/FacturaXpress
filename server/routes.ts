@@ -17,6 +17,7 @@ import stockTransitoRouter from "./routes/stock-transito.js";
 import { facturaCreationRateLimiter, transmisionRateLimiter } from "./lib/rate-limiters.js";
 import { logAudit, AuditActions, getClientIP, getUserAgent } from "./lib/audit.js";
 import { sendToSIEM } from "./lib/siem.js";
+import { logger } from "./lib/logger.js";
 import { sql } from "drizzle-orm";
 
 export async function registerRoutes(
@@ -57,7 +58,7 @@ export async function registerRoutes(
   const requireAuthOrApiKey = (req: Request, res: Response, next: any) => {
     const hasAuthCookie = req.headers.cookie?.includes("accessToken");
     const hasApiKey = req.headers["x-api-key"] || req.headers["authorization"];
-    
+
     if (hasApiKey && !hasAuthCookie) {
       return requireApiKey(req, res, next);
     }
@@ -159,11 +160,11 @@ export async function registerRoutes(
             successCount: mhCircuitState?.successCount || 0,
             nextRetryIn: mhCircuitState?.nextRetryIn || null,
             backoffMultiplier: mhCircuitState?.backoffMultiplier || 1,
-            description: mhCircuitState?.state === "OPEN" 
+            description: mhCircuitState?.state === "OPEN"
               ? "MH está caído. Facturas se encolan en contingencia"
               : mhCircuitState?.state === "HALF_OPEN"
-              ? "Probando recuperación de MH"
-              : "MH funciona normalmente"
+                ? "Probando recuperación de MH"
+                : "MH funciona normalmente"
           }
         }
       };
@@ -206,7 +207,7 @@ export async function registerRoutes(
       const outboxStats = await getOutboxStats();
 
       let metricsOutput = "";
-      
+
       if (allMetrics.length > 0) {
         metricsOutput += formatPrometheusMetrics(allMetrics);
       } else {
@@ -271,7 +272,7 @@ export async function registerRoutes(
         unidadesMedida: catalogs.UNIDADES_MEDIDA || [],
       });
     } catch (error: any) {
-      console.error("Error en /api/catalogos/all:", error);
+      logger.error("Error en /api/catalogos/all:", error);
       return res.status(500).json({ message: "Error al cargar catálogos", details: error.message });
     }
   });
@@ -284,10 +285,10 @@ export async function registerRoutes(
     try {
       const tenantId = getTenantId(req);
       const facturas = await storage.getFacturas(tenantId);
-      
+
       const today = new Date().toISOString().split("T")[0];
       const mesActual = new Date().toISOString().slice(0, 7);
-      
+
       const stats = {
         totalInvoices: facturas.length,
         hoy: facturas.filter((f: any) => f.fecEmi === today).length,
@@ -302,7 +303,7 @@ export async function registerRoutes(
           .reduce((sum: number, f: any) => sum + f.resumen.totalPagar, 0),
         recentInvoices: facturas.slice(0, 5)
       };
-      
+
       res.json(stats);
     } catch (error) {
       res.status(500).json({ error: "Error al obtener estadísticas" });
@@ -319,17 +320,17 @@ export async function registerRoutes(
       const tenantId = getTenantId(req);
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 25;
-      
+
       if (page < 1 || limit < 1 || limit > 100) {
         return res.status(400).json({ error: "Parámetros de paginación inválidos" });
       }
-      
+
       const offset = (page - 1) * limit;
-      
+
       const receptores = await storage.getReceptores(tenantId);
       const total = receptores.length;
       const paginated = receptores.slice(offset, offset + limit);
-      
+
       res.json({
         data: paginated,
         pagination: {
@@ -407,17 +408,17 @@ export async function registerRoutes(
       const tenantId = getTenantId(req);
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 25;
-      
+
       if (page < 1 || limit < 1 || limit > 100) {
         return res.status(400).json({ error: "Parámetros de paginación inválidos" });
       }
-      
+
       const offset = (page - 1) * limit;
-      
+
       const productos = await storage.getProductos(tenantId);
       const total = productos.length;
       const paginated = productos.slice(offset, offset + limit);
-      
+
       res.json({
         data: paginated,
         pagination: {
@@ -488,21 +489,21 @@ export async function registerRoutes(
       const tenantId = getTenantId(req);
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 25;
-      
+
       if (page < 1 || limit < 1 || limit > 100) {
         return res.status(400).json({ error: "Parámetros de paginación inválidos" });
       }
-      
+
       const offset = (page - 1) * limit;
-      
+
       const certificados = await storage.getCertificados(tenantId) || [];
       if (!Array.isArray(certificados)) {
         throw new Error("El almacenamiento no devolvió un arreglo de certificados");
       }
-      
+
       const total = certificados.length;
       const paginated = certificados.slice(offset, offset + limit);
-      
+
       res.json({
         data: paginated,
         pagination: {
@@ -513,11 +514,11 @@ export async function registerRoutes(
         },
       });
     } catch (error: any) {
-      console.error("Error en GET /api/certificados:", error);
-      res.status(500).json({ 
-        error: "Error al obtener certificados", 
+      logger.error("Error en GET /api/certificados:", error);
+      res.status(500).json({
+        error: "Error al obtener certificados",
         details: error.message,
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined 
+        stack: process.env.NODE_ENV === "development" ? error.stack : undefined
       });
     }
   });
@@ -540,7 +541,7 @@ export async function registerRoutes(
       if (!parsed.success) {
         return res.status(400).json({ error: parsed.error.errors });
       }
-      
+
       // Calcular huella del certificado (fingerprint SHA-256)
       // En producción, usar crypto para extraer del P12
       const crypto = await import("crypto");
@@ -553,7 +554,7 @@ export async function registerRoutes(
         ...parsed.data,
         huella,
       });
-      
+
       res.status(201).json(certificado);
     } catch (error: any) {
       if (error.message?.includes("unique constraint")) {
@@ -620,7 +621,7 @@ export async function registerRoutes(
     try {
       const tenantId = getTenantId(req);
       const { db } = await import("./db.js");
-      
+
       // Desactivar todos los demás certificados
       await db.execute(
         sql`UPDATE certificados SET activo = false WHERE tenant_id = ${tenantId} AND id != ${req.params.id}`
@@ -652,11 +653,11 @@ export async function registerRoutes(
       }
 
       const dteValidation = validateDTESchema(req.body);
-      
+
       if (dteValidation.valid) {
-        return res.json({ 
-          valid: true, 
-          message: "DTE válido según schema DGII" 
+        return res.json({
+          valid: true,
+          message: "DTE válido según schema DGII"
         });
       } else {
         return res.status(400).json({
@@ -665,14 +666,14 @@ export async function registerRoutes(
         });
       }
     } catch (error) {
-      console.error("[validar-dte] Error:", error);
-      return res.status(500).json({ 
+      logger.error("[validar-dte] Error:", error);
+      return res.status(500).json({
         error: "Error al validar DTE",
         details: error instanceof Error ? error.message : String(error)
       });
     }
   });
-  
+
   // ============================================
   // ENDPOINTS DE EMISOR (Configuración por Tenant)
   // ============================================
@@ -712,7 +713,7 @@ export async function registerRoutes(
     try {
       const tenantId = getTenantId(req);
       const facturas = await storage.getFacturas(tenantId);
-      
+
       // Si se solicita explícitamente sin paginación (ej: para reportes)
       if (req.query.limit === "all") {
         return res.json({
@@ -728,15 +729,15 @@ export async function registerRoutes(
 
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 25;
-      
+
       if (page < 1 || limit < 1 || limit > 500) {
         return res.status(400).json({ error: "Parámetros de paginación inválidos" });
       }
-      
+
       const offset = (page - 1) * limit;
       const total = facturas.length;
       const paginated = facturas.slice(offset, offset + limit);
-      
+
       res.json({
         data: paginated,
         pagination: {
@@ -764,100 +765,100 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/facturas", 
-    requireAuthOrApiKey, 
+  app.post("/api/facturas",
+    requireAuthOrApiKey,
     facturaCreationRateLimiter,
     checkPermission("create_invoice"),
     async (req: Request, res: Response) => {
-    try {
-      const tenantId = getTenantId(req);
-      const userId = (req as any).user?.id;
-      const ipAddress = getClientIP(req);
-      
-      const parsed = insertFacturaSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return res.status(400).json({ 
-          error: "Validación fallida",
-          details: parsed.error.errors 
-        });
-      }
+      try {
+        const tenantId = getTenantId(req);
+        const userId = (req as any).user?.id;
+        const ipAddress = getClientIP(req);
 
-      // Validar unicidad de código generación por tenant
-      const codigoGen = parsed.data.codigoGeneracion;
-      if (codigoGen) {
-        const existente = await storage.getFacturaByCodigoGeneracion(codigoGen, tenantId);
-        if (existente) {
+        const parsed = insertFacturaSchema.safeParse(req.body);
+        if (!parsed.success) {
           return res.status(400).json({
-            error: "Código de generación ya existe",
-            codigo: "DUPLICADO_CODIGO_GEN"
+            error: "Validación fallida",
+            details: parsed.error.errors
           });
         }
-      }
 
-      // Generar número de control en servidor usando tenantId
-      const emisorNit = parsed.data.emisor?.nit || "00000000000000-0";
-      const tipoDte = parsed.data.tipoDte || "01";
-      const numeroControl = await storage.getNextNumeroControl(tenantId, emisorNit, tipoDte);
-      const codigoGeneracion = parsed.data.codigoGeneracion || randomUUID().toUpperCase();
-      
-      const facturaConNumero = {
-        ...parsed.data,
-        numeroControl,
-        codigoGeneracion,
-        tenantId,
-        externalId: parsed.data.externalId || undefined,
-      };
+        // Validar unicidad de código generación por tenant
+        const codigoGen = parsed.data.codigoGeneracion;
+        if (codigoGen) {
+          const existente = await storage.getFacturaByCodigoGeneracion(codigoGen, tenantId);
+          if (existente) {
+            return res.status(400).json({
+              error: "Código de generación ya existe",
+              codigo: "DUPLICADO_CODIGO_GEN"
+            });
+          }
+        }
 
-      // Validación DGII Schema
-      const dteValidation = validateDTESchema(facturaConNumero);
-      if (!dteValidation.valid) {
-        return res.status(400).json({
-          error: "Validación DGII fallida",
-          dgiiErrors: dteValidation.errors
+        // Generar número de control en servidor usando tenantId
+        const emisorNit = parsed.data.emisor?.nit || "00000000000000-0";
+        const tipoDte = parsed.data.tipoDte || "01";
+        const numeroControl = await storage.getNextNumeroControl(tenantId, emisorNit, tipoDte);
+        const codigoGeneracion = parsed.data.codigoGeneracion || randomUUID().toUpperCase();
+
+        const facturaConNumero = {
+          ...parsed.data,
+          numeroControl,
+          codigoGeneracion,
+          tenantId,
+          externalId: parsed.data.externalId || undefined,
+        };
+
+        // Validación DGII Schema
+        const dteValidation = validateDTESchema(facturaConNumero);
+        if (!dteValidation.valid) {
+          return res.status(400).json({
+            error: "Validación DGII fallida",
+            dgiiErrors: dteValidation.errors
+          });
+        }
+
+        const factura = await storage.createFactura(tenantId, facturaConNumero);
+
+        // ✅ NUEVO: Guardar automáticamente al cliente en el catálogo
+        if (facturaConNumero.receptor) {
+          await storage.upsertReceptor(tenantId, facturaConNumero.receptor);
+        }
+
+        // Auditoría
+        await logAudit({
+          userId,
+          action: AuditActions.FACTURA_CREATED,
+          ipAddress,
+          userAgent: getUserAgent(req),
+          details: { facturaId: factura.id, codigoGeneracion: factura.codigoGeneracion }
         });
+
+        // Evento SIEM para factura creada
+        await sendToSIEM({
+          type: "factura_created",
+          level: "info",
+          userId,
+          tenantId,
+          ipAddress,
+          details: { facturaId: factura.id, codigoGeneracion: factura.codigoGeneracion, tipoDte: factura.tipoDte }
+        });
+
+        res.status(201).json(factura);
+      } catch (error) {
+        // Evento SIEM para error de creación
+        await sendToSIEM({
+          type: "factura_creation_error",
+          level: "error",
+          userId: (req as any).user?.id,
+          tenantId: getTenantId(req),
+          ipAddress: getClientIP(req),
+          details: { error: (error as Error).message }
+        });
+        logger.error("Error creating factura:", error);
+        res.status(500).json({ error: "Error al crear factura" });
       }
-
-      const factura = await storage.createFactura(tenantId, facturaConNumero);
-      
-      // ✅ NUEVO: Guardar automáticamente al cliente en el catálogo
-      if (facturaConNumero.receptor) {
-        await storage.upsertReceptor(tenantId, facturaConNumero.receptor);
-      }
-
-      // Auditoría
-      await logAudit({ 
-        userId, 
-        action: AuditActions.FACTURA_CREATED, 
-        ipAddress, 
-        userAgent: getUserAgent(req),
-        details: { facturaId: factura.id, codigoGeneracion: factura.codigoGeneracion }
-      });
-
-      // Evento SIEM para factura creada
-      await sendToSIEM({
-        type: "factura_created",
-        level: "info",
-        userId,
-        tenantId,
-        ipAddress,
-        details: { facturaId: factura.id, codigoGeneracion: factura.codigoGeneracion, tipoDte: factura.tipoDte }
-      });
-
-      res.status(201).json(factura);
-    } catch (error) {
-      // Evento SIEM para error de creación
-      await sendToSIEM({
-        type: "factura_creation_error",
-        level: "error",
-        userId: (req as any).user?.id,
-        tenantId: getTenantId(req),
-        ipAddress: getClientIP(req),
-        details: { error: (error as Error).message }
-      });
-      console.error("Error creating factura:", error);
-      res.status(500).json({ error: "Error al crear factura" });
-    }
-  });
+    });
 
   app.patch("/api/facturas/:id", requireAuth, async (req: Request, res: Response) => {
     try {
@@ -895,20 +896,20 @@ export async function registerRoutes(
 
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
-      
+
       doc.setFontSize(16);
       doc.setFont("helvetica", "bold");
       doc.text("DOCUMENTO TRIBUTARIO ELECTRONICO", pageWidth / 2, 20, { align: "center" });
-      
+
       doc.setFontSize(12);
       doc.setFont("helvetica", "normal");
       doc.text(`Tipo: ${factura.tipoDte === "01" ? "FACTURA" : "DTE-" + factura.tipoDte}`, pageWidth / 2, 28, { align: "center" });
-      
+
       doc.setFontSize(10);
       doc.text(`Número de Control: ${factura.numeroControl}`, 15, 40);
       doc.text(`Código de Generación: ${factura.codigoGeneracion}`, 15, 46);
       doc.text(`Fecha: ${factura.fecEmi} ${factura.horEmi}`, 15, 52);
-      
+
       doc.setFont("helvetica", "bold");
       doc.text("EMISOR:", 15, 64);
       doc.setFont("helvetica", "normal");
@@ -916,7 +917,7 @@ export async function registerRoutes(
       doc.text(`NIT: ${factura.emisor.nit}`, 15, 76);
       doc.text(`NRC: ${factura.emisor.nrc}`, 15, 82);
       doc.text(`${factura.emisor.direccion.complemento}`, 15, 88);
-      
+
       doc.setFont("helvetica", "bold");
       doc.text("RECEPTOR:", 110, 64);
       doc.setFont("helvetica", "normal");
@@ -926,10 +927,10 @@ export async function registerRoutes(
         doc.text(`NRC: ${factura.receptor.nrc}`, 110, 82);
       }
       doc.text(`${factura.receptor.direccion.complemento}`, 110, 88, { maxWidth: 80 });
-      
+
       doc.setFont("helvetica", "bold");
       doc.text("DETALLE:", 15, 105);
-      
+
       doc.setFillColor(240, 240, 240);
       doc.rect(15, 110, pageWidth - 30, 8, "F");
       doc.setFont("helvetica", "bold");
@@ -938,7 +939,7 @@ export async function registerRoutes(
       doc.text("Descripción", 35, 115);
       doc.text("P. Unit.", 130, 115);
       doc.text("Total", 165, 115);
-      
+
       doc.setFont("helvetica", "normal");
       let yPos = 125;
       factura.cuerpoDocumento.forEach((item: any) => {
@@ -948,28 +949,28 @@ export async function registerRoutes(
         doc.text(`$${item.ventaGravada.toFixed(2)}`, 165, yPos);
         yPos += 7;
       });
-      
+
       yPos += 10;
       doc.line(15, yPos - 5, pageWidth - 15, yPos - 5);
-      
+
       doc.setFont("helvetica", "normal");
       doc.text("Subtotal:", 130, yPos);
       doc.text(`$${factura.resumen.subTotal.toFixed(2)}`, 165, yPos);
       yPos += 7;
-      
+
       doc.text("IVA (13%):", 130, yPos);
       doc.text(`$${factura.resumen.totalIva.toFixed(2)}`, 165, yPos);
       yPos += 7;
-      
+
       doc.setFont("helvetica", "bold");
       doc.text("TOTAL A PAGAR:", 130, yPos);
       doc.text(`$${factura.resumen.totalPagar.toFixed(2)}`, 165, yPos);
       yPos += 10;
-      
+
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
       doc.text(`SON: ${factura.resumen.totalLetras}`, 15, yPos);
-      
+
       try {
         const qrData = JSON.stringify({
           codigoGeneracion: factura.codigoGeneracion,
@@ -977,19 +978,19 @@ export async function registerRoutes(
           fecEmi: factura.fecEmi,
           totalPagar: factura.resumen.totalPagar,
         });
-        
+
         const qrDataUrl = await QRCode.toDataURL(qrData, { width: 80, margin: 1 });
         doc.addImage(qrDataUrl, "PNG", 15, yPos + 10, 35, 35);
       } catch (qrError) {
-        console.error("Error generating QR code:", qrError);
+        logger.error("Error generating QR code:", qrError);
       }
-      
+
       const pdfBuffer = doc.output("arraybuffer");
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `attachment; filename=DTE-${factura.numeroControl}.pdf`);
       res.send(Buffer.from(pdfBuffer));
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      logger.error("Error generating PDF:", error);
       res.status(500).json({ error: "Error al generar PDF" });
     }
   });
@@ -997,13 +998,13 @@ export async function registerRoutes(
   // ============================================
   // ENDPOINTS DE INTEGRACIÓN MH
   // ============================================
-  
+
   app.post("/api/facturas/:id/transmitir", requireAuth, checkPermission("transmit_invoice"), transmisionRateLimiter, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
       const userId = (req as any).user?.id;
       const ipAddress = getClientIP(req);
-      
+
       const factura = await storage.getFactura(req.params.id, tenantId);
       if (!factura) {
         return res.status(404).json({ error: "Factura no encontrada" });
@@ -1015,12 +1016,12 @@ export async function registerRoutes(
 
       // Verificar disponibilidad del MH
       const mhDisponible = await mhService.verificarDisponibilidad();
-      
+
       if (!mhDisponible) {
         // MH no disponible - Agregar a cola de contingencia
-        console.log(`[Contingencia] MH no disponible. Agregando DTE ${factura.codigoGeneracion} a cola...`);
+        logger.info(`[Contingencia] MH no disponible. Agregando DTE ${factura.codigoGeneracion} a cola...`);
         await storage.addToContingenciaQueue(tenantId, req.params.id, factura.codigoGeneracion || "");
-        
+
         await logAudit({
           userId,
           action: AuditActions.CONTINGENCIA_ADDED,
@@ -1028,8 +1029,8 @@ export async function registerRoutes(
           userAgent: getUserAgent(req),
           details: { facturaId: req.params.id, codigoGeneracion: factura.codigoGeneracion }
         });
-        
-        return res.status(202).json({ 
+
+        return res.status(202).json({
           success: false,
           mensaje: "Ministerio de Hacienda no disponible. DTE guardado en cola de contingencia.",
           estado: "pendiente_contingencia",
@@ -1053,8 +1054,8 @@ export async function registerRoutes(
         action: AuditActions.FACTURA_TRANSMITTED,
         ipAddress,
         userAgent: getUserAgent(req),
-        details: { 
-          facturaId: req.params.id, 
+        details: {
+          facturaId: req.params.id,
           codigoGeneracion: factura.codigoGeneracion,
           selloRecibido: sello.selloRecibido,
           estado: nuevoEstado
@@ -1068,7 +1069,7 @@ export async function registerRoutes(
         userId,
         tenantId,
         ipAddress,
-        details: { 
+        details: {
           facturaId: req.params.id,
           codigoGeneracion: factura.codigoGeneracion,
           estadoMH: sello.estado,
@@ -1076,14 +1077,14 @@ export async function registerRoutes(
         }
       });
 
-      res.json({ 
+      res.json({
         success: sello.estado === "PROCESADO",
         sello,
-        factura: facturaActualizada 
+        factura: facturaActualizada
       });
     } catch (error) {
-      console.error("Error al transmitir factura:", error);
-      
+      logger.error("Error al transmitir factura:", error);
+
       // Evento SIEM para error de transmisión
       await sendToSIEM({
         type: "factura_transmission_error",
@@ -1093,7 +1094,7 @@ export async function registerRoutes(
         ipAddress: getClientIP(req),
         details: { facturaId: req.params.id, error: (error as Error).message }
       });
-      
+
       // Si error es de conexión, agregar a contingencia
       const errorMsg = error instanceof Error ? error.message : "Error desconocido";
       if (errorMsg.includes("ECONNREFUSED") || errorMsg.includes("ETIMEDOUT") || errorMsg.includes("ENOTFOUND")) {
@@ -1108,8 +1109,8 @@ export async function registerRoutes(
           });
         }
       }
-      
-      res.status(500).json({ 
+
+      res.status(500).json({
         error: errorMsg
       });
     }
@@ -1120,13 +1121,13 @@ export async function registerRoutes(
       const tenantId = getTenantId(req);
       const conectado = await mhService.verificarConexion(tenantId);
       const mockMode = process.env.MH_MOCK_MODE === "true" || !process.env.MH_API_TOKEN;
-      
+
       res.json({
         conectado,
         modoSimulacion: mockMode,
-        mensaje: mockMode 
+        mensaje: mockMode
           ? "Modo simulación activo"
-          : conectado 
+          : conectado
             ? "Conectado al MH"
             : "Sin conexión al MH"
       });
@@ -1174,7 +1175,7 @@ export async function registerRoutes(
       // Validar que el motivo sea válido según DGII
       const motivosValidos = ["01", "02", "03", "04", "05"];
       if (!motivosValidos.includes(motivo)) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: "Motivo inválido. Válidos: 01-05",
           motivosValidos: {
             "01": "Anulación por error",
@@ -1243,7 +1244,7 @@ export async function registerRoutes(
         });
       }
     } catch (error) {
-      console.error("Error al invalidar factura:", error);
+      logger.error("Error al invalidar factura:", error);
       res.status(500).json({
         error: error instanceof Error ? error.message : "Error al invalidar"
       });
@@ -1254,7 +1255,7 @@ export async function registerRoutes(
     try {
       const tenantId = getTenantId(req);
       const pendientes = await storage.getAnulacionesPendientes(tenantId);
-      
+
       res.json({
         total: pendientes.length,
         anulaciones: pendientes
@@ -1268,7 +1269,7 @@ export async function registerRoutes(
     try {
       const tenantId = getTenantId(req);
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
-      
+
       const historico = await storage.getHistoricoAnulaciones(tenantId, limit);
       res.json({
         total: historico.length,
@@ -1331,7 +1332,7 @@ export async function registerRoutes(
         resultados,
       });
     } catch (error) {
-      console.error("Error al procesar anulaciones:", error);
+      logger.error("Error al procesar anulaciones:", error);
       res.status(500).json({ error: "Error al procesar anulaciones pendientes" });
     }
   });
@@ -1339,10 +1340,10 @@ export async function registerRoutes(
   app.post("/api/anulaciones/procesar", requireAuth, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
-      console.log(`[API] Procesando anulaciones pendientes para tenant ${tenantId}...`);
-      
+      logger.info(`[API] Procesando anulaciones pendientes para tenant ${tenantId}...`);
+
       await mhService.procesarAnulacionesPendientes(tenantId);
-      
+
       const pendientes = await storage.getAnulacionesPendientes(tenantId);
       res.json({
         success: true,
@@ -1350,7 +1351,7 @@ export async function registerRoutes(
         aunPendientes: pendientes.length
       });
     } catch (error) {
-      console.error("Error procesando anulaciones:", error);
+      logger.error("Error procesando anulaciones:", error);
       res.status(500).json({
         error: error instanceof Error ? error.message : "Error al procesar anulaciones"
       });
@@ -1378,16 +1379,16 @@ export async function registerRoutes(
       // Nota: Drizzle query builder puede usarse, pero SQL crudo a veces es más claro para reportes complejos
       // Aquí simulamos la lógica usando filtrado en memoria SOLO de las facturas del rango de fechas
       // (Idealmente esto sería un SELECT SUM(...) FROM facturas WHERE date BETWEEN ...)
-      
+
       const facturas = await storage.getFacturas(tenantId);
-      
+
       // Filtrado optimizado: Primero por fecha en DB (si storage lo soportara)
       // Como storage.getFacturas trae todo, aquí filtramos.
       // TODO: Implementar getFacturasByDateRange en storage.ts para verdadera optimización SQL.
-      
+
       const facturasDelMes = facturas.filter(f => {
         if (f.estado !== "sellada") return false;
-        const fecha = new Date(f.fecEmi); 
+        const fecha = new Date(f.fecEmi);
         return fecha >= startDate && fecha <= endDate;
       });
 
@@ -1410,7 +1411,7 @@ export async function registerRoutes(
 
       res.json(reporte);
     } catch (error) {
-      console.error("Error generando reporte IVA:", error);
+      logger.error("Error generando reporte IVA:", error);
       res.status(500).json({ error: "Error al generar reporte de IVA" });
     }
   });
@@ -1447,10 +1448,10 @@ export async function registerRoutes(
   app.post("/api/contingencia/procesar", requireAuth, async (req: Request, res: Response) => {
     try {
       const tenantId = getTenantId(req);
-      console.log(`[API] Procesando cola de contingencia para tenant ${tenantId}...`);
-      
+      logger.info(`[API] Procesando cola de contingencia para tenant ${tenantId}...`);
+
       await mhService.procesarColaContingencia(tenantId);
-      
+
       const estado = await storage.getContingenciaQueue(tenantId);
       res.json({
         success: true,
@@ -1458,9 +1459,9 @@ export async function registerRoutes(
         resumen: estado
       });
     } catch (error) {
-      console.error("Error procesando contingencia:", error);
-      res.status(500).json({ 
-        error: error instanceof Error ? error.message : "Error al procesar contingencia" 
+      logger.error("Error procesando contingencia:", error);
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "Error al procesar contingencia"
       });
     }
   });
@@ -1468,14 +1469,14 @@ export async function registerRoutes(
   // ============================================
   // ENDPOINTS DE DATOS DE PRUEBA (Solo Desarrollo)
   // ============================================
-  
+
   if (process.env.NODE_ENV !== "production") {
     app.post("/api/seed/facturas", requireAuth, async (req: Request, res: Response) => {
       try {
         const tenantId = getTenantId(req);
         const { cantidad = 10 } = req.body;
         const facturasPrueba = generarFacturasPrueba(cantidad);
-        
+
         const facturasCreadas = [];
         for (const factura of facturasPrueba) {
           const facturaCompleta = { ...factura, externalId: factura.externalId || undefined };
@@ -1537,7 +1538,7 @@ export async function registerRoutes(
 
       res.json({ success: true, message: "Configuración guardada" });
     } catch (error: any) {
-      console.error("Error saving performance config:", error);
+      logger.error("Error saving performance config:", error);
       res.status(500).json({ message: error.message });
     }
   });
@@ -1553,7 +1554,7 @@ export async function registerRoutes(
 
       res.json(config || { enabled: false });
     } catch (error: any) {
-      console.error("Error getting performance config:", error);
+      logger.error("Error getting performance config:", error);
       res.status(500).json({ message: error.message });
     }
   });
@@ -1568,7 +1569,7 @@ export async function registerRoutes(
 
       res.json(profile);
     } catch (error: any) {
-      console.error("Error detecting performance profile:", error);
+      logger.error("Error detecting performance profile:", error);
       res.status(500).json({ message: error.message });
     }
   });

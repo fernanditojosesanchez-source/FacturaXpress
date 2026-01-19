@@ -2,10 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { getQueryFn } from "@/lib/queryClient";
 
-type MeResponse = { 
-  user?: { 
-    id: string; 
-    username: string; 
+type MeResponse = {
+  user?: {
+    id: string;
+    username: string;
     email?: string;
     nombre?: string;
     tenantId?: string;
@@ -71,6 +71,7 @@ export function useAuth() {
 
   return {
     user: (me.data as MeResponse | null)?.user,
+    tenant: (me.data as MeResponse | null)?.tenant,
     isAuthenticated: !!(me.data as MeResponse | null)?.user,
     isLoading: me.isLoading,
     login,

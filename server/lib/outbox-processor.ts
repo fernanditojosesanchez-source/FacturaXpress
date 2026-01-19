@@ -36,7 +36,7 @@ async function publishEventToQueue(
     eventType: string;
     tenantId: string;
     payload: any;
-   aggregateId?: string | null;
+    aggregateId?: string | null;
   }
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -48,11 +48,12 @@ async function publishEventToQueue(
       case "factura_anulada":
       case "factura_completada": {
         // Publicar a cola de transmisión
+        // ✅ IDEMPOTENCIA: Usar ID del evento como ID del Job
         const jobData = {
           facturaId: payload.facturaId,
           tenantId: tenantId,
         };
-        await addTransmisionJob(jobData);
+        await addTransmisionJob(jobData, { jobId: event.id });
         return { success: true };
       }
 
@@ -199,11 +200,10 @@ export async function startOutboxProcessor(intervalMs: number = 5000): Promise<v
 
       // ✅ Tenemos el lock, procesar batch
       const result = await processBatch();
-      
+
       if (result.processed > 0 || result.failed > 0) {
         log(
-          `📊 Outbox: ${result.processed} enviados, ${result.failed} con retry${
-            result.errors.length > 0 ? `, errores: ${result.errors.slice(0, 3).join("; ")}` : ""
+          `📊 Outbox: ${result.processed} enviados, ${result.failed} con retry${result.errors.length > 0 ? `, errores: ${result.errors.slice(0, 3).join("; ")}` : ""
           }`,
           "outbox"
         );

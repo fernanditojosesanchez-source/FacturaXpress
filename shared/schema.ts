@@ -4,15 +4,15 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Re-export new P2 schemas
-export * from "./schema-stock-transito.js";
-export * from "./schema-sigma-support.js";
-export * from "./schema-sigma-jit.js";
+export * from "./schema-stock-transito.ts";
+export * from "./schema-sigma-support.ts";
+export * from "./schema-sigma-jit.ts";
 
 // Re-export P1 schemas (Catalog Sync)
-export * from "./schema-catalog-sync.js";
+export * from "./schema-catalog-sync.ts";
 
 // Re-export P3 schemas (Feature Flags)
-export * from "./schema-feature-flags.js";
+export * from "./schema-feature-flags.ts";
 
 // --- TABLAS PARA MULTI-TENANCY ---
 
@@ -76,14 +76,14 @@ export const certificadosTable = pgTable("certificados", {
 
 // --- TABLAS DE NEGOCIO ACTUALIZADAS ---
 
-export const users = pgTable("users", {
+export const users = pgTable("fx_users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tenantId: uuid("tenant_id").references(() => tenants.id),
   username: text("username").notNull().unique(),
   email: text("email").unique(),
   nombre: text("nombre"),
   password: text("password").notNull(),
-  
+
   // Sistema de roles
   role: text("role").notNull().default("cashier"),
   // Roles disponibles:
@@ -93,11 +93,11 @@ export const users = pgTable("users", {
   //   'cashier'          - Cajero/facturador
   //   'accountant'       - Contador (solo lectura + reportes)
   //   'sigma_readonly'   - Usuario Sigma básico (solo consulta)
-  
+
   // Restricciones por sucursal (para manager/cashier)
   sucursales_asignadas: jsonb("sucursales_asignadas").default(null),
   // Formato: ["uuid-sucursal-1", "uuid-sucursal-2"] o null si tiene acceso a todas
-  
+
   // Controles de módulos personalizados por usuario
   // Nota: también hereda de tenants.modules, pero puede tener overrides
   modulos_habilitados: jsonb("modulos_habilitados").default(null),
@@ -109,16 +109,16 @@ export const users = pgTable("users", {
   //   "multi_sucursal": true
   // }
   // null = heredar de tenant
-  
+
   // Datos de contacto
   telefono: text("telefono"),
-  
+
   // Estado de cuenta
   emailVerified: boolean("email_verified").default(false),
   accountLocked: boolean("account_locked").default(false),
   lockUntil: timestamp("lock_until"),
   activo: boolean("activo").default(true),
-  
+
   // Auditoría
   ultimo_acceso: timestamp("ultimo_acceso"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -130,7 +130,7 @@ export const users = pgTable("users", {
   idx_tenant_role: index("idx_users_tenant_role").on(t.tenantId, t.role),
 }));
 
-export const loginAttempts = pgTable("login_attempts", {
+export const loginAttempts = pgTable("fx_login_attempts", {
   id: serial("id").primaryKey(),
   username: text("username").notNull(),
   ipAddress: text("ip_address").notNull(),
@@ -139,7 +139,7 @@ export const loginAttempts = pgTable("login_attempts", {
   attemptedAt: timestamp("attempted_at").notNull().defaultNow(),
 });
 
-export const auditLogs = pgTable("audit_logs", {
+export const auditLogs = pgTable("fx_audit_logs", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").references(() => users.id),
   action: text("action").notNull(), // login, logout, login_failed, password_change, etc.
@@ -260,7 +260,7 @@ export const facturasTable = pgTable("facturas", {
 
 // --- COLA DE CONTINGENCIA (Para DTEs cuando MH está caído) ---
 
-export const contingenciaQueueTable = pgTable("contingencia_queue", {
+export const contingenciaQueueTable = pgTable("fx_contingencia_queue", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   tenantId: uuid("tenant_id").references(() => tenants.id).notNull(),
   facturaId: text("factura_id").references(() => facturasTable.id).notNull(),
@@ -297,7 +297,7 @@ export const anulacionesTable = pgTable("anulaciones", {
   unq: unique().on(t.tenantId, t.codigoGeneracion),
 }));
 
-export const apiKeys = pgTable("api_keys", {
+export const apiKeys = pgTable("fx_api_keys", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   tenantId: uuid("tenant_id").references(() => tenants.id).notNull(),
   key: text("key").unique().notNull(), // API Key (formato: fx_live_...)
@@ -518,6 +518,7 @@ export const facturaSchema = z.object({
     valor: z.string(),
   })).optional(),
   selloRecibido: z.string().nullable().optional(),
+  firma: z.string().nullable().optional(), // JWS Compact
   estado: z.enum(["borrador", "generada", "transmitida", "sellada", "anulada"]).default("borrador"),
   createdAt: z.string().optional(),
 });
@@ -574,10 +575,10 @@ export const certificadoSchema = z.object({
   updatedAt: z.string().optional(),
 });
 
-export const insertCertificadoSchema = certificadoSchema.omit({ 
-  id: true, 
-  tenantId: true, 
-  createdAt: true, 
+export const insertCertificadoSchema = certificadoSchema.omit({
+  id: true,
+  tenantId: true,
+  createdAt: true,
   updatedAt: true,
   huella: true, // Se calcula
   diasParaExpiracion: true, // Se calcula
@@ -679,3 +680,23 @@ export const UNIDADES_MEDIDA = [
   { codigo: 24, nombre: "Millar" },
   { codigo: 99, nombre: "Otra" },
 ];
+
+// ----------------------------------------------------------------------
+// CATALOG SYNC INFRASTRUCTURE (Audit P1)
+// ----------------------------------------------------------------------
+
+export const catalogVersionsTable = pgTable("catalog_versions", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  catalogName: text("catalog_name").notNull(),
+  version: text("version").notNull(),
+  data: jsonb("data").notNull(),
+  lastSyncAt: timestamp("last_sync_at").notNull().defaultNow(),
+  syncStatus: text("sync_status").notNull(),
+  recordsCount: integer("records_count").notNull(),
+}, (t) => ({
+  idxCatalogVersion: uniqueIndex("idx_catalog_version").on(t.catalogName, t.version),
+  idxLatestSync: index("idx_catalog_name_date").on(t.catalogName, t.lastSyncAt),
+}));
+
+export type CatalogVersion = typeof catalogVersionsTable.$inferSelect;
+export type NewCatalogVersion = typeof catalogVersionsTable.$inferInsert;

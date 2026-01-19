@@ -20,21 +20,21 @@ export const sigmaSupportAccessRequestsTable = pgTable(
   "sigma_support_access_requests",
   {
     id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-    
+
     // Solicitante (Sigma Support)
     requestedBy: uuid("requested_by").notNull(), // Usuario de Sigma que solicita
     requestedByName: varchar("requested_by_name", { length: 255 }).notNull(),
     requestedByEmail: varchar("requested_by_email", { length: 255 }).notNull(),
-    
+
     // Tenant objetivo
     tenantId: uuid("tenant_id").notNull(),
     tenantNombre: varchar("tenant_nombre", { length: 255 }).notNull(),
-    
+
     // Justificación
     reason: text("reason").notNull(), // "Debugging emisión lenta", "Investigar error 500"
     estimatedDuration: integer("estimated_duration").notNull().default(7200000), // ms (default 2h)
     urgency: varchar("urgency", { length: 20 }).notNull().default("normal"), // low, normal, high, critical
-    
+
     // Scope solicitado
     scopeRequested: jsonb("scope_requested").notNull().default({
       canViewLogs: true,
@@ -42,25 +42,28 @@ export const sigmaSupportAccessRequestsTable = pgTable(
       canViewAudit: false,
       canExportData: false,
     }),
-    
+
     // Estado del workflow
     status: varchar("status", { length: 20 }).notNull().default("pending"),
     // pending, approved, rejected, expired, revoked
-    
+
     // Aprobación
     reviewedBy: uuid("reviewed_by"), // Admin del tenant que aprobó/rechazó
     reviewedByName: varchar("reviewed_by_name", { length: 255 }),
     reviewedAt: timestamp("reviewed_at"),
     reviewNotes: text("review_notes"), // Notas del revisor
-    
+
     // Token generado (si fue aprobado)
     accessGrantedId: uuid("access_granted_id"), // FK a sigmaSupportAccessTable
     accessExpiresAt: timestamp("access_expires_at"),
-    
+
     // Timestamps
     createdAt: timestamp("created_at").notNull().defaultNow(),
     expiresAt: timestamp("expires_at").notNull(), // Solicitud expira en 24h si no se responde
-    
+
+    // Break-Glass (Emergencia)
+    isBreakGlass: boolean("is_break_glass").default(false),
+
     // Notificaciones
     notificationSent: boolean("notification_sent").default(false),
     notificationSentAt: timestamp("notification_sent_at"),
@@ -80,25 +83,25 @@ export const sigmaSupportAccessExtensionsTable = pgTable(
   "sigma_support_access_extensions",
   {
     id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-    
+
     // Acceso original que se extiende
     originalAccessId: uuid("original_access_id").notNull(),
-    
+
     // Nueva solicitud de extensión
     requestId: uuid("request_id").notNull(), // FK a access_requests
-    
+
     // Extensión otorgada
     previousExpiresAt: timestamp("previous_expires_at").notNull(),
     newExpiresAt: timestamp("new_expires_at").notNull(),
     extensionDuration: integer("extension_duration").notNull(), // ms
-    
+
     // Justificación
     reason: text("reason").notNull(),
-    
+
     // Aprobación
     approvedBy: uuid("approved_by").notNull(),
     approvedByName: varchar("approved_by_name", { length: 255 }).notNull(),
-    
+
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [
@@ -114,22 +117,22 @@ export const sigmaSupportJitPoliciesTable = pgTable(
   "sigma_support_jit_policies",
   {
     id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-    
+
     tenantId: uuid("tenant_id").notNull().unique(),
-    
+
     // Políticas de aprobación
     requireApproval: boolean("require_approval").notNull().default(true),
     autoApproveForUrgency: varchar("auto_approve_for_urgency", { length: 20 }), // "critical" = auto-aprobar críticos
-    
+
     // Límites de tiempo
     maxAccessDuration: integer("max_access_duration").notNull().default(7200000), // 2h en ms
     maxExtensions: integer("max_extensions").notNull().default(2), // Max 2 extensiones
     requestExpirationTime: integer("request_expiration_time").notNull().default(86400000), // 24h
-    
+
     // Notificaciones
     notifyAdminsOnRequest: boolean("notify_admins_on_request").default(true),
     notifyAdminEmails: text("notify_admin_emails"), // Emails separados por coma
-    
+
     // Restricciones de scope
     allowedScopes: jsonb("allowed_scopes").default({
       canViewLogs: true,
@@ -137,7 +140,7 @@ export const sigmaSupportJitPoliciesTable = pgTable(
       canViewAudit: false,
       canExportData: false,
     }),
-    
+
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },

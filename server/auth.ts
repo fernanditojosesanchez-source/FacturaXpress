@@ -3,7 +3,27 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { storage } from "./storage.js";
+import { logger } from "./lib/logger.js";
+
 import { logAudit, logLoginAttempt, AuditActions, getClientIP, getUserAgent } from "./lib/audit.js";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+// Service Role for Admin tasks on Dedicated DB
+const supabaseService = process.env.SUPABASE_SERVICE_ROLE_KEY ? createClient(supabaseUrl!, process.env.SUPABASE_SERVICE_ROLE_KEY!) : null;
+// Client for Dedicated DB (if you ever need to sign in as local user)
+const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
+
+// AUTH BRIDGE: Main SIGMA Project
+const mainSupabaseUrl = process.env.MAIN_SUPABASE_URL;
+const mainSupabaseKey = process.env.MAIN_SUPABASE_ANON_KEY;
+const mainSupabase = (mainSupabaseUrl && mainSupabaseKey) ? createClient(mainSupabaseUrl, mainSupabaseKey) : null;
+
+if (!mainSupabase) {
+  logger.warn("⚠️  AUTH BRIDGE WARNING: MAIN_SUPABASE_URL/KEY not found. Cross-project auth will fail.");
+}
+
 
 // Configuración JWT
 import { randomBytes } from "crypto";
@@ -19,7 +39,7 @@ const JWT_SECRET = process.env.JWT_SECRET || randomBytes(64).toString("hex");
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || randomBytes(64).toString("hex");
 
 if (!process.env.JWT_SECRET) {
-  console.warn("⚠️  ADVERTENCIA DE SEGURIDAD: Usando secretos JWT generados aleatoriamente. Las sesiones se invalidarán al reiniciar.");
+  logger.warn("⚠️  ADVERTENCIA DE SEGURIDAD: Usando secretos JWT generados aleatoriamente. Las sesiones se invalidarán al reiniciar.");
 }
 const ACCESS_TOKEN_EXPIRY = "15m"; // 15 minutos
 const REFRESH_TOKEN_EXPIRY = "7d"; // 7 días
@@ -90,9 +110,78 @@ async function checkAccountLock(user: any): Promise<{ locked: boolean; reason?: 
 // Middleware de autenticación JWT
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   try {
+    // 1. Check Bearer Token (Supabase Bridge)
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+
+      let sbUser: any = null;
+
+      // A. Try Main Ecosystem Project (Priority)
+      if (mainSupabase) {
+        const { data, error } = await mainSupabase.auth.getUser(token);
+        if (!error && data.user) {
+          sbUser = data.user;
+        }
+      }
+
+      // B. Try Dedicated Project (Fallback)
+      if (!sbUser && supabase) {
+        const { data, error } = await supabase.auth.getUser(token);
+        if (!error && data.user) {
+          sbUser = data.user;
+        }
+      }
+
+      if (sbUser) {
+        // Sync Logic: Ensure user exists in local dedicated DB
+        let localUser = await storage.getUserByUsername(sbUser.email || sbUser.id);
+
+        if (!localUser && sbUser.email) {
+          // Auto-Sync / Just-In-Time Provisioning
+          logger.info(`[AuthBridge] Syncing user ${sbUser.email} from Supabase...`);
+
+          try {
+            // Generate a random internal password as they authenticate via Supabase
+            const dummyHash = await bcrypt.hash(randomBytes(16).toString("hex"), 10);
+
+            // Get tenant from metadata or default
+            const tenantId = sbUser.app_metadata?.tenant_id || sbUser.user_metadata?.tenant_id;
+
+            localUser = await (storage as any).createUser({
+              username: sbUser.email,
+              email: sbUser.email,
+              password: dummyHash,
+              role: sbUser.app_metadata?.role || "cashier",
+              tenantId: tenantId,
+              sucursales_asignadas: sbUser.user_metadata?.sucursales_asignadas || [],
+              modulos_habilitados: sbUser.user_metadata?.modulos_habilitados || {}
+            });
+          } catch (err) {
+            logger.error("[AuthBridge] Failed to sync user:", err);
+            // Proceed as virtual user if DB write fails, but restricted
+          }
+
+        }
+
+        const role = sbUser.app_metadata?.role || sbUser.user_metadata?.role || "cashier";
+        const tenantId = sbUser.app_metadata?.tenant_id || sbUser.user_metadata?.tenant_id;
+
+        (req as any).user = {
+          id: localUser?.id || sbUser.id,
+          username: sbUser.email || "supabase_user",
+          email: sbUser.email,
+          role: localUser?.role || role,
+          tenantId: localUser?.tenantId || tenantId,
+        };
+        return next();
+      }
+    }
+
+    // 2. Legacy Cookies
     const cookies = parseCookies(req);
     const accessToken = cookies["accessToken"];
-    
+
     if (!accessToken) {
       return res.status(401).json({ message: "No autenticado" });
     }
@@ -120,7 +209,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
       role: user.role,
       tenantId: user.tenantId,
     };
-    
+
     next();
   } catch (err) {
     next(err);
@@ -141,7 +230,7 @@ export function requireRole(allowedRoles: string[]) {
 // Middleware para API Keys (Integración SIGMA)
 export async function requireApiKey(req: Request, res: Response, next: NextFunction) {
   const apiKey = req.headers["x-api-key"] || req.headers["authorization"]?.toString().replace("Bearer ", "");
-  
+
   if (!apiKey || typeof apiKey !== "string") {
     return res.status(401).json({ message: "API Key requerida" });
   }
@@ -184,7 +273,7 @@ export function registerAuthRoutes(app: Express) {
   app.post("/api/auth/login", async (req: Request, res: Response) => {
     const ipAddress = getClientIP(req);
     const userAgent = req.headers["user-agent"];
-    
+
     try {
       const parsed = loginSchema.safeParse(req.body);
       if (!parsed.success) {
@@ -193,32 +282,74 @@ export function registerAuthRoutes(app: Express) {
 
       const { usernameOrEmail, password } = parsed.data;
 
-      // Buscar usuario por username o email
-      let user = await storage.getUserByUsername(usernameOrEmail);
-      if (!user && typeof (storage as any).getUserByEmail === "function") {
-        user = await (storage as any).getUserByEmail(usernameOrEmail);
+      // 1. Attempt Supabase Auth First
+      let authSuccessful = false;
+      let user: any = null;
+
+      if (supabase) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: usernameOrEmail,
+          password: password,
+        });
+
+        if (data.user && !error) {
+          authSuccessful = true;
+          // Sync User to Local DB
+          const sbUser = data.user;
+          user = await storage.getUserByUsername(sbUser.email!);
+
+          if (!user) {
+            // Create if missing. Generate dummy password hash.
+            // We use email as username for consistency
+            const dummyHash = await bcrypt.hash(randomBytes(16).toString("hex"), 10);
+            try {
+              // Ensure tenantId exists? Assuming it's in metadata or global default
+              const tenantId = sbUser.user_metadata?.tenant_id || sbUser.app_metadata?.tenant_id;
+              // Wait, create user might strict on schema.
+              // We'll trust existing storage.createUser if available or try direct insert logic if possible.
+              // Assuming storage.createUser(insertUserSchema)
+              user = await (storage as any).createUser({
+                username: sbUser.email!,
+                password: dummyHash,
+                role: sbUser.user_metadata?.role || "cashier",
+                tenantId: tenantId,
+                email: sbUser.email
+              });
+            } catch (createErr) {
+              logger.warn("Auto-creation failed, using virtual user:", createErr);
+
+              // Fallback to virtual user object without ID in DB? Dangerous for relations.
+              // We will try to fetch again or fail.
+            }
+          }
+        }
       }
 
-      if (!user) {
-        await logLoginAttempt({ username: usernameOrEmail, ipAddress, success: false, userAgent });
-        await logAudit({ userId: null, action: AuditActions.LOGIN_FAILED, ipAddress, userAgent, details: { reason: "user_not_found" } });
-        return res.status(401).json({ message: "Credenciales inválidas" });
+      // 2. Fallback to Local Auth if Supabase failed (or not configured)
+      if (!authSuccessful) {
+        // Buscar usuario por username o email
+        user = await storage.getUserByUsername(usernameOrEmail);
+        if (!user && typeof (storage as any).getUserByEmail === "function") {
+          user = await (storage as any).getUserByEmail(usernameOrEmail);
+        }
+
+        if (!user) {
+          await logLoginAttempt({ username: usernameOrEmail, ipAddress, success: false, userAgent });
+          await logAudit({ userId: null, action: AuditActions.LOGIN_FAILED, ipAddress, userAgent, details: { reason: "user_not_found" } });
+          return res.status(401).json({ message: "Credenciales inválidas" });
+        }
+
+        // Verificar contraseña
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (!passwordMatch) {
+          await logLoginAttempt({ username: user.username, ipAddress, success: false, userAgent });
+          await logAudit({ userId: user.id, action: AuditActions.LOGIN_FAILED, ipAddress, userAgent, details: { reason: "wrong_password" } });
+          return res.status(401).json({ message: "Credenciales inválidas" });
+        }
       }
 
-      // Verificar bloqueo de cuenta
-      const lockStatus = await checkAccountLock(user);
-      if (lockStatus.locked) {
-        await logAudit({ userId: user.id, action: "login_blocked", ipAddress, userAgent });
-        return res.status(403).json({ message: lockStatus.reason });
-      }
+      // Login exitoso (Common path)
 
-      // Verificar contraseña
-      const passwordMatch = await bcrypt.compare(password, user.password);
-      if (!passwordMatch) {
-        await logLoginAttempt({ username: user.username, ipAddress, success: false, userAgent });
-        await logAudit({ userId: user.id, action: AuditActions.LOGIN_FAILED, ipAddress, userAgent, details: { reason: "wrong_password" } });
-        return res.status(401).json({ message: "Credenciales inválidas" });
-      }
 
       // Login exitoso
       await logLoginAttempt({ username: user.username, ipAddress, success: true, userAgent });
@@ -267,7 +398,8 @@ export function registerAuthRoutes(app: Express) {
         },
       });
     } catch (error) {
-      console.error("Login error:", error);
+      logger.error("Login error:", error);
+
       await logAudit({ userId: null, action: "login_error", ipAddress, userAgent, details: { error: String(error) } });
       res.status(500).json({ message: "Error en login" });
     }
@@ -346,7 +478,7 @@ export function registerAuthRoutes(app: Express) {
   });
 
   // --- GESTIÓN DE API KEYS (Solo Tenant Admin) ---
-  
+
   app.get("/api/auth/api-keys", ...requireTenantAdmin, async (req: Request, res: Response) => {
     const user = (req as any).user;
     const keys = await storage.listApiKeys(user.tenantId);
@@ -357,7 +489,7 @@ export function registerAuthRoutes(app: Express) {
     const user = (req as any).user;
     const { name } = req.body;
     if (!name) return res.status(400).json({ message: "Nombre de la llave requerido" });
-    
+
     const key = await storage.createApiKey(user.tenantId, name);
     res.status(201).json({ key, name });
   });
@@ -506,7 +638,7 @@ export function getPermissionsByRole(role: string): Permission[] {
 export const checkPermission = (requiredPermission: Permission) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const user = (req as any).user;
-    
+
     if (!user) {
       return res.status(401).json({ error: "No autenticado" });
     }

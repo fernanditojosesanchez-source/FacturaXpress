@@ -46,15 +46,23 @@ export async function processTransmision(job: Job<TransmisionJob>) {
       throw new Error(`Factura ${facturaId} no encontrada`);
     }
 
+    // ✅ IDEMPOTENCIA: Si ya tiene sello, no hacer nada (fue procesado exitosamente antes)
+    if (factura.selloRecibido) {
+      log(`[Worker Transmisión] Factura ${facturaId} ya procesada. IDEMPOTENCIA ACTIVADA.`);
+      return { success: true, facturaId, previouslyCompleted: true };
+    }
+
     // 2. Validar que tenga código de generación
     if (!factura.codigoGeneracion) {
       throw new Error(`Factura ${facturaId} sin código de generación`);
     }
 
     // 3. Firmar documento (si no está firmado)
-    if (!factura.selloRecibido) {
+    // Nota: Aunque el check de arriba (selloRecibido) cubre el caso final,
+    // este check es útil si tenemos firma parcial guardada (que no es el caso actual, pero es defensivo)
+    if (!factura.firma) {
       log(`[Worker Transmisión] Firmando factura ${facturaId}...`);
-      
+
       // Obtener certificado del tenant
       const certs = await storage.getCertificados(tenantId);
       const certActivo = certs.find((c: any) => c.activo && new Date(c.validoHasta) > new Date());
@@ -68,20 +76,37 @@ export async function processTransmision(job: Job<TransmisionJob>) {
       }
 
       // ✅ Usar signDTE con Worker Thread (no bloquea event loop)
-      // Nota: certActivo.archivo es el p12 en Base64, certActivo.contrasena es la pwd
       const firmado = await signDTE(factura, certActivo.archivo, certActivo.contrasena);
-      
+
       log(`[Worker Transmisión] Factura firmada: ${firmado.signature.substring(0, 20)}...`);
+
+      // OPTIMIZACIÓN: Podríamos guardar la firma parcial aquí si el proceso es muy largo
     }
 
     // 4. Transmitir al MH
     log(`[Worker Transmisión] Transmitiendo al MH: ${facturaId}`);
-    // TODO: Integrar con mh-service.ts para enviar al MH
-    // const response = await mhService.transmitirDocumento(tenantId, factura);
+
+    try {
+      // TODO: Integrar con mh-service.ts para enviar al MH
+      // const response = await mhService.transmitirDocumento(tenantId, factura);
+
+      // Simulación temporal de latencia
+      await new Promise(r => setTimeout(r, 500));
+
+    } catch (mhError: any) {
+      // ✅ IDEMPOTENCIA DE RED:
+      // Si MH responde "Duplicado" (DTE ya recibido), lo marcamos como éxito
+      if (mhError.code === 'DTE_DUPLICATE' || mhError.message?.includes('ya fue recibido')) {
+        log(`[Worker Transmisión] DTE ya recibido en MH. Recuperando sello...`);
+        // TODO: Llamar a consultaDTE para obtener el sello real
+      } else {
+        throw mhError;
+      }
+    }
 
     // 5. Actualizar estado en BD
     await storage.updateFactura(facturaId, tenantId, {
-      selloRecibido: new Date().toISOString(),
+      selloRecibido: new Date().toISOString(), // Simulado por ahora
     });
 
     // 6. Auditoría
@@ -153,11 +178,11 @@ export async function processFirma(job: Job<FirmaJob>) {
 
     // 3. Firmar documento
     log(`[Worker Firma] Firmando con certificado ${certActivo.id}...`);
-    
+
     // ✅ Usar signDTE con Worker Thread (no bloquea event loop)
     // Nota: certActivo.archivo es el p12 en Base64, certActivo.contrasena es la pwd
     const firma = await signDTE(doc, certActivo.archivo, certActivo.contrasena);
-    
+
     log(`[Worker Firma] Documento firmado: ${firma.signature.substring(0, 20)}...`);
 
     // 4. Guardar firma
@@ -292,7 +317,7 @@ export async function initWorkers(): Promise<{ started: number; errors: string[]
   // Worker de Transmisión
   try {
     transmisionWorker = new Worker<TransmisionJob>(
-      process.env.Q_TRANSMISION_NAME || "fx:transmision",
+      process.env.Q_TRANSMISION_NAME || "fx-transmision",
       processTransmision,
       {
         connection,
@@ -310,7 +335,7 @@ export async function initWorkers(): Promise<{ started: number; errors: string[]
 
     transmisionWorker.on("failed", async (job, err) => {
       log(`❌ [Worker Transmisión] Job ${job?.id} falló: ${err.message}`);
-      
+
       // Si se agotaron todos los reintentos, mover a DLQ
       if (job && job.attemptsMade >= (job.opts.attempts || 5)) {
         await addToDLQ(job, err, "transmision");
@@ -325,7 +350,7 @@ export async function initWorkers(): Promise<{ started: number; errors: string[]
   // Worker de Firma
   try {
     firmaWorker = new Worker<FirmaJob>(
-      process.env.Q_FIRMA_NAME || "fx:firma",
+      process.env.Q_FIRMA_NAME || "fx-firma",
       processFirma,
       {
         connection,
@@ -339,7 +364,7 @@ export async function initWorkers(): Promise<{ started: number; errors: string[]
 
     firmaWorker.on("failed", async (job, err) => {
       log(`❌ [Worker Firma] Job ${job?.id} falló: ${err.message}`);
-      
+
       if (job && job.attemptsMade >= (job.opts.attempts || 5)) {
         await addToDLQ(job, err, "firma");
       }
@@ -353,7 +378,7 @@ export async function initWorkers(): Promise<{ started: number; errors: string[]
   // Worker de Notificaciones
   try {
     notificacionesWorker = new Worker<NotificacionJob>(
-      process.env.Q_NOTIFS_NAME || "fx:notificaciones",
+      process.env.Q_NOTIFS_NAME || "fx-notificaciones",
       processNotificacion,
       {
         connection,
@@ -367,7 +392,7 @@ export async function initWorkers(): Promise<{ started: number; errors: string[]
 
     notificacionesWorker.on("failed", async (job, err) => {
       log(`❌ [Worker Notificaciones] Job ${job?.id} falló: ${err.message}`);
-      
+
       if (job && job.attemptsMade >= (job.opts.attempts || 5)) {
         await addToDLQ(job, err, "notificaciones");
       }

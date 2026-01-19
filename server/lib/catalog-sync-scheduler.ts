@@ -1,102 +1,45 @@
-/**
- * Catalog Sync Scheduler
- * 
- * Inicia un cron job para sincronizar catálogos DGII cada 24 horas.
- * Ejecuta la sincronización automática a las 2:00 AM.
- * 
- * @see AUDITORIA_SEGURIDAD_2026_01.md - Punto #6
- */
 
 import { catalogSyncService } from "./catalog-sync-service.js";
+import { log } from "../index.js";
+
+const SYNC_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 horas
 
 /**
- * Calcula milisegundos hasta la próxima ejecución a las 2:00 AM
+ * Inicia el cron job para sincronizar catálogos.
+ * Ejecuta una sincronización inmediata al inicio y luego cada 24h.
  */
-function getDelay(): number {
-  const now = new Date();
-  const target = new Date(now);
-  
-  // Establecer la hora a 2:00 AM
-  target.setHours(2, 0, 0, 0);
-  
-  // Si ya pasó las 2:00 AM hoy, programar para mañana
-  if (target <= now) {
-    target.setDate(target.getDate() + 1);
-  }
-  
-  return target.getTime() - now.getTime();
-}
-
-/**
- * Inicia el scheduler de sincronización de catálogos
- */
-export function startCatalogSyncScheduler(): NodeJS.Timeout | null {
-  console.log("[CatalogSync] Iniciando scheduler de sincronización de catálogos...");
-  
-  // Calcular delay inicial
-  const initialDelay = getDelay();
-  const nextRun = new Date(Date.now() + initialDelay);
-  
-  console.log(`[CatalogSync] Próxima sincronización: ${nextRun.toLocaleString()}`);
-  
-  // Ejecutar la sincronización inicial después del delay
-  const initialTimer = setTimeout(() => {
-    syncCatalogs();
-    
-    // Ejecutar cada 24 horas después
-    const intervalTimer = setInterval(syncCatalogs, 24 * 60 * 60 * 1000);
-    
-    // Guardar el timer del intervalo para poder detenerlo luego
-    (initialTimer as any).__intervalTimer = intervalTimer;
-  }, initialDelay);
-  
-  return initialTimer;
-}
-
-/**
- * Ejecuta la sincronización de catálogos
- */
-async function syncCatalogs(): Promise<void> {
-  try {
-    console.log("[CatalogSync] Iniciando sincronización automática de catálogos...");
-    const startTime = Date.now();
-    
-    // Sincronizar todos los catálogos
-    const results = await catalogSyncService.syncAllCatalogs({
-      triggerType: "auto",
+export function startCatalogSyncScheduler(): NodeJS.Timeout {
+  // Ejecutar inmediatamente al inicio (async sin bloquear)
+  catalogSyncService.syncCatalogs()
+    .then(result => {
+      if (result.updated.length > 0) {
+        log(`[Scheduler] Catálogos sincronizados al inicio: ${result.updated.join(', ')}`);
+      }
+    })
+    .catch(err => {
+      console.error("[Scheduler] Error en sync inicial de catálogos:", err);
     });
-    
-    const totalTime = Date.now() - startTime;
-    const successCount = results.filter(r => r.success).length;
-    const failedCount = results.filter(r => !r.success).length;
-    
-    console.log(`[CatalogSync] ✅ Sincronización completada en ${totalTime}ms`);
-    console.log(`[CatalogSync] Resultados: ${successCount} exitosas, ${failedCount} fallidas`);
-    
-    // Log de cada catálogo
-    for (const result of results) {
-      const status = result.success ? "✅" : "❌";
-      console.log(`[CatalogSync] ${status} ${result.catalogName}: ${result.message}`);
+
+  // Programar intervalo
+  const timer = setInterval(async () => {
+    try {
+      const result = await catalogSyncService.syncCatalogs();
+      if (result.updated.length > 0) {
+        log(`[Scheduler] Catálogos actualizados: ${result.updated.join(', ')}`);
+      } else {
+        // Silencioso si no hay cambios para no llenar logs
+      }
+    } catch (error) {
+      console.error("[Scheduler] Error en sync programado:", error);
     }
-  } catch (error) {
-    console.error("[CatalogSync] ❌ Error durante sincronización:", error);
-  }
+  }, SYNC_INTERVAL_MS);
+
+  return timer;
 }
 
-/**
- * Detiene el scheduler de sincronización
- */
-export function stopCatalogSyncScheduler(timer: NodeJS.Timeout): void {
-  console.log("[CatalogSync] Deteniendo scheduler de sincronización de catálogos...");
-  
-  // Detener el timer inicial
-  clearTimeout(timer);
-  
-  // Detener el timer del intervalo si existe
-  const intervalTimer = (timer as any).__intervalTimer;
-  if (intervalTimer) {
-    clearInterval(intervalTimer);
+export function stopCatalogSyncScheduler(timer: NodeJS.Timeout | null) {
+  if (timer) {
+    clearInterval(timer);
+    log("✅ Scheduler de catálogos detenido");
   }
-  
-  console.log("[CatalogSync] Scheduler detenido");
 }

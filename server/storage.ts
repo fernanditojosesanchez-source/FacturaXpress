@@ -28,7 +28,9 @@ import {
 import { randomUUID, createHash } from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
+import { logger } from "./lib/logger.js";
 import { db } from "./db.js";
+
 import { eq, desc, sql, and } from "drizzle-orm";
 import { encrypt, decrypt } from "./lib/crypto.js";
 import { saveSecretToVault, getSecretFromVault, deleteSecretFromVault, secretExists } from "./lib/vault.js";
@@ -84,7 +86,7 @@ export interface IStorage {
   updateUserPassword(userId: string, passwordHash: string): Promise<void>;
   updateUserStatus(userId: string, activo: boolean): Promise<void>;
   updateUserPhone(userId: string, telefono: string): Promise<void>;
-  
+
   // Clientes (Receptores)
   getReceptores(tenantId: string): Promise<any[]>;
   getReceptorByDoc(tenantId: string, numDocumento: string): Promise<any | undefined>;
@@ -109,7 +111,7 @@ export interface IStorage {
   // Emisor (Configuración por Tenant)
   getEmisor(tenantId: string): Promise<Emisor | undefined>;
   saveEmisor(tenantId: string, emisor: Emisor): Promise<Emisor>;
-  
+
   // Facturación (DTEs por Tenant)
   getFacturas(tenantId: string): Promise<Factura[]>;
   getFactura(id: string, tenantId: string): Promise<Factura | undefined>;
@@ -118,7 +120,7 @@ export interface IStorage {
   deleteFactura(id: string, tenantId: string): Promise<boolean>;
   getNextNumeroControl(tenantId: string, emisorNit: string, tipoDte: string): Promise<string>;
   getFacturaByCodigoGeneracion(codigoGen: string, tenantId: string): Promise<Factura | null>;
-  
+
   // API Keys para integraciones (SIGMA)
   createApiKey(tenantId: string, name: string): Promise<string>;
   validateApiKey(key: string): Promise<{ tenantId: string } | null>;
@@ -481,9 +483,10 @@ export class DatabaseStorage implements IStorage {
         .where(eq(certificadosTable.tenantId, tenantId))
         .orderBy(desc(certificadosTable.createdAt));
     } catch (error) {
-      console.error("Error in storage.getCertificados:", error);
+      logger.error("Error in storage.getCertificados:", error);
       throw error;
     }
+
   }
 
   async getCertificado(id: string, tenantId: string): Promise<Certificado | undefined> {
@@ -499,7 +502,7 @@ export class DatabaseStorage implements IStorage {
     const [row] = await db.insert(certificadosTable).values({
       ...c,
       tenantId,
-      diasParaExpiracion: c.validoHasta 
+      diasParaExpiracion: c.validoHasta
         ? Math.floor((new Date(c.validoHasta).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
         : undefined,
     } as any).returning();
@@ -508,7 +511,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateCertificado(id: string, tenantId: string, updates: Partial<Certificado>): Promise<Certificado | undefined> {
     const data: any = { ...updates, updatedAt: new Date() };
-    
+
     // Recalcular días para expiración si cambió la fecha
     if (updates.validoHasta) {
       data.diasParaExpiracion = Math.floor(
@@ -562,7 +565,7 @@ export class DatabaseStorage implements IStorage {
     const id = randomUUID();
     const createdAt = new Date().toISOString();
     const factura: Factura = { ...insertFactura, id, createdAt, tenantId, externalId: insertFactura.externalId };
-    
+
     await db.transaction(async (tx) => {
       await tx.insert(facturasTable).values({
         id,
@@ -578,19 +581,19 @@ export class DatabaseStorage implements IStorage {
       if (insertFactura.cuerpoDocumento && insertFactura.cuerpoDocumento.length > 0) {
         const items = insertFactura.cuerpoDocumento.map(
           (item: InsertFactura["cuerpoDocumento"][number], idx: number) => ({
-          facturaId: id,
-          numItem: item.numItem || idx + 1,
-          tipoItem: item.tipoItem,
-          cantidad: item.cantidad.toString(),
-          codigo: item.codigo,
-          descripcion: item.descripcion,
-          precioUni: item.precioUni.toString(),
-          ventaNoSuj: (item.ventaNoSuj || 0).toString(),
-          ventaExenta: (item.ventaExenta || 0).toString(),
-          ventaGravada: (item.ventaGravada || 0).toString(),
-          ivaItem: (item.ivaItem || 0).toString(),
-          tributos: item.tributos || null,
-        })
+            facturaId: id,
+            numItem: item.numItem || idx + 1,
+            tipoItem: item.tipoItem,
+            cantidad: item.cantidad.toString(),
+            codigo: item.codigo,
+            descripcion: item.descripcion,
+            precioUni: item.precioUni.toString(),
+            ventaNoSuj: (item.ventaNoSuj || 0).toString(),
+            ventaExenta: (item.ventaExenta || 0).toString(),
+            ventaGravada: (item.ventaGravada || 0).toString(),
+            ivaItem: (item.ivaItem || 0).toString(),
+            tributos: item.tributos || null,
+          })
         );
         await tx.insert(facturaItemsTable).values(items);
       }
@@ -604,24 +607,24 @@ export class DatabaseStorage implements IStorage {
         status: "pending",
       });
     });
-    
+
     return factura;
   }
 
   async updateFactura(id: string, tenantId: string, updates: Partial<Factura>): Promise<Factura | undefined> {
     const current = await this.getFactura(id, tenantId);
     if (!current) return undefined;
-    
+
     const updated = { ...current, ...updates };
-    
+
     await db.update(facturasTable)
-      .set({ 
+      .set({
         data: updated,
         estado: updated.estado,
         selloRecibido: updated.selloRecibido,
       })
       .where(and(eq(facturasTable.id, id), eq(facturasTable.tenantId, tenantId)));
-      
+
     return updated;
   }
 
@@ -640,7 +643,7 @@ export class DatabaseStorage implements IStorage {
       // ESTRATEGIA ATÓMICA: Intentar UPDATE primero (caso común)
       // Si no existe el registro, INSERT con ON CONFLICT
       // Esto elimina la ventana de race condition del SELECT + UPDATE
-      
+
       // Paso 1: Intentar incrementar el secuencial existente
       const [updated] = await tx
         .update(secuencialControlTable)
@@ -658,7 +661,7 @@ export class DatabaseStorage implements IStorage {
         .returning();
 
       let record = updated;
-      
+
       // Paso 2: Si no existía, crear nuevo registro con UPSERT
       if (!record) {
         try {
@@ -690,7 +693,7 @@ export class DatabaseStorage implements IStorage {
                 )
               )
               .returning();
-            
+
             if (!retried) {
               throw new Error('No se pudo obtener el siguiente número de control después de reintento');
             }
@@ -725,7 +728,7 @@ export class DatabaseStorage implements IStorage {
         eq(facturasTable.tenantId, tenantId)
       ))
       .limit(1);
-      
+
     return row ? (row.data as Factura) : null;
   }
 
@@ -733,7 +736,7 @@ export class DatabaseStorage implements IStorage {
   async createApiKey(tenantId: string, name: string): Promise<string> {
     const rawKey = `fx_live_${randomUUID().replace(/-/g, "")}`;
     const hashedKey = createHash("sha256").update(rawKey).digest("hex");
-    
+
     await db.insert(apiKeys).values({
       tenantId,
       name,
@@ -744,7 +747,7 @@ export class DatabaseStorage implements IStorage {
 
   async validateApiKey(key: string): Promise<{ tenantId: string } | null> {
     const hashedKey = createHash("sha256").update(key).digest("hex");
-    
+
     const [row] = await db.select().from(apiKeys).where(and(eq(apiKeys.key, hashedKey), eq(apiKeys.active, true))).limit(1);
     if (!row) return null;
 
@@ -775,7 +778,7 @@ export class DatabaseStorage implements IStorage {
 
   async getContingenciaQueue(tenantId: string, estado?: string): Promise<any[]> {
     let query: any = db.select().from(contingenciaQueueTable).where(eq(contingenciaQueueTable.tenantId, tenantId));
-    
+
     if (estado) {
       query = query.where(eq(contingenciaQueueTable.estado, estado));
     }
@@ -879,9 +882,9 @@ export class DatabaseStorage implements IStorage {
     let query: any = db.select().from(anulacionesTable)
       .where(eq(anulacionesTable.tenantId, tenantId))
       .orderBy(desc(anulacionesTable.fechaAnulo));
-    
+
     if (limit) query = query.limit(limit);
-    
+
     return await query;
   }
 
@@ -922,7 +925,7 @@ export class DatabaseStorage implements IStorage {
   async saveMHCredentialsToVault(tenantId: string, usuario: string, password: string, userId: string, ipAddress?: string): Promise<void> {
     // Guardar usuario y contraseña como un JSON encriptado
     const credentials = JSON.stringify({ usuario, password });
-    
+
     await saveSecretToVault({
       tenantId,
       secretType: "mh_password",
@@ -948,7 +951,7 @@ export class DatabaseStorage implements IStorage {
 
     for (const secretType of secretTypes) {
       const exists = await secretExists(tenantId, secretType, secretType === "mh_password" ? "credentials" : secretType === "cert_password" ? "password" : "p12");
-      
+
       if (exists) {
         await deleteSecretFromVault(
           tenantId,
