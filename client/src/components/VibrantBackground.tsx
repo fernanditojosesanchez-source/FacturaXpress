@@ -14,33 +14,24 @@ export function VibrantBackground({ className, children }: VibrantBackgroundProp
             {/* Dynamic SVG Background */}
             <div className="fixed inset-0 w-full h-full pointer-events-none select-none z-0">
                 {theme === 'light' ? (
-                    <svg className="w-full h-full opacity-80" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" style={{ filter: 'blur(40px)' }}>
+                    <svg className="w-full h-full opacity-90" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
                         <defs>
-                            <radialGradient id="lightRadial1" cx="20%" cy="20%" r="60%">
-                                <stop offset="0%" stopColor="#818cf8" stopOpacity="0.4" />
-                                <stop offset="100%" stopColor="#e0e7ff" stopOpacity="0" />
-                            </radialGradient>
-                            <radialGradient id="lightRadial2" cx="80%" cy="80%" r="50%">
-                                <stop offset="0%" stopColor="#c084fc" stopOpacity="0.3" />
-                                <stop offset="100%" stopColor="#f3e8ff" stopOpacity="0" />
-                            </radialGradient>
-                            <radialGradient id="lightRadial3" cx="70%" cy="10%" r="40%">
-                                <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.15" />
-                                <stop offset="100%" stopColor="#fef3c7" stopOpacity="0" />
-                            </radialGradient>
-                            <radialGradient id="lightRadial4" cx="10%" cy="90%" r="50%">
-                                <stop offset="0%" stopColor="#2dd4bf" stopOpacity="0.2" />
-                                <stop offset="100%" stopColor="#ccfbf1" stopOpacity="0" />
-                            </radialGradient>
+                            <linearGradient id="warmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#fdfcfb" />
+                                <stop offset="100%" stopColor="#f7f3ed" />
+                            </linearGradient>
+                            <filter id="softBlur" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur in="SourceGraphic" stdDeviation="50" />
+                            </filter>
                         </defs>
+                        <rect width="1440" height="900" fill="url(#warmGrad)" />
 
-                        <rect width="1440" height="900" fill="#f8fafc" />
-                        <circle cx="20%" cy="20%" r="400" fill="url(#lightRadial1)" />
-                        <circle cx="80%" cy="80%" r="500" fill="url(#lightRadial2)" />
-                        <circle cx="70%" cy="10%" r="350" fill="url(#lightRadial3)" />
-                        <circle cx="10%" cy="90%" r="450" fill="url(#lightRadial4)" />
-
-                        <path d="M0,450 Q360,350 720,450 T1440,450" fill="none" stroke="#e2e8f0" strokeWidth="100" opacity="0.5" />
+                        {/* Organic Waves Emulating provided reference */}
+                        <g filter="url(#softBlur)" opacity="0.4">
+                            <path d="M-100,300 C300,150 400,600 900,450 C1200,350 1500,600 1700,500 L1700,900 L-100,900 Z" fill="#e9e3d5" />
+                            <path d="M-200,600 C200,500 600,800 1000,650 C1400,500 1600,700 1800,600 L1800,1000 L-200,1000 Z" fill="#dfd6c5" opacity="0.4" />
+                            <path d="M1200,100 C1000,0 800,200 600,100 C400,0 200,200 0,100 L0,-100 L1200,-100 Z" fill="#f0ede6" opacity="0.5" />
+                        </g>
                     </svg>
                 ) : (
                     <svg className="w-full h-full" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" style={{ filter: 'blur(60px)' }}>

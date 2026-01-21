@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, decimal, integer, timestamp, jsonb, serial, unique, uuid, boolean, index } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, decimal, integer, timestamp, jsonb, serial, unique, uuid, boolean, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -692,7 +692,7 @@ export const catalogVersionsTable = pgTable("catalog_versions", {
   data: jsonb("data").notNull(),
   lastSyncAt: timestamp("last_sync_at").notNull().defaultNow(),
   syncStatus: text("sync_status").notNull(),
-  recordsCount: integer("records_count").notNull(),
+  recordsCount: integer("record_count").notNull(),
 }, (t) => ({
   idxCatalogVersion: uniqueIndex("idx_catalog_version").on(t.catalogName, t.version),
   idxLatestSync: index("idx_catalog_name_date").on(t.catalogName, t.lastSyncAt),

@@ -54,16 +54,16 @@ const mockSigmaInvoice: any = {
             precioUni: 40.00,
             montoDescu: 0,
             ventaNoSuj: 0,
-            ventaExenta: 40.00, // CORRECCIÓN AUDITORÍA: Servicios médicos son EXENTOS (Art. 162 CT)
-            ventaGravada: 0.00, // No puede haber gravado sin IVA (13%)
-            ivaItem: 0.00
+            ventaExenta: 0.00,
+            ventaGravada: 40.00, // CORRECCIÓN AUDITOR: Se asume escenario GRAVADO (Precio incluye IVA en FCF)
+            ivaItem: 4.60 // Cálculo: 40.00 / 1.13 * 0.13 = 4.6017... (Redondeado a 2 decimales)
         }
     ],
 
     resumen: {
         totalNoSuj: 0,
-        totalExenta: 40.00,
-        totalGravada: 0.00,
+        totalExenta: 0.00,
+        totalGravada: 40.00,
         subTotalVentas: 40.00, // Suma de Gravada + Exenta + No Sujeta
         descuNoSuj: 0,
         descuExenta: 0,
@@ -77,7 +77,7 @@ const mockSigmaInvoice: any = {
         totalNoGravado: 0,
         totalPagar: 40.00,
         totalLetras: "CUARENTA 00/100 USD",
-        totalIva: 0,
+        totalIva: 4.60,
         saldoFavor: 0,
         condicionOperacion: "1", // Contado
         pagos: [
@@ -140,10 +140,10 @@ async function runTest() {
         // 3. Validar Escenario de Contingencia (Requerido por Auditoría)
         console.log("\n🚨 3. PROBANDO ESCENARIO DE FALLA (SIMULACIÓN CONTINGENCIA)");
         console.log("   Escenario: El servidor de Hacienda responde 503 o Timeout.");
-        
+
         // Simulamos la transformación que debe hacer el sistema antes de guardar en cola
         const dteContingencia = JSON.parse(JSON.stringify(dteJson));
-        
+
         // APLICANDO REGLAS DE CONTINGENCIA (Normativa Técnica v3)
         dteContingencia.identificacion.tipoTransmision = 2; // 1=Normal, 2=Contingencia
         dteContingencia.identificacion.motivoContin = 2;    // 2=Servicio No Disponible (Catálogo MH-006)

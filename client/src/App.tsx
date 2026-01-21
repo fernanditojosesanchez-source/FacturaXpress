@@ -197,10 +197,6 @@ function AppContent() {
     staleTime: 30000,
   });
 
-  const { data: emisor } = useQuery<any>({
-    queryKey: ["/api/emisor"],
-    enabled: !authLoading && !!user && !isSuperAdmin,
-  });
 
   // Extraer array de facturas de forma estable
   const facturas = useMemo(() =>
@@ -320,39 +316,38 @@ function AppContent() {
     : 'border-white/40 bg-white/60';
 
   return (
-    <VibrantBackground className="p-6">
-      <div className="relative z-10 flex justify-center">
+    <VibrantBackground className="p-4 sm:p-8">
+      <div className="relative z-50 flex justify-center mb-8">
         <div className={cn(
-          "flex items-center gap-2.5 rounded-2xl border px-5 py-3 backdrop-blur-xl transition-all duration-300",
+          "flex items-center gap-3 rounded-2xl border px-4 py-2.5 backdrop-blur-3xl transition-all duration-500",
           navBgClass,
           theme === 'dark'
-            ? 'shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30'
-            : 'shadow-md shadow-slate-200/50 hover:shadow-lg hover:shadow-slate-300/60'
+            ? 'shadow-xl shadow-black/20 border-white/10'
+            : 'shadow-sm shadow-black/5 border-white/80'
         )}>
-          {emisor?.logo && (
-            <>
-              <img
-                src={emisor.logo}
-                alt="Logo"
-                className="h-6 object-contain"
-              />
-              <div className={cn(
-                "h-5 w-px",
-                theme === 'dark' ? 'bg-slate-600/60' : 'bg-slate-300/60'
-              )} />
-            </>
-          )}
+          {/* Usando el ícono sugerido en el header */}
+          <div className="flex items-center">
+            <img
+              src="/neexum_app_icon.png"
+              alt="NX"
+              className="h-7 w-auto object-contain"
+            />
+            <div className={cn(
+              "h-5 w-px mx-3",
+              theme === 'dark' ? 'bg-white/10' : 'bg-slate-300/60'
+            )} />
+          </div>
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "px-3 py-2 text-sm font-500 rounded-lg transition-all duration-200",
+                "px-3 py-2 text-[13px] font-bold rounded-xl transition-all duration-300 whitespace-nowrap",
                 location === item.href
-                  ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
                   : theme === 'dark'
-                    ? "text-slate-300/90 hover:text-slate-100 hover:bg-slate-700/50"
-                    : "text-slate-600 hover:text-slate-800 hover:bg-slate-200/50"
+                    ? "text-slate-300 hover:text-white hover:bg-white/5"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-black/5"
               )}
             >
               {item.label}
@@ -406,22 +401,27 @@ function AppContent() {
           <ThemeToggle />
           {user && (
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="ml-1 text-xs px-2.5"
+              className={cn(
+                "ml-1 text-[11px] px-2.5 h-8 rounded-lg font-black uppercase tracking-tight transition-all",
+                theme === 'dark'
+                  ? "text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  : "text-red-500 hover:text-red-600 hover:bg-red-500/5"
+              )}
               onClick={(e) => {
                 e.preventDefault();
                 logout.mutate();
               }}
             >
-              Salir
+              SALIR
             </Button>
           )}
         </div>
       </div>
 
-      <main className="mt-6 flex justify-center relative z-10">
-        <div className="w-full max-w-7xl">
+      <main className="mt-4 flex justify-center relative z-10 animate-in fade-in duration-700">
+        <div className="w-full max-w-7xl px-4">
           <Router />
         </div>
       </main>

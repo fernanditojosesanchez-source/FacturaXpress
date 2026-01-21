@@ -46,17 +46,17 @@ export function setupBullBoard(app: Express): void {
       uiConfig: {
         boardTitle: "FacturaXpress - Colas BullMQ",
         boardLogo: {
-          path: "/logo.png",
-          width: 120,
-          height: 40,
+          path: "/neexum_final_logo.png",
+          width: 140,
+          height: 60,
         },
         miscLinks: [
           { text: "Volver a Admin", url: "/admin" },
           { text: "Documentación", url: "/docs/queues" },
         ],
         favIcon: {
-          default: "static/favicon.ico",
-          alternative: "static/favicon-32x32.png",
+          default: "/favicon.png",
+          alternative: "/favicon.png",
         },
       },
     },

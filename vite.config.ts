@@ -10,7 +10,7 @@ export default defineConfig({
     runtimeErrorOverlay(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
+      includeAssets: ["favicon.png", "apple-touch-icon.png", "mask-icon.svg"],
       manifest: {
         name: "FacturaXpress - DTE El Salvador",
         short_name: "FacturaXpress",
@@ -113,15 +113,15 @@ export default defineConfig({
       },
     }),
     ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
+      process.env.REPL_ID !== undefined
       ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
-          ),
-          await import("@replit/vite-plugin-dev-banner").then((m) =>
-            m.devBanner(),
-          ),
-        ]
+        await import("@replit/vite-plugin-cartographer").then((m) =>
+          m.cartographer(),
+        ),
+        await import("@replit/vite-plugin-dev-banner").then((m) =>
+          m.devBanner(),
+        ),
+      ]
       : []),
   ],
   resolve: {
@@ -144,6 +144,9 @@ export default defineConfig({
     fs: {
       strict: true,
       deny: ["**/.*"],
+    },
+    watch: {
+      usePolling: false,
     },
   },
 });

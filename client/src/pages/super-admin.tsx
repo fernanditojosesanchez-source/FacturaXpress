@@ -77,27 +77,13 @@ export default function SuperAdminPage() {
       <div className="fixed inset-0 -z-10 bg-white/10 dark:bg-black/20 pointer-events-none" />
 
       <div className="relative p-6 sm:p-12 space-y-12 max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 animate-fade-in-up">
-          <div className="space-y-2">
-            <h1 className="text-6xl md:text-8xl font-black tracking-tighter italic bg-gradient-to-br from-slate-900 via-slate-700 to-slate-500 bg-clip-text text-transparent drop-shadow-2xl dark:from-white dark:via-white/80 dark:to-white/20">
-              NEEXUM ADMIN
-            </h1>
-            <p className="text-blue-600 dark:text-blue-400 font-black tracking-[0.5em] uppercase text-xs opacity-80">NEEXUM Ecosystem // Control Core</p>
-          </div>
-
-          <Button
-            onClick={() => setIsCreateOpen(true)}
-            size="lg"
-            className="h-20 px-10 rounded-[2rem] bg-gradient-to-br from-blue-500 to-purple-600 text-white hover:scale-105 active:scale-95 transition-all duration-500 font-black italic tracking-tighter text-2xl shadow-[0_20px_50px_rgba(59,130,246,0.5)] border border-white/20 backdrop-blur-xl"
-          >
-            <Plus className="h-8 w-8 mr-3 stroke-[4px]" />
-            NUEVA EMPRESA
-          </Button>
-        </div>
 
         {/* Dashboard Cards Component */}
-        <TenantCards metrics={metrics} isLoading={isLoadingMetrics} />
+        <TenantCards 
+          metrics={metrics} 
+          isLoading={isLoadingMetrics} 
+          onNewTenant={() => setIsCreateOpen(true)} 
+        />
 
         {/* Main Data Table Component */}
         <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
